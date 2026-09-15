@@ -1,0 +1,26 @@
+# CMake and native build output
+/build/
+/out/
+/install/
+CMakeCache.txt
+CMakeFiles/
+cmake-build-*/
+compile_commands.json
+*.so
+*.dll
+*.dylib
+
+# Python environments and packaging output
+/.venv/
+/venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+/python/build/
+/python/dist/
+/python/.cache/
+.pytest_cache/
+
+# IDE and local tooling
+.vscode/*.log
+.idea/
