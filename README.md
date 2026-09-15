@@ -49,6 +49,17 @@ Run the C++ tests through CTest:
 ctest --test-dir build --output-on-failure
 ```
 
+The same workflow is available through the Makefile:
+
+```bash
+make              # Debug build
+make test
+make run
+make release
+make clean
+make help
+```
+
 To enable AddressSanitizer and UndefinedBehaviorSanitizer for a development build, add `-DCONVEXITY_ENABLE_SANITIZERS=ON` to the configure command.
 
 The install tree exports the target as `convexity::core`, ready for a consumer using `find_package(convexity CONFIG REQUIRED)`:
