@@ -31,8 +31,15 @@ configure:
 test: debug
 	$(CTEST) --test-dir "$(BUILD_DIR)" --output-on-failure
 
-run: debug
-	./$(BUILD_DIR)/convexity_cpp_client
+run: BUILD_DIR := $(BUILD_ROOT)/debug
+run: BUILD_TYPE := Debug
+run:
+	@$(CMAKE) -S . -B "$(BUILD_DIR)" -G "$(GENERATOR)" \
+		-DCMAKE_BUILD_TYPE="$(BUILD_TYPE)" \
+		-DCONVEXITY_BUILD_TESTS=ON \
+		-DCONVEXITY_BUILD_CLIENT=ON >/dev/null
+	@$(CMAKE) --build "$(BUILD_DIR)" --target convexity_cpp_client >/dev/null
+	@./$(BUILD_DIR)/convexity_cpp_client
 
 install: release
 	$(CMAKE) --install "$(BUILD_DIR)" --prefix "$(PREFIX)"
