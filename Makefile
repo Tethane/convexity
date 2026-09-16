@@ -1,6 +1,8 @@
 CMAKE ?= cmake
 CTEST ?= ctest
-PYTHON ?= .venv/bin/python
+PYTHON_ENV ?= .venv
+PYTHON ?= $(PYTHON_ENV)/bin/python
+PYTHON_STAMP := $(PYTHON_ENV)/.convexity-installed
 BUILD_ROOT ?= build
 BUILD_DIR ?= $(BUILD_ROOT)/debug
 BUILD_TYPE ?= Debug
@@ -44,17 +46,24 @@ run:
 install: release
 	$(CMAKE) --install "$(BUILD_DIR)" --prefix "$(PREFIX)"
 
-venv:
-	python3 -m venv .venv
+venv: $(PYTHON_ENV)/bin/python
 
-python: venv
-	$(PYTHON) -m pip install --editable './python[dev]'
+$(PYTHON_ENV)/bin/python:
+	python3 -m venv "$(PYTHON_ENV)"
 
-python-run: python
-	$(PYTHON) python/examples/client.py
+$(PYTHON_STAMP): $(PYTHON_ENV)/bin/python CMakeLists.txt cmake/ConvexityWarnings.cmake cmake/convexityConfig.cmake.in \
+	bindings/python/module.cpp include/convexity/core/version.hpp src/core/version.cpp \
+	python/convexity/__init__.py python/pyproject.toml
+	@$(PYTHON) -m pip install --editable './python[dev]'
+	@touch "$@"
 
-python-test: python
-	$(PYTHON) -m pytest tests/python
+python: $(PYTHON_STAMP)
+
+python-run: $(PYTHON_STAMP)
+	@$(PYTHON) python/examples/client.py
+
+python-test: $(PYTHON_STAMP)
+	@$(PYTHON) -m pytest tests/python
 
 clean:
 	@for dir in "$(BUILD_DIR)" "$(BUILD_ROOT)" "$(BUILD_ROOT)/debug" "$(BUILD_ROOT)/release"; do \
