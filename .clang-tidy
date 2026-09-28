@@ -1,9 +1,0 @@
-Checks: >-
-  -*,
-  bugprone-*,
-  modernize-use-nullptr,
-  performance-*,
-  portability-*,
-  readability-*
-WarningsAsErrors: ''
-HeaderFilterRegex: '(^|/)include/convexity/.*'

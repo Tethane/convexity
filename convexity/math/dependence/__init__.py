@@ -1,0 +1,39 @@
+"""Covariance, dependence and tails on supplied mathematical inputs.
+
+    from convexity.math import dependence as dep
+    covariance = dep.LedoitWolf().fit(training_matrix)
+    dependence = dep.fit_copula(training_matrix, family="student_t", df=5)
+
+Backends load on use. No data, calendar, forecasting or trading imports.
+"""
+
+from . import builtins, interfaces
+from .builtins import (
+    ClaytonCopula, EWMACovariance, GaussianCopula, GeneralizedExtremeValue,
+    GeneralizedPareto, GumbelCopula, IndependenceCopula, KendallCopula, LedoitWolf,
+    OAS, PositiveSemidefinite, SampleCovariance, ShrunkCovariance, StudentT,
+    StudentTCopula, block_maxima, correlation, correlation_to_covariance,
+    covariance_to_correlation, ewma_covariance, fit_copula, fit_factor_covariance,
+    fit_gev, fit_gpd, fit_student_t, generalized_extreme_value, generalized_pareto,
+    multivariate_student_t, nearest_correlation, peaks_over_threshold,
+    pseudo_observations, sample_covariance,
+)
+from .interfaces import (
+    ContinuousMarginal, ConvergenceError, Copula, CopulaAdapter, CopulaDistribution,
+    CopulaFit, CovarianceEstimate, CovarianceEstimator, Diagnostics, FactorCovariance,
+    MatrixRepair, PeaksOverThresholdResult, StudentTResult, TailFit, fit_covariance,
+)
+
+__all__ = [
+    "builtins", "interfaces", "ClaytonCopula", "EWMACovariance", "GaussianCopula",
+    "GeneralizedExtremeValue", "GeneralizedPareto", "GumbelCopula", "IndependenceCopula",
+    "KendallCopula", "LedoitWolf", "OAS", "PositiveSemidefinite", "SampleCovariance",
+    "ShrunkCovariance", "StudentT", "StudentTCopula", "block_maxima", "correlation",
+    "correlation_to_covariance", "covariance_to_correlation", "ewma_covariance",
+    "fit_copula", "fit_factor_covariance", "fit_gev", "fit_gpd", "fit_student_t",
+    "generalized_extreme_value", "generalized_pareto", "multivariate_student_t",
+    "nearest_correlation", "peaks_over_threshold", "pseudo_observations", "sample_covariance",
+    "ContinuousMarginal", "ConvergenceError", "Copula", "CopulaAdapter", "CopulaDistribution",
+    "CopulaFit", "CovarianceEstimate", "CovarianceEstimator", "Diagnostics", "FactorCovariance",
+    "MatrixRepair", "PeaksOverThresholdResult", "StudentTResult", "TailFit", "fit_covariance",
+]
