@@ -118,12 +118,12 @@ def test_custom_ode_tool_uses_public_checked_schema():
     assert_allclose(result.y[0], np.exp(-np.array([0., .5, 1.])))
 
 
-def test_public_namespaces():
-    assert_allclose(n.linalg.eigh(np.eye(2)).values, [1, 1])
-    assert_allclose(n.roots.solve(lambda x:x-1, [0.]).value, [1])
-    assert n.integrate.quad(lambda x:x, 0, 1).value == .5
-    assert callable(n.interpolation.spline)
-    assert callable(n.calculus.jvp)
-    assert callable(n.operators.laplacian_matrix)
-    assert callable(n.grids.linspace)
-    assert_allclose(n.linalg.norm([3, 4]).value, 5.)
+def test_public_functions():
+    assert_allclose(n.eigh(np.eye(2)).values, [1, 1])
+    assert_allclose(n.root(lambda x:x-1, [0.]).value, [1])
+    assert n.quad(lambda x:x, 0, 1).value == .5
+    assert callable(n.spline)
+    assert callable(n.jvp)
+    assert callable(n.laplacian_matrix)
+    assert callable(n.linspace)
+    assert_allclose(n.norm([3, 4]).value, 5.)

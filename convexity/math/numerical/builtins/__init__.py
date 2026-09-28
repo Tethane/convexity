@@ -4,7 +4,7 @@ from .calculus import AdaptiveQuadrature, AutoDiff, FiniteDifference, derivative
 from .interpolation import Interpolation, interpolate
 from .linalg import (
     DenseSolve, Eigendecomposition, MatrixExponentialTool, SingularValueDecomposition,
-    SparseSolve, eig, expm, solve, sparse_matrix, svd,
+    SparseSolve, eig, eigh, expm, solve, sparse_matrix, svd,
 )
 from .matrix_equations import LyapunovSolver, RiccatiSolver, solve_lyapunov, solve_riccati
 from .roots import ScalarRootSolver, SystemRootSolver, root, root_scalar
@@ -76,6 +76,7 @@ from .ode import (
     IVPSolver,
     BVPSolver,
     solve_ivp,
+    solve_ode,
     solve_bvp,
 )
 
@@ -130,6 +131,7 @@ __all__ = [
     'SingularValueDecomposition',
     'SparseSolve',
     'eig',
+    'eigh',
     'expm',
     'solve',
     'sparse_matrix',
@@ -189,6 +191,7 @@ __all__ = [
     'IVPSolver',
     'BVPSolver',
     'solve_ivp',
+    'solve_ode',
     'solve_bvp',
     'GridConstruction',
     'MeshConstruction',

@@ -13,7 +13,7 @@ from .builtins import (
     AdaptiveQuadrature, AutoDiff, DenseSolve, Eigendecomposition, FiniteDifference,
     Interpolation, LyapunovSolver, MatrixExponentialTool, RiccatiSolver,
     ScalarRootSolver, SingularValueDecomposition, SparseSolve, SystemRootSolver,
-    derivative, eig, expm, gradient, hessian, interpolate, jacobian, quad, root,
+    derivative, eig, eigh, expm, gradient, hessian, interpolate, jacobian, quad, root,
     root_scalar, solve, solve_lyapunov, solve_riccati, sparse_matrix, svd,
 )
 from .interfaces import (
@@ -72,6 +72,7 @@ from .builtins import (
     IVPSolver,
     BVPSolver,
     solve_ivp,
+    solve_ode,
     solve_bvp,
     GridConstruction,
     MeshConstruction,
@@ -139,18 +140,6 @@ from .interfaces import (
 )
 
 
-from . import (
-    linalg,
-    calculus,
-    roots,
-    interpolation,
-    integrate,
-    ode,
-    grids,
-    operators,
-    accuracy,
-)
-
 __all__ = [
     'builtins',
     'interfaces',
@@ -169,6 +158,7 @@ __all__ = [
     'SystemRootSolver',
     'derivative',
     'eig',
+    'eigh',
     'expm',
     'gradient',
     'hessian',
@@ -251,6 +241,7 @@ __all__ = [
     'IVPSolver',
     'BVPSolver',
     'solve_ivp',
+    'solve_ode',
     'solve_bvp',
     'GridConstruction',
     'MeshConstruction',
@@ -312,13 +303,4 @@ __all__ = [
     'ResidualProblem',
     'ResidualResult',
     'Backend',
-    'linalg',
-    'calculus',
-    'roots',
-    'interpolation',
-    'integrate',
-    'ode',
-    'grids',
-    'operators',
-    'accuracy',
 ]

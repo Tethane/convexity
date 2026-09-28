@@ -53,7 +53,7 @@ def solve_bvp(function, boundary, x, y, *, tool=None, check_convergence=True):
                tool if tool is not None else BVPSolver(), check_convergence=check_convergence)
 
 
-def solve(function, y0, t, *, tool=None, events=(), jacobian=None, check_convergence=True):
+def solve_ode(function, y0, t, *, tool=None, events=(), jacobian=None, check_convergence=True):
     """Convenience IVP on a supplied increasing or decreasing time grid."""
     times = v.array(t, "t", ndim=1, real=True)
     if times.size < 2:
@@ -62,4 +62,4 @@ def solve(function, y0, t, *, tool=None, events=(), jacobian=None, check_converg
                      jacobian=jacobian, tool=tool, check_convergence=check_convergence)
 
 
-__all__ = ["IVPSolver", "BVPSolver", "solve_ivp", "solve_bvp"]
+__all__ = ["IVPSolver", "BVPSolver", "solve_ivp", "solve_bvp", "solve_ode"]

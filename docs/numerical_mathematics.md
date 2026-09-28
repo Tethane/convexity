@@ -24,8 +24,9 @@ optional; without the `autodiff` extra, its demonstration is explicitly skipped.
 2. `interfaces/`: validated problem/result schemas, `NumericalTool` callable
    protocol, `run(problem, tool)`, and explicit `Backend` capability routing.
 3. `builtins/`: concrete tools and convenience functions. Each numerical
-   operation accepts a compatible `tool=` override. Public namespaces organize
-   these functions; there is no mutable global backend selection.
+   operation accepts a compatible `tool=` override. Functions and interfaces
+   are exported directly by `convexity.math.numerical`, as in the other families.
+   There is no mutable global backend selection.
 
 ```bash
 python -m pip install -e '.[dev]'
@@ -45,18 +46,19 @@ JAX adapter is claimed.
 ```python
 from convexity.math import numerical as cx
 
-x = cx.linalg.solve([[3., 1.], [1., 2.]], [9., 8.]).value
-q = cx.linalg.qr([[1., 2.], [3., 4.]])
-g = cx.calculus.gradient(lambda x: x @ x, [1., 2.]).value
-r = cx.roots.solve(lambda x: x*x-2., [1.]).value
-integral = cx.integrate.quad(lambda x: x*x, 0., 1.).value
-curve = cx.interpolation.spline([0, 1, 2, 3], [0, 1, 4, 9])
-trajectory = cx.ode.solve(lambda t, y: -y, [1.], [0., .5, 1.])
+x = cx.solve([[3., 1.], [1., 2.]], [9., 8.]).value
+q = cx.qr([[1., 2.], [3., 4.]])
+g = cx.gradient(lambda x: x @ x, [1., 2.]).value
+r = cx.root(lambda x: x*x-2., [1.]).value
+integral = cx.quad(lambda x: x*x, 0., 1.).value
+curve = cx.spline([0, 1, 2, 3], [0, 1, 4, 9])
+trajectory = cx.solve_ode(lambda t, y: -y, [1.], [0., .5, 1.])
 ```
 
-Existing flat calls (`cx.solve`, `cx.gradient`, `cx.interpolate`, etc.) remain
-available. Namespaces are `linalg`, `roots`, `calculus`, `integrate`,
-`interpolation`, `ode`, `grids`, `operators`, and `accuracy`.
+Use direct calls such as `cx.solve`, `cx.gradient`, and `cx.interpolate`.
+`cx.root` solves nonlinear systems; `cx.solve_ode` integrates an initial-value
+problem on a supplied time grid. `cx.eigh` supports ordinary and generalized
+Hermitian eigenproblems.
 
 ## Finite acceptance catalog
 
@@ -64,11 +66,11 @@ available. Namespaces are `linalg`, `roots`, `calculus`, `integrate`,
 |---|---|---|
 | 1. Dense linear algebra | `solve`, `lstsq`, `eig`, `eigh`, `generalized_eig`, `svd`, `qr`, `lu`, `cholesky`, `schur`, `matrix_rank`, `condition_number`, `norm`, `pinv`, `det`, `slogdet`, `expm`, `logm`, `sqrtm`, `solve_lyapunov`, `solve_riccati` | General square solve; SVD minimum-norm least squares; general/Hermitian eigenpairs; reduced/full SVD; reduced QR with optional column pivoting; pivoted LU; lower Cholesky; real/complex Schur; continuous/discrete matrix equations |
 | 2. Sparse and matrix-free algebra | `sparse_matrix`, `linear_operator`, `solve`, `sparse_eig`, `sparse_svd` | Native CSR/CSC containers; direct solve; CG/GMRES/BiCGSTAB with optional preconditioner; ARPACK eigen/SVD; native `LinearOperator` interoperability |
-| 3. Roots and fixed points | `root_scalar`, `root` / `roots.solve`, `fixed_point` | Brent, bisection, TOMS748, Newton, secant; Powell hybrid, Broyden 1/2, Anderson, Krylov; fixed-point iteration or Steffensen acceleration |
+| 3. Roots and fixed points | `root_scalar`, `root`, `fixed_point` | Brent, bisection, TOMS748, Newton, secant; Powell hybrid, Broyden 1/2, Anderson, Krylov; fixed-point iteration or Steffensen acceleration |
 | 4. Differentiation | `derivative`, `gradient`, `jacobian`, `hessian`, `jvp`, `vjp`, `check_derivative` | SciPy adaptive finite differences; PyTorch automatic derivatives and products; componentwise derivative checks against finite differences |
 | 5. Integration | `quad`, `nquad`, `gauss_quad`, `integrate_density`, `quadrature_rule` | Adaptive 1-D and rectangular multidimensional quadrature, including improper bounds; fixed-order Gaussian quadrature; Legendre/Hermite/Laguerre nodes and weights |
 | 6. Interpolation and approximation | `interpolate`, `spline`, `regular_grid`, `scattered`, `polynomial_approximation` | 1-D linear/cubic/PCHIP; degree 1/3/5 splines; cubic natural/clamped boundaries; regular-grid linear/nearest/cubic; scattered linear/nearest and 2-D cubic; scaled polynomial/Chebyshev approximation |
-| 7. Initial-value ODEs | `solve_ivp`, `ode.solve` | Real ODE systems; RK23/RK45/DOP853/Radau/BDF/LSODA; adaptive steps, optional Jacobian, directional/terminal events, dense solutions, forward/backward integration |
+| 7. Initial-value ODEs | `solve_ivp`, `solve_ode` | Real ODE systems; RK23/RK45/DOP853/Radau/BDF/LSODA; adaptive steps, optional Jacobian, directional/terminal events, dense solutions, forward/backward integration |
 | 8. Boundary-value and PDE primitives | `solve_bvp`, `differentiation_matrix`, `partial_derivative_matrix`, `laplacian_matrix` | Real first-order BVP systems with endpoint boundary residuals; sparse uniform/nonuniform derivative and mixed-partial matrices; uniform isotropic Laplacian with homogeneous Dirichlet/Neumann/periodic boundaries |
 | 9. Numerical construction | `linspace`, `logspace`, `geomspace`, `arange`, `meshgrid`, `cartesian_product`, `quadrature_rule` | NumPy grid/mesh construction; `ij` indexing and C flattening; explicit Gaussian weight functions |
 | 10. Accuracy and stability | `Tolerances`, `isclose`, `allclose`, `machine_precision`, `require_finite`, `residual`, numerical diagnostics | Explicit absolute/relative tolerances; machine limits; shape-safe comparison; NaN/Inf policies; conditioning, residuals, convergence reports, and library error estimates where available |
@@ -278,15 +280,15 @@ class NumpySolve:
 
 problem = cx.LinearSystem([[2., 0.], [0., 4.]], [6., 8.])
 answer = cx.run(problem, NumpySolve())
-same_answer = cx.linalg.solve(problem.a, problem.b, tool=NumpySolve())
+same_answer = cx.solve(problem.a, problem.b, tool=NumpySolve())
 
 backend = cx.scipy_backend().with_tools(solve=NumpySolve())
 answer = backend.run("solve", problem)
-same_answer = cx.linalg.solve(problem.a, problem.b, tool=backend.tool("solve"))
+same_answer = cx.solve(problem.a, problem.b, tool=backend.tool("solve"))
 
 # PyTorch advertises only its differentiation capabilities; there is no silent fallback.
 torch_tools = cx.torch_backend()
-gradient = cx.calculus.gradient(lambda x: (x*x).sum(), [1., 2.],
+gradient = cx.gradient(lambda x: (x*x).sum(), [1., 2.],
                                 tool=torch_tools.tool("gradient"))
 ```
 

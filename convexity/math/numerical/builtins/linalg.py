@@ -107,3 +107,10 @@ def sparse_matrix(data: Any, *, format: Literal["csr", "csc"] = "csr",
         for size in shape:
             v.integer(size, "shape dimension")
     return backend.sparse_matrix(data, format=format, shape=shape)
+
+
+def eigh(a, b=None, *, tool=None):
+    """Hermitian eigenpairs for an ordinary or generalized eigenproblem."""
+    from .linear_algebra import generalized_eig
+
+    return eig(a, hermitian=True, tool=tool) if b is None else generalized_eig(a, b, hermitian=True, tool=tool)

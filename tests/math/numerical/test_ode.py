@@ -22,9 +22,9 @@ def test_stiff_ivp_with_jacobian(method):
     assert_allclose(result.solution(np.linspace(0, 1, 9))[0], np.cos(np.linspace(0, 1, 9)), atol=2e-6)
 
 
-def test_backward_ode_and_namespace_convenience():
+def test_backward_ode_on_supplied_time_grid():
     times = np.linspace(1, 0, 11)
-    result = n.ode.solve(lambda t,y:-y, [np.exp(-1)], times)
+    result = n.solve_ode(lambda t,y:-y, [np.exp(-1)], times)
     assert_allclose(result.y[0], np.exp(-times), atol=1e-6)
     assert_allclose(result.solution(.5), [np.exp(-.5)], atol=1e-6)
 
