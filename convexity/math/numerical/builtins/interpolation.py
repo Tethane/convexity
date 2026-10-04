@@ -23,7 +23,15 @@ class Interpolation:
         return interpolation.fit(problem, method=self.method)
 
 
-def interpolate(x: ArrayLike, y: ArrayLike, *, extrapolate: bool = False,
-                tool: NumericalTool[InterpolationProblem, Interpolant] | None = None) -> Interpolant:
+def interpolate(
+    x: ArrayLike,
+    y: ArrayLike,
+    *,
+    extrapolate: bool = False,
+    tool: NumericalTool[InterpolationProblem, Interpolant] | None = None,
+) -> Interpolant:
     """Fit a callable interpolant; out-of-domain queries raise unless opted in."""
-    return run(InterpolationProblem(x, y, extrapolate), tool if tool is not None else Interpolation())
+    return run(
+        InterpolationProblem(x, y, extrapolate),
+        tool if tool is not None else Interpolation(),
+    )

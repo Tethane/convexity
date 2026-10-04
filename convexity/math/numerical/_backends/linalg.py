@@ -1,4 +1,6 @@
 """SciPy linear algebra adapters; no Convexity numerical algorithms."""
+from __future__ import annotations
+from typing import TypeIs
 
 import warnings
 from typing import Any
@@ -13,11 +15,11 @@ from ..interfaces import (
 )
 
 
-def is_sparse(value: Any) -> bool:
+def is_sparse(value: object) -> TypeIs[sparse.spmatrix | sparse.sparray]:
     return sparse.issparse(value)
 
 
-def is_operator(value: Any) -> bool:
+def is_operator(value: object) -> TypeIs[spla.LinearOperator]:
     return isinstance(value, spla.LinearOperator)
 
 
@@ -79,7 +81,7 @@ def sparse_solve(problem: LinearSystem, *, method: str, atol: float,
         else:
             x, info = spla.gmres(a, b, atol=atol, rtol=rtol, maxiter=maxiter,
                                  callback=count, callback_type="legacy", M=preconditioner)
-    residual = float(np.linalg.norm(a @ x - b))
+    residual = float(np.linalg.norm(np.asarray(a @ x) - b))
     success = bool(info == 0 and np.all(np.isfinite(x)) and np.isfinite(residual))
     return ArrayResult(x, Diagnostics(converged=success,
                                       iterations=None if method == "direct" else iterations,

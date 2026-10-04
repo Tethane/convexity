@@ -1,53 +1,87 @@
 """Bounded tree and ensemble catalog for means and class probabilities."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
+
+from numpy.typing import ArrayLike
 
 from .. import _validation as v
 from .._backends import sklearn
+from ..interfaces import FittedModel
 
 
 @dataclass(frozen=True)
 class Tree:
+    """Reusable tree-learning specification. task determines mean versus class-probability capabilities."""
+
     task: str = "regression"
     kind: str = "decision_tree"
     max_depth: int | None = None
     min_samples_leaf: int = 1
     n_estimators: int = 100
-    learning_rate: float = .1
+    learning_rate: float = 0.1
     seed: int = 0
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         v.choice(self.task, ("regression", "classification"), "task")
-        v.choice(self.kind, ("decision_tree", "random_forest", "extra_trees", "gradient_boosting"), "kind")
+        v.choice(
+            self.kind,
+            ("decision_tree", "random_forest", "extra_trees", "gradient_boosting"),
+            "kind",
+        )
         if self.max_depth is not None:
             v.integer(self.max_depth, "max_depth", 1)
         v.integer(self.min_samples_leaf, "min_samples_leaf", 1)
         v.integer(self.n_estimators, "n_estimators", 1)
-        object.__setattr__(self, "learning_rate", v.scalar(self.learning_rate, "learning_rate", minimum=0, strict=True))
+        object.__setattr__(
+            self,
+            "learning_rate",
+            v.scalar(self.learning_rate, "learning_rate", minimum=0, strict=True),
+        )
         v.seed(self.seed)
 
-    def fit(self, features, response, *, sample_weight=None):
-        x, y, w = v.training(features, response, sample_weight,
-                              classification=self.task == "classification", multi=self.kind != "gradient_boosting")
+    def fit(
+        self,
+        features: ArrayLike,
+        response: ArrayLike,
+        *,
+        sample_weight: ArrayLike | None = None,
+    ) -> FittedModel:
+        x, y, w = v.training(
+            features,
+            response,
+            sample_weight,
+            classification=self.task == "classification",
+            multi=self.kind != "gradient_boosting",
+        )
         return sklearn.trees(self, x, y, w)
 
 
 @dataclass(frozen=True)
 class DecisionTree(Tree):
+    """Single regression or classification tree with explicit depth and leaf-size constraints."""
+
     kind: str = field(default="decision_tree", init=False)
 
 
 @dataclass(frozen=True)
 class RandomForest(Tree):
+    """Bagged tree ensemble for the selected prediction task, with explicit seed and ensemble size."""
+
     kind: str = field(default="random_forest", init=False)
 
 
 @dataclass(frozen=True)
 class ExtraTrees(Tree):
+    """Randomized tree ensemble for the selected prediction task, with explicit seed and ensemble size."""
+
     kind: str = field(default="extra_trees", init=False)
 
 
 @dataclass(frozen=True)
 class GradientBoosting(Tree):
+    """Sequential tree boosting with explicit learning rate, depth and iteration count."""
+
     kind: str = field(default="gradient_boosting", init=False)
     max_depth: int | None = 3

@@ -26,7 +26,9 @@ def test_quadrature_known_integrals(function, a, b, expected):
 def test_quadrature_failure_exposes_partial_result():
     with pytest.raises(nm.ConvergenceError) as caught:
         nm.quad(lambda x: np.sin(1000*x), 0, 1, tool=nm.AdaptiveQuadrature(limit=1))
+    assert isinstance(caught.value.result, nm.ArrayResult)
     assert not caught.value.result.diagnostics.converged
+    assert isinstance(caught.value.result, nm.ArrayResult)
     assert caught.value.result.diagnostics.message
 
 

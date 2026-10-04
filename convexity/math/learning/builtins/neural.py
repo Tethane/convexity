@@ -1,5 +1,15 @@
 """Dense neural mean/probability learners and user-supplied neural functions."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from numpy.typing import ArrayLike
+
+if TYPE_CHECKING:
+    from torch.nn import Module
+
+
 from dataclasses import dataclass, field
 
 from .. import _validation as v
@@ -15,39 +25,68 @@ class NeuralNetwork:
     task: str = "regression"
     hidden_layers: tuple[int, ...] = (32, 32)
     activation: str = "tanh"
-    learning_rate: float = .01
+    learning_rate: float = 0.01
     maxiter: int = 2000
     tolerance: float = 1e-5
     seed: int = 0
     check_convergence: bool = True
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         v.choice(self.task, ("regression", "classification"), "task")
         widths = tuple(v.integer(n, "hidden width", 1) for n in self.hidden_layers)
         object.__setattr__(self, "hidden_layers", widths)
         v.choice(self.activation, ("tanh", "relu", "sigmoid"), "activation")
-        object.__setattr__(self, "learning_rate", v.scalar(self.learning_rate, "learning_rate", minimum=0, strict=True))
-        object.__setattr__(self, "tolerance", v.scalar(self.tolerance, "tolerance", minimum=0, strict=True))
+        object.__setattr__(
+            self,
+            "learning_rate",
+            v.scalar(self.learning_rate, "learning_rate", minimum=0, strict=True),
+        )
+        object.__setattr__(
+            self,
+            "tolerance",
+            v.scalar(self.tolerance, "tolerance", minimum=0, strict=True),
+        )
         v.integer(self.maxiter, "maxiter", 1)
         v.seed(self.seed)
         v.boolean(self.check_convergence, "check_convergence")
 
-    def fit(self, features, response, *, sample_weight=None):
-        x, y, w = v.training(features, response, sample_weight, classification=self.task == "classification")
+    def fit(
+        self,
+        features: ArrayLike,
+        response: ArrayLike,
+        *,
+        sample_weight: ArrayLike | None = None,
+    ) -> FittedModel:
+        x, y, w = v.training(
+            features,
+            response,
+            sample_weight,
+            classification=self.task == "classification",
+        )
         return checked_convergence(torch.neural(self, x, y, w), self.check_convergence)
 
 
 @dataclass(frozen=True)
 class NeuralRegressor(NeuralNetwork):
+    """Feed-forward mean regressor with explicit architecture, training controls and random seed."""
+
     task: str = field(default="regression", init=False)
 
 
 @dataclass(frozen=True)
 class NeuralClassifier(NeuralNetwork):
+    """Feed-forward classifier with explicit architecture, training controls and random seed."""
+
     task: str = field(default="classification", init=False)
 
 
-def neural_function(module, input_dimension, *, output_shape=(), classes=None):
+def neural_function(
+    module: Module,
+    input_dimension: int,
+    *,
+    output_shape: tuple[int, ...] = (),
+    classes: ArrayLike | None = None,
+) -> FittedModel:
     """Snapshot a torch module as a deterministic CPU float64 predictor.
 
     Regression modules return (n,m), m=1 for scalar outputs. Classification
@@ -61,5 +100,11 @@ def neural_function(module, input_dimension, *, output_shape=(), classes=None):
     for size in shape:
         v.integer(size, "output dimension", 1)
     caps = frozenset({"mean" if labels is None else "probability"})
-    adapter = torch.TorchAdapter(module, dimension, shape, caps, None if labels is None else len(labels))
-    return FittedModel(adapter, Diagnostics("torch.nn.Module", message="Supplied function; no fit performed"), classes=labels)
+    adapter = torch.TorchAdapter(
+        module, dimension, shape, caps, None if labels is None else len(labels)
+    )
+    return FittedModel(
+        adapter,
+        Diagnostics("torch.nn.Module", message="Supplied function; no fit performed"),
+        classes=labels,
+    )

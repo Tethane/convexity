@@ -29,7 +29,7 @@ def test_empirical_ties_weights_zero_mass_and_exact_expectation():
     with pytest.raises(ValueError):
         law.given(lambda x: x < 0)
     with pytest.raises(ValueError):
-        law.probability(lambda x: 1)
+        law.probability(lambda x: 1)  # pyright: ignore[reportArgumentType]  # Exercise runtime rejection.
 
 
 def test_empirical_vector_condition_and_pushforward():

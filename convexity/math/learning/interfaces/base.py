@@ -1,14 +1,20 @@
 """Structural extension protocols and checked prediction semantics."""
 
+from __future__ import annotations
+
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Protocol
+from typing import Protocol, cast
 
 import numpy as np
+from numpy.typing import ArrayLike, NDArray
 
+from ..._typing import _FACTORY, FloatArray
 from .. import _validation as v
 
 
 class PredictionAdapter(Protocol):
+    """Prediction extension with input dimension, output shape and capabilities; evaluate returns aligned observation rows."""
     @property
     def input_dimension(self) -> int: ...
 
@@ -18,21 +24,26 @@ class PredictionAdapter(Protocol):
     @property
     def capabilities(self) -> frozenset[str]: ...
 
-    def evaluate(self, operation: str, features: Any, *, offset: Any = None) -> Any: ...
+    def evaluate(
+        self, operation: str, features: ArrayLike, *, offset: ArrayLike | None = None
+    ) -> ArrayLike: ...
 
 
 class Learner(Protocol):
-    def fit(self, features: Any, response: Any) -> "FittedModel": ...
+    """Fit feature rows and scalar/vector responses into a FittedModel; optional training settings belong to the implementation."""
+    def fit(self, features: ArrayLike, response: ArrayLike) -> "FittedModel": ...
 
 
 @dataclass(frozen=True)
 class Diagnostics:
+    """Backend termination diagnostics. Inspect converged and message before using a fitted approximation; iterations may be unavailable."""
+
     backend: str = "user"
     converged: bool = True
     message: str = ""
     iterations: int | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         v.boolean(self.converged, "converged")
         if not isinstance(self.backend, str) or not self.backend:
             raise ValueError("backend must be a nonempty string")
@@ -43,12 +54,15 @@ class Diagnostics:
 
 
 class ConvergenceError(RuntimeError):
-    def __init__(self, result):
+    """Raised when a checked numerical method does not converge; result retains the attempted solution and diagnostics."""
+    def __init__(self, result: FittedModel) -> None:
         self.result = result
-        super().__init__(result.diagnostics.message or "Predictive fit did not converge")
+        super().__init__(
+            result.diagnostics.message or "Predictive fit did not converge"
+        )
 
 
-def checked_convergence(result, check):
+def checked_convergence(result: FittedModel, check: bool) -> FittedModel:
     v.boolean(check, "check_convergence")
     if check and not result.diagnostics.converged:
         raise ConvergenceError(result)
@@ -66,14 +80,14 @@ class FittedModel:
     adapter: PredictionAdapter = field(repr=False)
     diagnostics: Diagnostics = field(default_factory=Diagnostics)
     nobs: int | None = None
-    coefficients: Any = None
-    intercept: Any = None
-    classes: Any = None
-    quantiles: Any = None
-    loss_history: Any = None
+    coefficients: FloatArray | None = cast("FloatArray | None", None)
+    intercept: FloatArray | None = cast("FloatArray | None", None)
+    classes: NDArray[np.generic] | None = cast("FloatArray | None", None)
+    quantiles: FloatArray | None = cast("FloatArray | None", None)
+    loss_history: FloatArray | None = cast("FloatArray | None", None)
     requires_offset: bool = False
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         v.integer(self.adapter.input_dimension, "input_dimension", 1)
         shape = self.adapter.output_shape
         if not isinstance(shape, tuple) or len(shape) > 1:
@@ -110,9 +124,15 @@ class FittedModel:
             if value is not None:
                 object.__setattr__(self, name, v.array(value, name))
         if self.coefficients is not None:
-            if self.coefficients.ndim not in (1, 2) or self.coefficients.shape[0] != self.input_dimension:
+            if (
+                self.coefficients.ndim not in (1, 2)
+                or self.coefficients.shape[0] != self.input_dimension
+            ):
                 raise ValueError("coefficients must have shape (d,) or (d,k)")
-            if self.intercept is None or self.intercept.shape != self.coefficients.shape[1:]:
+            if (
+                self.intercept is None
+                or self.intercept.shape != self.coefficients.shape[1:]
+            ):
                 raise ValueError("intercept must match coefficient output axes")
         if self.loss_history is not None and self.loss_history.ndim != 1:
             raise ValueError("loss_history must be a vector")
@@ -129,7 +149,9 @@ class FittedModel:
     def capabilities(self):
         return frozenset(self.adapter.capabilities)
 
-    def _evaluate(self, operation, features, offset):
+    def _evaluate(
+        self, operation: str, features: ArrayLike, offset: ArrayLike | None
+    ) -> FloatArray:
         if operation not in self.capabilities:
             raise NotImplementedError(f"model does not support {operation} predictions")
         x = v.coordinates(features, self.input_dimension)
@@ -145,21 +167,30 @@ class FittedModel:
             offset = offset.reshape(-1)
         tail = self.output_shape
         if operation == "probability":
+            assert self.classes is not None
             tail = (len(self.classes),)
         elif operation == "quantile":
+            assert self.quantiles is not None
             tail = (len(self.quantiles),)
         flat = x.reshape(-1, self.input_dimension)
-        result = (np.empty((0,) + tail) if not len(flat) else
-                  self.adapter.evaluate(operation, flat, offset=offset))
+        result = (
+            np.empty((0,) + tail)
+            if not len(flat)
+            else self.adapter.evaluate(operation, flat, offset=offset)
+        )
         result = v.array(result, "prediction", empty=True)
         if result.shape != (len(flat),) + tail:
             raise ValueError("prediction must preserve rows and declared output shape")
         if operation == "probability":
-            if np.any((result < 0) | (result > 1)) or not np.allclose(result.sum(axis=-1), 1, atol=1e-10, rtol=0):
+            if np.any((result < 0) | (result > 1)) or not np.allclose(
+                result.sum(axis=-1), 1, atol=1e-10, rtol=0
+            ):
                 raise ValueError("class probabilities must lie in [0,1] and sum to one")
         return v.array(result.reshape(leading + tail), "prediction", empty=True)
 
-    def predict(self, features, *, offset=None):
+    def predict(
+        self, features: ArrayLike, *, offset: ArrayLike | None = None
+    ) -> NDArray[np.generic]:
         """Mean, class label, or the declared quantile vector, in that order."""
         if "mean" in self.capabilities:
             return self.predict_mean(features, offset=offset)
@@ -167,33 +198,71 @@ class FittedModel:
             return self.predict_class(features, offset=offset)
         return self.predict_quantiles(features, offset=offset)
 
-    def predict_mean(self, features, *, offset=None):
+    def predict_mean(
+        self, features: ArrayLike, *, offset: ArrayLike | None = None
+    ) -> FloatArray:
         return self._evaluate("mean", features, offset)
 
-    def predict_proba(self, features, *, offset=None):
+    def predict_proba(
+        self, features: ArrayLike, *, offset: ArrayLike | None = None
+    ) -> FloatArray:
         return self._evaluate("probability", features, offset)
 
-    def predict_class(self, features, *, offset=None):
+    def predict_class(
+        self, features: ArrayLike, *, offset: ArrayLike | None = None
+    ) -> NDArray[np.generic]:
         probabilities = self.predict_proba(features, offset=offset)
+        assert self.classes is not None
         result = np.array(self.classes[np.argmax(probabilities, axis=-1)], copy=True)
         result.setflags(write=False)
         return result
 
-    def predict_quantiles(self, features, *, offset=None):
+    def predict_quantiles(
+        self, features: ArrayLike, *, offset: ArrayLike | None = None
+    ) -> FloatArray:
         """Return the fitted levels in order; never sort away quantile crossings."""
         return self._evaluate("quantile", features, offset)
 
+    def __init__(
+        self,
+        adapter: PredictionAdapter,
+        diagnostics: Diagnostics = cast("Diagnostics", _FACTORY),
+        nobs: int | None = None,
+        coefficients: ArrayLike | None = None,
+        intercept: ArrayLike | None = None,
+        classes: ArrayLike | None = None,
+        quantiles: ArrayLike | None = None,
+        loss_history: ArrayLike | None = None,
+        requires_offset: bool = False,
+    ) -> None:
+        object.__setattr__(self, "adapter", adapter)
+        if diagnostics is _FACTORY:
+            diagnostics = __class__.__dataclass_fields__[
+                "diagnostics"
+            ].default_factory()
+        object.__setattr__(self, "diagnostics", diagnostics)
+        object.__setattr__(self, "nobs", nobs)
+        object.__setattr__(self, "coefficients", coefficients)
+        object.__setattr__(self, "intercept", intercept)
+        object.__setattr__(self, "classes", classes)
+        object.__setattr__(self, "quantiles", quantiles)
+        object.__setattr__(self, "loss_history", loss_history)
+        object.__setattr__(self, "requires_offset", requires_offset)
+        self.__post_init__()
 
-def fit(features, response, learner: Learner, **kwargs) -> FittedModel:
+
+def fit(
+    features: ArrayLike, response: ArrayLike, learner: Learner, **kwargs: object
+) -> FittedModel:
     """Fit a user or built-in learner and check every declared output on training rows."""
     x = v.features(features)
     # Target meaning and additional arguments belong to the learner.
-    tool: Any = learner
-    result = tool.fit(x, response, **kwargs)
+    invoke = cast(Callable[..., FittedModel], learner.fit)
+    result = invoke(x, response, **kwargs)
     if not isinstance(result, FittedModel):
         raise TypeError("learner must return FittedModel")
     if result.input_dimension != x.shape[1]:
         raise ValueError("fitted input_dimension must match training columns")
     for capability in result.capabilities:
-        result._evaluate(capability, x, kwargs.get("offset"))
+        result._evaluate(capability, x, cast(ArrayLike | None, kwargs.get("offset")))
     return result

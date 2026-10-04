@@ -1,10 +1,15 @@
 """A checked law facade and a small, structural adapter contract."""
 
+from __future__ import annotations
+
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Literal, Protocol
+from typing import Literal, Protocol
 
 import numpy as np
+from numpy.typing import ArrayLike
 
+from ..._typing import BoolArray, FloatArray, SampleSize
 from .. import _validation as v
 
 Measure = Literal["continuous", "discrete"]
@@ -27,7 +32,9 @@ class DistributionAdapter(Protocol):
     @property
     def capabilities(self) -> frozenset[str]: ...
 
-    def evaluate(self, operation: str, *args: Any, **kwargs: Any) -> Any: ...
+    def evaluate(
+        self, operation: str, *args: object, **kwargs: object
+    ) -> ArrayLike | Distribution: ...
 
 
 @dataclass(frozen=True)
@@ -42,7 +49,7 @@ class Distribution:
 
     _adapter: DistributionAdapter
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         shape = self._adapter.event_shape
         if not isinstance(shape, tuple) or len(shape) > 1:
             raise ValueError("event_shape must be () or (dimension,)")
@@ -56,15 +63,15 @@ class Distribution:
             raise TypeError("adapter.evaluate must be callable")
 
     @property
-    def event_shape(self):
+    def event_shape(self) -> tuple[int, ...]:
         return self._adapter.event_shape
 
     @property
-    def measure(self):
+    def measure(self) -> Measure:
         return self._adapter.measure
 
     @property
-    def capabilities(self):
+    def capabilities(self) -> frozenset[str]:
         capabilities = frozenset(self._adapter.capabilities) | {"density"}
         if "variance" in capabilities:
             capabilities |= {"std"}
@@ -72,19 +79,25 @@ class Distribution:
                 capabilities |= {"covariance"}
         return capabilities
 
-    def _call(self, operation, *args, **kwargs):
+    def _call(
+        self, operation: str, *args: object, **kwargs: object
+    ) -> ArrayLike | Distribution:
         if operation not in self.capabilities:
             raise NotImplementedError(f"this law does not support {operation}")
         return self._adapter.evaluate(operation, *args, **kwargs)
 
-    def _points(self, value):
+    def _points(self, value: ArrayLike) -> tuple[FloatArray, tuple[int, ...]]:
         x = v.array(value, "evaluation points", finite=False, empty=True)
         if self.event_shape and (x.ndim == 0 or x.shape[-1:] != self.event_shape):
-            raise ValueError(f"points must have trailing event shape {self.event_shape}")
+            raise ValueError(
+                f"points must have trailing event shape {self.event_shape}"
+            )
         return x, x.shape[:-1] if self.event_shape else x.shape
 
     @staticmethod
-    def _result(value, shape=None, *, moments=False):
+    def _result(
+        value: object, shape: tuple[int, ...] | None = None, *, moments: bool = False
+    ) -> FloatArray:
         raw = np.asarray(value)
         if raw.dtype.kind not in "iuf":
             raise ValueError("adapter must return real numeric values")
@@ -96,14 +109,16 @@ class Distribution:
         result.setflags(write=False)
         return result
 
-    def log_density(self, x):
+    def log_density(self, x: ArrayLike) -> FloatArray:
         points, shape = self._points(x)
         return self._result(self._call("log_density", points), shape)
 
-    def density(self, x):
+    def density(self, x: ArrayLike) -> FloatArray:
         return self._result(np.exp(self.log_density(x)))
 
-    def cdf(self, x, *, rng=None):
+    def cdf(
+        self, x: ArrayLike, *, rng: np.random.Generator | None = None
+    ) -> FloatArray:
         points, shape = self._points(x)
         if rng is not None:
             v.generator(rng)
@@ -112,7 +127,7 @@ class Distribution:
             raise ValueError("adapter CDF must lie in [0, 1]")
         return result
 
-    def survival(self, x):
+    def survival(self, x: ArrayLike) -> FloatArray:
         """P(X > x) for scalar laws; SciPy laws use the stable backend SF."""
         points, shape = self._points(x)
         result = self._result(self._call("survival", points), shape)
@@ -120,42 +135,50 @@ class Distribution:
             raise ValueError("adapter survival probability must lie in [0, 1]")
         return result
 
-    def quantile(self, probability):
+    def quantile(self, probability: ArrayLike) -> FloatArray:
         p = v.array(probability, "probability", empty=True)
         if np.any((p < 0) | (p > 1)):
             raise ValueError("probability must lie in [0, 1]")
         return self._result(self._call("quantile", p), p.shape)
 
-    def sample(self, size=(), *, rng):
+    def sample(self, size: SampleSize = (), *, rng: np.random.Generator) -> FloatArray:
         """Return size + event_shape draws using only the supplied generator."""
         shape = v.sample_shape(size)
         v.generator(rng)
-        result = self._result(self._call("sample", shape, rng=rng), shape + self.event_shape)
+        result = self._result(
+            self._call("sample", shape, rng=rng), shape + self.event_shape
+        )
         if not np.all(np.isfinite(result)):
             raise ValueError("adapter returned nonfinite samples")
         return result
 
-    def mean(self):
+    def mean(self) -> FloatArray:
         return self._result(self._call("mean"), self.event_shape, moments=True)
 
-    def variance(self):
+    def variance(self) -> FloatArray:
         return self._result(self._call("variance"), self.event_shape, moments=True)
 
-    def std(self):
+    def std(self) -> FloatArray:
         return self._result(np.sqrt(self.variance()), moments=True)
 
-    def covariance(self):
+    def covariance(self) -> FloatArray:
         """Scalar variance or vector (d,d) covariance, never an estimated matrix."""
         if not self.event_shape:
             return self.variance()
-        return self._result(self._call("covariance"), self.event_shape * 2, moments=True)
+        return self._result(
+            self._call("covariance"), self.event_shape * 2, moments=True
+        )
 
-    def moment(self, order):
+    def moment(self, order: int) -> FloatArray:
         """Raw E[X**order], componentwise for vector laws where supported."""
         v.integer(order, "order")
         return self._result(self._call("moment", order), self.event_shape, moments=True)
 
-    def expect(self, function, **options):
+    def expect(
+        self,
+        function: Callable[[float], ArrayLike] | Callable[[FloatArray], ArrayLike],
+        **options: object,
+    ) -> FloatArray:
         """Expectation of a one-event callback; no implicit sampling fallback.
 
         Scalar SciPy laws integrate a scalar callback (options go to SciPy
@@ -166,23 +189,25 @@ class Distribution:
             raise TypeError("function must be callable")
         return self._result(self._call("expect", function, **options), moments=True)
 
-    def support(self):
+    def support(self) -> tuple[float, float]:
         """Scalar support endpoints; quantile(0/1) uses these endpoints."""
         result = self._result(self._call("support"), (2,))
         if result[0] > result[1]:
             raise ValueError("invalid support endpoints")
-        return tuple(float(x) for x in result)
+        return float(result[0]), float(result[1])
 
-    def marginal(self, indices):
+    def marginal(self, indices: ArrayLike) -> Distribution:
         if not self.event_shape:
             raise ValueError("marginal requires a vector law")
         keep = v.indices(indices, self.event_shape[0])
         result = self._call("marginal", keep)
         if not isinstance(result, Distribution) or result.event_shape != (len(keep),):
-            raise ValueError("marginal must return a vector law in the requested coordinate order")
+            raise ValueError(
+                "marginal must return a vector law in the requested coordinate order"
+            )
         return result
 
-    def condition(self, indices, values):
+    def condition(self, indices: ArrayLike, values: ArrayLike) -> Distribution:
         """Law of the remaining coordinates given X[indices]=values.
 
         Remaining coordinates retain original order, including a one-coordinate
@@ -198,10 +223,14 @@ class Distribution:
         result = self._call("condition", observed, values)
         expected = (self.event_shape[0] - len(observed),)
         if not isinstance(result, Distribution) or result.event_shape != expected:
-            raise ValueError("condition must return the law of the remaining coordinates")
+            raise ValueError(
+                "condition must return the law of the remaining coordinates"
+            )
         return result
 
-    def probability(self, event):
+    def probability(
+        self, event: Callable[[FloatArray], bool | BoolArray]
+    ) -> FloatArray:
         """Exact predicate probability for finite empirical laws."""
         if not callable(event):
             raise TypeError("event must be callable")
@@ -210,16 +239,19 @@ class Distribution:
             raise ValueError("event probability must lie in [0, 1]")
         return result
 
-    def given(self, event):
+    def given(self, event: Callable[[FloatArray], bool | BoolArray]) -> Distribution:
         """Restrict a finite empirical law to a positive-probability predicate."""
         if not callable(event):
             raise TypeError("event must be callable")
         result = self._call("given", event)
-        if not isinstance(result, Distribution) or result.event_shape != self.event_shape:
+        if (
+            not isinstance(result, Distribution)
+            or result.event_shape != self.event_shape
+        ):
             raise ValueError("given must preserve the event shape")
         return result
 
-    def map(self, function):
+    def map(self, function: Callable[[FloatArray], ArrayLike]) -> Distribution:
         """Exact finite pushforward; arbitrary scalar/vector maps of empirical laws."""
         if not callable(function):
             raise TypeError("function must be callable")

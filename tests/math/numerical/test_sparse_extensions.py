@@ -50,19 +50,19 @@ def test_sparse_svd_and_adjoint_on_rectangular_operator():
 def test_sparse_spectral_invalid_requests():
     a = n.sparse_matrix(np.eye(3))
     with pytest.raises(ValueError, match="k"):
-        n.sparse_eig(a, 3)
+        n.sparse_eig(a, 3)  # pyright: ignore[reportArgumentType]  # Exercise runtime rejection.
     with pytest.raises(ValueError, match="k"):
-        n.sparse_eig(a, 2, hermitian=False)
+        n.sparse_eig(a, 2, hermitian=False)  # pyright: ignore[reportArgumentType]  # Exercise runtime rejection.
     with pytest.raises(ValueError, match="Hermitian"):
-        n.sparse_eig(n.sparse_matrix([[1, 1, 0], [0, 2, 0], [0, 0, 3]]))
+        n.sparse_eig(n.sparse_matrix([[1, 1, 0], [0, 2, 0], [0, 0, 3]]))  # pyright: ignore[reportArgumentType]  # Exercise runtime rejection.
 
 
 def test_real_operator_supports_complex_vectors_and_complex_adjoint():
     a = np.array([[0., -1.], [1., 0.]])
     real_operator = n.linear_operator(a.shape, lambda x:a @ x, rmatvec=lambda x:a.T @ x)
     vector = np.array([1+2j, 3-1j])
-    assert_allclose(real_operator @ vector, a @ vector)
+    assert_allclose(np.asarray(real_operator @ vector), a @ vector)
     complex_a = a + np.diag([1j, -1j])
     complex_operator = n.linear_operator(a.shape, lambda x:complex_a @ x,
                                          rmatvec=lambda x:complex_a.conj().T @ x, dtype=np.complex128)
-    assert_allclose(complex_operator.H @ vector, complex_a.conj().T @ vector)
+    assert_allclose(np.asarray(complex_operator.H @ vector), complex_a.conj().T @ vector)

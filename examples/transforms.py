@@ -15,6 +15,7 @@ def main():
     coordinates = tx.Pipeline((tx.Standardize(), tx.PCA(2))).fit(training)
     scores = coordinates.transform(held_out)
     assert_allclose(coordinates.reconstruct(scores) + coordinates.residuals(held_out), held_out)
+    assert isinstance(coordinates.steps[-1], tx.PCAResult)
     print("Retained variance ratios:", coordinates.steps[-1].explained_variance_ratio)
     print("Held-out reconstruction RMSE:", np.sqrt(np.mean(coordinates.residuals(held_out)**2)))
 

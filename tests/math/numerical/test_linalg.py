@@ -92,6 +92,7 @@ def test_sparse_nonconvergence_is_visible():
     tool = nm.SparseSolve(method="cg", maxiter=1, rtol=1e-14)
     with pytest.raises(nm.ConvergenceError) as caught:
         nm.solve(a, np.ones(100), tool=tool)
+    assert isinstance(caught.value.result, nm.ArrayResult)
     assert caught.value.result.diagnostics.iterations == 1
     result = nm.solve(a, np.ones(100), tool=tool, check_convergence=False)
     assert not result.diagnostics.converged

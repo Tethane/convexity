@@ -24,7 +24,7 @@ def align(source, target):
     else:
         rotation, _ = orthogonal_procrustes(source.basis, target.basis)
     aligned = source.basis @ rotation
-    return Alignment(rotation, Subspace(aligned), np.linalg.norm(aligned - target.basis),
+    return Alignment(rotation, Subspace(aligned), float(np.linalg.norm(aligned - target.basis)),
                      principal_angles(source, target))
 
 

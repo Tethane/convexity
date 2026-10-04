@@ -5,6 +5,8 @@ from typing import Any
 
 import numpy as np
 from scipy import linalg, stats
+from scipy.special import poch
+from ..._backends.gaussian import sample as gaussian_sample, logpdf as gaussian_logpdf
 
 from .. import _validation as v
 from ..interfaces import Distribution, Measure
@@ -87,7 +89,8 @@ class EllipticalAdapter:
 
     def _law(self, rng=None) -> Any:
         if self.df is None:
-            return stats.multivariate_normal(self.location, self.matrix, seed=rng)
+            generator: Any = stats.multivariate_normal
+            return generator(self.location, stats.Covariance.from_cholesky(np.linalg.cholesky(self.matrix)), seed=rng)
         # Some SciPy stubs incorrectly restrict df to int; the library accepts real df.
         generator: Any = stats.multivariate_t
         return generator(self.location, self.matrix, self.df, seed=rng)
@@ -104,7 +107,24 @@ class EllipticalAdapter:
                 # Infinite coordinates are outside any positive-definite density.
                 finite = np.all(np.isfinite(flat), axis=-1)
                 result = np.full(len(flat), -np.inf)
-                result[finite] = self._law().logpdf(flat[finite]) if np.any(finite) else []
+                if self.df is None:
+                    result[finite] = gaussian_logpdf(flat[finite], self.location, self.matrix)
+                elif np.any(finite):
+                    units = np.sqrt(np.diag(self.matrix))
+                    corr = self.matrix / units[:, None] / units[None, :]
+                    root = np.linalg.cholesky(corr)
+                    z = (flat[finite] - self.location) / units
+                    white = linalg.solve_triangular(root, z.T, lower=True).T
+                    log_volume = np.log(units).sum() + np.log(np.diag(root)).sum()
+                    # Integer dimension permits a stable gamma-ratio product.
+                    # Avoid subtracting enormous log-gammas in the normal limit.
+                    half_df = self.df / 2
+                    offset = .5 if d % 2 else 0.
+                    normalization = np.log1p((np.arange(d//2) + offset) / half_df).sum()
+                    if d % 2:
+                        normalization += np.log(poch(half_df, .5) / np.sqrt(half_df))
+                    result[finite] = (normalization - d/2*np.log(2*np.pi) - log_volume
+                                      - (self.df+d)/2*np.log1p(np.sum(white**2, axis=1)/self.df))
                 return result.reshape(shape)
             rng = v.generator(kwargs.get("rng"))
             result = np.empty(len(flat))
@@ -116,7 +136,11 @@ class EllipticalAdapter:
                 elif self.df is None:
                     result[finite] = self._law(rng).cdf(flat[finite])
                 else:
-                    result[finite] = self._law().cdf(flat[finite], random_state=rng)
+                    units = np.sqrt(np.diag(self.matrix))
+                    corr = self.matrix / units[:, None] / units[None, :]
+                    generator: Any = stats.multivariate_t
+                    law = generator(shape=corr, df=self.df)
+                    result[finite] = law.cdf((flat[finite] - self.location) / units, random_state=rng)
             for i in np.flatnonzero(~finite):
                 point = flat[i]
                 if np.any(np.isneginf(point)):
@@ -131,7 +155,11 @@ class EllipticalAdapter:
             shape = args[0]
             if 0 in shape:
                 return np.empty(shape + self.event_shape)
-            return np.asarray(self._law().rvs(size=shape, random_state=kwargs["rng"])).reshape(shape + self.event_shape)
+            rng = kwargs['rng']
+            noise = gaussian_sample(np.zeros(d), self.matrix, shape, rng)
+            if self.df is not None:
+                noise = noise / np.sqrt(rng.chisquare(self.df, size=shape) / self.df)[..., None]
+            return self.location + noise
         if operation == "mean":
             return self.location if self.df is None or self.df > 1 else np.full(d, np.nan)
         if operation in {"variance", "covariance"}:

@@ -1,7 +1,7 @@
 """Standard continuous/discrete Lyapunov and algebraic Riccati equations."""
 
 from dataclasses import dataclass
-from typing import Any, Literal
+from typing import Literal
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -29,7 +29,7 @@ class LyapunovEquation:
         object.__setattr__(self, "a", a)
         object.__setattr__(self, "q", q)
 
-    def validate_result(self, result: Any) -> None:
+    def validate_result(self, result: object) -> None:
         check_array_result(result, np.shape(self.a))
 
 
@@ -51,12 +51,16 @@ class RiccatiEquation:
         v.choice(self.time, ("continuous", "discrete"), "time")
         a, b = v.square(self.a, "a"), v.array(self.b, "b", ndim=2)
         q, r = v.square(self.q, "q"), v.square(self.r, "r")
-        if q.shape != a.shape or b.shape[0] != a.shape[0] or r.shape != (b.shape[1], b.shape[1]):
+        if (
+            q.shape != a.shape
+            or b.shape[0] != a.shape[0]
+            or r.shape != (b.shape[1], b.shape[1])
+        ):
             raise ValueError("expected a/q: (n,n), b: (n,m), r: (m,m)")
         v.hermitian(q, "q")
         v.hermitian(r, "r")
         for name, value in (("a", a), ("b", b), ("q", q), ("r", r)):
             object.__setattr__(self, name, value)
 
-    def validate_result(self, result: Any) -> None:
+    def validate_result(self, result: object) -> None:
         check_array_result(result, np.shape(self.a))

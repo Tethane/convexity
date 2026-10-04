@@ -50,13 +50,10 @@ def bounds(lower, upper, size, *, strict=False):
 
 
 def matrix(value, size, name, *, positive=False):
-    result = array(value, name, ndim=2)
-    if result.shape != (size, size) or not np.allclose(result, result.T, rtol=1e-8, atol=1e-12):
-        raise ValueError(f"{name} must be symmetric with shape ({size}, {size})")
-    result = array((result + result.T) / 2, name)
-    eig = np.linalg.eigvalsh(result)
-    if (positive and eig[0] <= 0) or eig[0] < -1e-10 * max(1., float(np.max(np.abs(eig)))):
-        raise ValueError(f"{name} must be positive {'definite' if positive else 'semidefinite'}")
+    from .._covariance import psd
+    result = psd(value, name, definite=positive)
+    if result.shape != (size, size):
+        raise ValueError(f'{name} must have shape ({size}, {size})')
     return result
 
 

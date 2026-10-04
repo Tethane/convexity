@@ -15,19 +15,22 @@ def main(*, neural=False):
     y = 3 + x @ beta + .25 * rng.normal(size=len(x))
     train, test = x[:900], x[900:]
     ols = learn.linear_regression(train, y[:900])
+    assert ols.coefficients is not None
     assert_allclose(ols.coefficients, beta, atol=.04)
     penalized = [learn.Ridge(alpha=.05), learn.Lasso(alpha=.02), learn.ElasticNet(alpha=.02)]
     for tool in penalized:
         fit = learn.Pipeline((tx.Standardize(),), tool).fit(train, y[:900])
-        assert np.mean((fit.predict(test) - y[900:]) ** 2) < .13
+        assert np.mean((fit.predict_mean(test) - y[900:]) ** 2) < .13
     print("Linear recovery and train-only penalized pipelines verified.")
 
     offset = rng.uniform(-.5, .5, len(x))
     mean = np.exp(.4 + x @ [.2, -.15, .1] + offset)
     counts = rng.poisson(mean)
     poisson = learn.GeneralizedLinearModel('poisson').fit(x, counts, offset=offset)
+    assert poisson.coefficients is not None
     assert_allclose(poisson.coefficients, [.2, -.15, .1], atol=.08)
-    assert_allclose(poisson.predict(x[:5], offset=offset[:5]),
+    assert poisson.coefficients is not None and poisson.intercept is not None
+    assert_allclose(poisson.predict_mean(x[:5], offset=offset[:5]),
                     np.exp(x[:5] @ poisson.coefficients + poisson.intercept + offset[:5]))
     print("Poisson coefficients:", poisson.coefficients)
 
@@ -36,6 +39,7 @@ def main(*, neural=False):
     trials = rng.integers(10, 30, len(x))
     successes = rng.binomial(trials, p)
     grouped = learn.GeneralizedLinearModel('binomial').fit(x, successes, trials=trials)
+    assert grouped.coefficients is not None
     assert_allclose(grouped.coefficients, [.8, -.5, .2], atol=.06)
     assert_allclose(grouped.predict_proba(test).sum(axis=-1), 1.)
     labels = np.where(rng.random(len(x)) < p, 'success', 'failure')
@@ -45,6 +49,7 @@ def main(*, neural=False):
 
     quantile = learn.QuantileRegression((.1, .5, .9)).fit(train, y[:900])
     assert quantile.predict_quantiles(test).shape == (300, 3)
+    assert quantile.coefficients is not None
     assert_allclose(quantile.coefficients, np.repeat(beta[:, None], 3, axis=1), atol=.08)
     print("Held-out quantile coverage:", np.mean(y[900:, None] <= quantile.predict_quantiles(test), axis=0))
 
@@ -53,7 +58,7 @@ def main(*, neural=False):
     for tool in [learn.DecisionTree(max_depth=6), learn.RandomForest(n_estimators=40),
                  learn.ExtraTrees(n_estimators=40), learn.GradientBoosting(n_estimators=100)]:
         fitted = tool.fit(nonlinear_x[:700], nonlinear_y[:700])
-        mse = np.mean((fitted.predict(nonlinear_x[700:]) - nonlinear_y[700:]) ** 2)
+        mse = np.mean((fitted.predict_mean(nonlinear_x[700:]) - nonlinear_y[700:]) ** 2)
         assert mse < .1
         print(type(tool).__name__, "held-out MSE:", round(float(mse), 5))
 
@@ -65,9 +70,10 @@ def main(*, neural=False):
             features = np.linspace(-2, 2, 120)[:, None]
             response = np.sin(features[:, 0])
             net = learn.NeuralRegressor(hidden_layers=(12,), seed=7, maxiter=3000, tolerance=3e-4).fit(features, response)
-            assert np.mean((net.predict(features) - response) ** 2) < .001
+            assert np.mean((net.predict_mean(features) - response) ** 2) < .001
             classifier = learn.NeuralClassifier(hidden_layers=(), maxiter=2000, tolerance=1e-5).fit(train, labels[:900])
             assert_allclose(classifier.predict_proba(test).sum(axis=-1), 1.)
+            assert net.loss_history is not None
             print("Neural final loss / updates:", net.loss_history[-1], net.diagnostics.iterations)
         finally:
             torch.set_num_threads(previous_threads)

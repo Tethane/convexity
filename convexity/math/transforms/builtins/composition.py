@@ -1,17 +1,25 @@
 """Sequential fitting and composition of row-preserving coordinate maps."""
 
-from dataclasses import dataclass
-from typing import Any
+from __future__ import annotations
 
+from collections.abc import Sequence
+from dataclasses import dataclass
+
+from numpy.typing import ArrayLike
+
+from ..._typing import FloatArray
 from .. import _validation as v
 from ..interfaces import checked_transform, fit
+from ..interfaces.base import Transform, TransformFitter
 
 
 @dataclass(frozen=True)
 class FittedPipeline:
-    steps: tuple[Any, ...]
+    """Ordered fitted transforms. Coordinate order follows each transform; inverse requires every stage to support it."""
 
-    def __post_init__(self):
+    steps: Sequence[Transform]
+
+    def __post_init__(self) -> None:
         steps = tuple(self.steps)
         if not steps:
             raise ValueError("pipeline must have at least one step")
@@ -20,7 +28,9 @@ class FittedPipeline:
             v.integer(step.output_dimension, "output_dimension", 1)
             if not callable(step.transform):
                 raise TypeError("each step must have a transform method")
-        if any(a.output_dimension != b.input_dimension for a, b in zip(steps, steps[1:])):
+        if any(
+            a.output_dimension != b.input_dimension for a, b in zip(steps, steps[1:])
+        ):
             raise ValueError("adjacent pipeline dimensions must match")
         object.__setattr__(self, "steps", steps)
 
@@ -36,7 +46,7 @@ class FittedPipeline:
     def is_invertible(self):
         return all(getattr(step, "is_invertible", False) for step in self.steps)
 
-    def transform(self, values):
+    def transform(self, values: ArrayLike):
         current = v.coordinates(values, self.input_dimension, "values")
         for step in self.steps:
             current = checked_transform(step, current)
@@ -48,7 +58,9 @@ class FittedPipeline:
             callback = getattr(step, method, None)
             if not callable(callback):
                 raise ValueError(f"pipeline step does not support {method}")
-            decoded = v.coordinates(callback(current), step.input_dimension, "decoded values")
+            decoded = v.coordinates(
+                callback(current), step.input_dimension, "decoded values"
+            )
             if decoded.shape[:-1] != current.shape[:-1]:
                 raise ValueError("decoding must preserve all leading dimensions")
             current = decoded
@@ -62,7 +74,7 @@ class FittedPipeline:
             raise ValueError("pipeline has no exact inverse; use reconstruct")
         return self._decode(coordinates, "inverse_transform")
 
-    def residuals(self, values):
+    def residuals(self, values: ArrayLike) -> FloatArray:
         x = v.coordinates(values, self.input_dimension, "values")
         return v.array(x - self.reconstruct(self.transform(x)), "residuals")
 
@@ -71,15 +83,15 @@ class FittedPipeline:
 class Pipeline:
     """Fit each step only on the preceding step's transformed training rows."""
 
-    steps: tuple[Any, ...]
+    steps: Sequence[TransformFitter]
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         steps = tuple(self.steps)
         if not steps or any(not callable(getattr(step, "fit", None)) for step in steps):
             raise TypeError("pipeline requires one or more fitters")
         object.__setattr__(self, "steps", steps)
 
-    def fit(self, samples):
+    def fit(self, samples: ArrayLike) -> FittedPipeline:
         current = v.samples(samples)
         fitted = []
         for step in self.steps:

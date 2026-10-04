@@ -114,7 +114,7 @@ def test_user_learner_and_adapter_contracts():
             return learn.FittedModel(Constant())
 
     fitted = learn.fit([[1, 2], [3, 4]], [1, 2], Custom())
-    assert_allclose(fitted.predict([3, 4]), 3)
+    assert_allclose(fitted.predict_mean([3, 4]), 3)
     with pytest.raises(NotImplementedError):
         fitted.predict_proba([3, 4])
     with pytest.raises(ValueError):

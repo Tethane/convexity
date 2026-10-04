@@ -39,16 +39,9 @@ def symmetric(value, name="matrix"):
     return array(x / 2 + x.T / 2, name)
 
 
-def psd(value, name="covariance", *, definite=False):
-    x = symmetric(value, name)
-    eigenvalues = np.linalg.eigvalsh(x)
-    scale = max(float(np.max(np.abs(eigenvalues))), np.finfo(float).tiny)
-    tolerance = 1e-10 * scale
-    if np.any(np.diag(x) < 0) or eigenvalues[0] < -tolerance:
-        raise ValueError(f"{name} must be positive semidefinite")
-    if definite and eigenvalues[0] <= np.finfo(float).eps * len(x) * scale:
-        raise ValueError(f"{name} must be numerically positive definite")
-    return x
+def psd(value, name='covariance', *, definite=False):
+    from .._covariance import psd as checked
+    return checked(value, name, definite=definite)
 
 
 def correlation(value, *, definite=False):

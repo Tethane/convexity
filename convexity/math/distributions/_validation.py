@@ -44,16 +44,9 @@ def indices(value, dimension, *, proper=False):
 
 
 def location_matrix(location, matrix, name):
-    location = array(location, "location", ndim=1)
-    matrix = array(matrix, name, ndim=2)
+    from .._covariance import psd
+    location = array(location, 'location', ndim=1)
+    matrix = psd(matrix, name, definite=True)
     if matrix.shape != (location.size, location.size):
-        raise ValueError(f"{name} must have shape (dimension, dimension)")
-    if not np.allclose(matrix, matrix.T, rtol=1e-12, atol=1e-14):
-        raise ValueError(f"{name} must be symmetric")
-    # Make the accepted roundoff-level asymmetry exact before the backend sees it.
-    matrix = array(matrix / 2 + matrix.T / 2, name)
-    try:
-        np.linalg.cholesky(matrix)
-    except np.linalg.LinAlgError as exc:
-        raise ValueError(f"{name} must be positive definite") from exc
+        raise ValueError(f'{name} must have shape (dimension, dimension)')
     return location, matrix

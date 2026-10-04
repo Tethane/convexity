@@ -1,9 +1,29 @@
 """Reusable, immutable GP regression specifications."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
+from typing import TypedDict, Unpack
+
+from numpy.typing import ArrayLike
 
 from .. import _validation as v
 from ..interfaces import ConvergenceError, Kernel
+from ..interfaces.regression import FittedGaussianProcess
+
+
+class GaussianProcessRegressionOptions(TypedDict, total=False):
+    """Optional keyword settings for gaussian_process_regression."""
+
+    kernel: Kernel | None
+    alpha: object
+    normalize_y: bool
+    optimize: bool
+    restarts: int
+    seed: int
+    tolerance: float
+    maxiter: int
+    check_convergence: bool
 
 
 @dataclass(frozen=True)
@@ -25,9 +45,11 @@ class GaussianProcessRegressor:
     maxiter: int = 1000
     check_convergence: bool = True
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.kernel is not None and not isinstance(self.kernel, Kernel):
-            raise TypeError("kernel must be a Kernel; use from_sklearn for custom kernels")
+            raise TypeError(
+                "kernel must be a Kernel; use from_sklearn for custom kernels"
+            )
         object.__setattr__(self, "alpha", v.variance(self.alpha, "alpha"))
         for name in ("normalize_y", "optimize", "check_convergence"):
             v.boolean(getattr(self, name), name)
@@ -38,11 +60,15 @@ class GaussianProcessRegressor:
         if self.restarts and not self.optimize:
             raise ValueError("restarts require optimize=True")
         v.integer(self.maxiter, "maxiter", 1)
-        object.__setattr__(self, "tolerance", v.scalar(self.tolerance, "tolerance", minimum=0, strict=True))
+        object.__setattr__(
+            self,
+            "tolerance",
+            v.scalar(self.tolerance, "tolerance", minimum=0, strict=True),
+        )
 
-    def fit(self, features, response):
+    def fit(self, features: ArrayLike, response: ArrayLike) -> FittedGaussianProcess:
         from .._backends.sklearn import fit
-        from .kernels import Constant, RBF
+        from .kernels import RBF, Constant
 
         x = v.features(features)
         y = v.array(response, "response", ndim=1)
@@ -56,5 +82,14 @@ class GaussianProcessRegressor:
         return result
 
 
-def gaussian_process_regression(features, response, **kwargs):
+def gaussian_process_regression(
+    features: ArrayLike,
+    response: ArrayLike,
+    **kwargs: Unpack[GaussianProcessRegressionOptions],
+) -> FittedGaussianProcess:
+    """Fit GaussianProcessRegressor to features (observation,feature) and aligned response.
+
+    Exact scalar-response Gaussian regression using scikit-learn.
+    Return the checked fitted predictor; no feature scaling is implicit.
+    Optional settings: kernel, alpha, normalize_y, optimize, restarts, seed, tolerance, maxiter, check_convergence."""
     return GaussianProcessRegressor(**kwargs).fit(features, response)

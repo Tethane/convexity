@@ -1,19 +1,31 @@
 """Checked copulas and composition with continuous scalar marginals."""
 
-from dataclasses import dataclass
-from typing import Any
+from __future__ import annotations
+
+from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 import numpy as np
+from numpy.typing import ArrayLike
 
+from ..._typing import FloatArray
+
+if TYPE_CHECKING:
+    from ...distributions import Distribution
+from dataclasses import dataclass
+
+from ..._typing import SampleSize
 from .. import _validation as v
-from .base import CopulaAdapter, Diagnostics, diagnostics
+from .base import ContinuousMarginal, CopulaAdapter, Diagnostics, diagnostics
 
 
 @dataclass(frozen=True)
 class Copula:
+    """Checked dependence law on unit-interval coordinates with explicitly advertised capabilities."""
+
     adapter: CopulaAdapter
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         v.integer(self.adapter.dimension, "dimension", 2)
         if not callable(self.adapter.evaluate):
             raise TypeError("adapter must implement evaluate")
@@ -33,17 +45,21 @@ class Copula:
             raise NotImplementedError(f"copula does not support {operation}")
         return self.adapter.evaluate(operation, *args, **kwargs)
 
-    def log_density(self, uniforms):
+    def log_density(self, uniforms: ArrayLike):
         u = v.probabilities(v.coordinates(uniforms, self.dimension), interior=True)
-        result = v.array(self._call("log_density", u), "log density", finite=False, empty=True)
+        result = v.array(
+            self._call("log_density", u), "log density", finite=False, empty=True
+        )
         if result.shape != u.shape[:-1]:
             raise ValueError("copula density must preserve leading dimensions")
         return result
 
-    def density(self, uniforms):
-        return v.array(np.exp(self.log_density(uniforms)), "density", finite=False, empty=True)
+    def density(self, uniforms) -> FloatArray:
+        return v.array(
+            np.exp(self.log_density(uniforms)), "density", finite=False, empty=True
+        )
 
-    def cdf(self, uniforms, *, rng=None):
+    def cdf(self, uniforms: ArrayLike, *, rng: np.random.Generator | None = None):
         """Elliptical adapters require rng for randomized SciPy integration."""
         u = v.probabilities(v.coordinates(uniforms, self.dimension))
         if rng is not None:
@@ -53,7 +69,7 @@ class Copula:
             raise ValueError("copula CDF must preserve leading dimensions")
         return result
 
-    def sample(self, size=(), *, rng):
+    def sample(self, size: SampleSize = (), *, rng: np.random.Generator):
         shape = v.sample_shape(size)
         v.generator(rng)
         result = v.probabilities(self._call("sample", shape, rng=rng))
@@ -61,7 +77,7 @@ class Copula:
             raise ValueError("copula samples must have size + (dimension,) shape")
         return result
 
-    def tail_dependence(self, i=0, j=1):
+    def tail_dependence(self, i: int = 0, j: int = 1):
         """Pairwise (lower, upper) limiting conditional exceedance probabilities."""
         i, j = v.integer(i, "i"), v.integer(j, "j")
         if i == j or max(i, j) >= self.dimension:
@@ -74,17 +90,21 @@ class Copula:
 
 @dataclass(frozen=True)
 class CopulaFit:
+    """Fitted copula and fit diagnostics; marginal distributions are not inferred by this result."""
+
     copula: Copula
     nobs: int
     log_likelihood: float
-    repair_distance: float = 0.
+    repair_distance: float = 0.0
     diagnostics: Diagnostics = Diagnostics()
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not isinstance(self.copula, Copula):
             raise TypeError("copula must be Copula")
         v.integer(self.nobs, "nobs", 2)
-        object.__setattr__(self, "log_likelihood", v.scalar(self.log_likelihood, "log_likelihood"))
+        object.__setattr__(
+            self, "log_likelihood", v.scalar(self.log_likelihood, "log_likelihood")
+        )
         distance = v.scalar(self.repair_distance, "repair_distance")
         if distance < 0:
             raise ValueError("repair_distance must be nonnegative")
@@ -97,9 +117,9 @@ class CopulaDistribution:
     """Sklar composition. Continuous marginals supply cdf, quantile, log_density."""
 
     copula: Copula
-    marginals: tuple[Any, ...]
+    marginals: tuple[Distribution, ...]
 
-    def __init__(self, copula, marginals):
+    def __init__(self, copula: Copula, marginals: Sequence[ContinuousMarginal]) -> None:
         if not isinstance(copula, Copula):
             raise TypeError("copula must be Copula")
         laws = tuple(marginals)
@@ -108,8 +128,13 @@ class CopulaDistribution:
         for law in laws:
             if law.event_shape != () or law.measure != "continuous":
                 raise ValueError("marginals must be continuous scalar laws")
-            if any(not callable(getattr(law, method, None)) for method in ("cdf", "quantile", "log_density")):
-                raise TypeError("marginals must implement cdf, quantile and log_density")
+            if any(
+                not callable(getattr(law, method, None))
+                for method in ("cdf", "quantile", "log_density")
+            ):
+                raise TypeError(
+                    "marginals must implement cdf, quantile and log_density"
+                )
         object.__setattr__(self, "copula", copula)
         object.__setattr__(self, "marginals", laws)
 
@@ -125,20 +150,24 @@ class CopulaDistribution:
         x = v.coordinates(values, self.copula.dimension, finite=False)
         columns = []
         for j, law in enumerate(self.marginals):
-            column = v.array(getattr(law, operation)(x[..., j]), operation, finite=False, empty=True)
+            column = v.array(
+                getattr(law, operation)(x[..., j]), operation, finite=False, empty=True
+            )
             if column.shape != x.shape[:-1]:
                 raise ValueError("marginals must preserve point shapes")
             columns.append(column)
         return np.stack(columns, axis=-1)
 
-    def sample(self, size=(), *, rng):
+    def sample(self, size: SampleSize = (), *, rng: np.random.Generator) -> FloatArray:
         uniforms = self.copula.sample(size, rng=rng)
-        return v.array(self._marginal_values(uniforms, "quantile"), "samples", empty=True)
+        return v.array(
+            self._marginal_values(uniforms, "quantile"), "samples", empty=True
+        )
 
-    def cdf(self, values, *, rng=None):
+    def cdf(self, values: ArrayLike, *, rng: np.random.Generator | None = None):
         return self.copula.cdf(self._marginal_values(values, "cdf"), rng=rng)
 
-    def log_density(self, values):
+    def log_density(self, values: ArrayLike) -> FloatArray:
         logs = self._marginal_values(values, "log_density")
         uniforms = v.probabilities(self._marginal_values(values, "cdf"))
         leading = logs.shape[:-1]
@@ -149,8 +178,12 @@ class CopulaDistribution:
         # At saturated marginal CDFs the density ratio is not numerically
         # identified. Do not replace it with an arbitrary clipped density.
         if np.any(active):
-            result[active] = self.copula.log_density(flat_u[active]) + flat_logs[active].sum(axis=1)
+            result[active] = self.copula.log_density(flat_u[active]) + flat_logs[
+                active
+            ].sum(axis=1)
         return v.array(result.reshape(leading), "log density", finite=False, empty=True)
 
-    def density(self, values):
-        return v.array(np.exp(self.log_density(values)), "density", finite=False, empty=True)
+    def density(self, values: ArrayLike) -> FloatArray:
+        return v.array(
+            np.exp(self.log_density(values)), "density", finite=False, empty=True
+        )

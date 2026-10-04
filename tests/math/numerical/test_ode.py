@@ -56,6 +56,7 @@ def test_ivp_failure_retains_partial_solution():
     with pytest.raises(n.ConvergenceError) as caught:
         n.solve_ivp(lambda t,y:y*y, [1.], (0, 2))
     result = caught.value.result
+    assert isinstance(result, n.ODEResult)
     assert not result.diagnostics.converged
     assert result.t[-1] < 2
     assert_allclose(result.solution(.5), [2.], atol=1e-5)
@@ -92,6 +93,7 @@ def test_bvp_nonconvergence_and_boundary_shape():
         n.solve_bvp(lambda x,y:np.vstack([y[1],-100*np.sin(10*x)]),
                      lambda a,b:[a[0],b[0]-np.sin(10)], x, np.zeros((2, 5)),
                      tool=n.BVPSolver(tolerance=1e-10, max_nodes=5))
+    assert isinstance(caught.value.result, n.BoundaryValueResult)
     assert not caught.value.result.diagnostics.converged
     with pytest.raises(ValueError, match="boundary residual"):
         n.solve_bvp(lambda x,y:y, lambda a,b:[0.], x, np.zeros((2, 5)))

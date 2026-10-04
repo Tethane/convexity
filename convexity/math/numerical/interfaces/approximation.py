@@ -1,109 +1,189 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Callable
+
 import numpy as np
+from numpy.typing import ArrayLike
+
+from ..._typing import (
+    FloatArray,
+)
 from .. import _validation as v
 from .base import Diagnostics
-from .interpolation import InterpolationProblem, Interpolant
+from .interpolation import Interpolant, InterpolationProblem
 
 
 @dataclass(frozen=True)
 class MultivariateInterpolationProblem:
-    points: Any
-    values: Any
+    """Regular-grid axes or scattered point rows and aligned values; extrapolation is explicit."""
+
+    points: FloatArray | tuple[FloatArray, ...]
+    values: FloatArray
     layout: str = "regular"
     extrapolation: str = "raise"
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         v.choice(self.layout, ("regular", "scattered"), "layout")
         v.choice(self.extrapolation, ("raise", "nan", "extrapolate"), "extrapolation")
         values = v.array(self.values, "values", real=True)
         if self.layout == "regular":
             points = tuple(v.array(x, "axis", ndim=1, real=True) for x in self.points)
             if not points or any(x.size < 2 or np.any(np.diff(x) <= 0) for x in points):
-                raise ValueError("regular axes must each contain at least two increasing points")
+                raise ValueError(
+                    "regular axes must each contain at least two increasing points"
+                )
             shape = tuple(x.size for x in points)
-            if values.shape[:len(shape)] != shape:
+            if values.shape[: len(shape)] != shape:
                 raise ValueError("leading value dimensions must match the grid axes")
         else:
             points = v.array(self.points, "points", ndim=2, real=True)
-            if points.shape[1] < 2 or points.shape[0] < points.shape[1]+1 or values.ndim < 1 or values.shape[0] != points.shape[0]:
-                raise ValueError("scattered points need (N,d), d>=2, N>=d+1; values must have N samples")
+            if (
+                points.shape[1] < 2
+                or points.shape[0] < points.shape[1] + 1
+                or values.ndim < 1
+                or values.shape[0] != points.shape[0]
+            ):
+                raise ValueError(
+                    "scattered points need (N,d), d>=2, N>=d+1; values must have N samples"
+                )
         object.__setattr__(self, "points", points)
         object.__setattr__(self, "values", values)
 
     @property
     def dimension(self):
-        return len(self.points) if self.layout == "regular" else self.points.shape[1]
+        return (
+            len(self.points) if self.layout == "regular" else np.shape(self.points)[1]
+        )
 
     @property
     def output_shape(self):
-        return self.values.shape[self.dimension:] if self.layout == "regular" else self.values.shape[1:]
+        return (
+            self.values.shape[self.dimension :]
+            if self.layout == "regular"
+            else self.values.shape[1:]
+        )
 
-    def validate_result(self, result):
+    def validate_result(self, result: object) -> None:
         if not isinstance(result, MultivariateInterpolant):
             raise TypeError("tool must return MultivariateInterpolant")
-        if result.dimension != self.dimension or result.output_shape != self.output_shape or result.extrapolation != self.extrapolation:
+        if (
+            result.dimension != self.dimension
+            or result.output_shape != self.output_shape
+            or result.extrapolation != self.extrapolation
+        ):
             raise ValueError("multivariate interpolant contract mismatch")
+
+    def __init__(
+        self,
+        points: ArrayLike | tuple[ArrayLike, ...],
+        values: ArrayLike,
+        layout: str = "regular",
+        extrapolation: str = "raise",
+    ) -> None:
+        object.__setattr__(self, "points", points)
+        object.__setattr__(self, "values", values)
+        object.__setattr__(self, "layout", layout)
+        object.__setattr__(self, "extrapolation", extrapolation)
+        self.__post_init__()
 
 
 @dataclass(frozen=True)
 class MultivariateInterpolant:
-    _evaluate: Callable = field(repr=False)
+    """Callable interpolant accepting points with a final coordinate axis and preserving leading batch axes."""
+
+    _evaluate: Callable[[FloatArray], ArrayLike] = field(repr=False)
     dimension: int
     output_shape: tuple[int, ...] = ()
     extrapolation: str = "raise"
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         v.function(self._evaluate)
         v.integer(self.dimension, "dimension")
         v.choice(self.extrapolation, ("raise", "nan", "extrapolate"), "extrapolation")
         for size in self.output_shape:
             v.integer(size, "output dimension")
 
-    def __call__(self, points):
+    def __call__(self, points: ArrayLike):
         points = v.array(points, "query points", real=True)
         if points.ndim < 1 or points.shape[-1] != self.dimension:
             raise ValueError("queries must have shape (..., dimension)")
         shape = points.shape[:-1] + self.output_shape
-        output = v.array(self._evaluate(points.reshape(-1, self.dimension)), "interpolated values",
-                         real=True, finite=self.extrapolation != "nan")
-        if output.shape != (int(np.prod(points.shape[:-1])),) + self.output_shape or np.any(np.isinf(output)):
+        output = v.array(
+            self._evaluate(points.reshape(-1, self.dimension)),
+            "interpolated values",
+            real=True,
+            finite=self.extrapolation != "nan",
+        )
+        if output.shape != (
+            int(np.prod(points.shape[:-1])),
+        ) + self.output_shape or np.any(np.isinf(output)):
             raise ValueError("interpolator returned invalid values or shape")
         return output.reshape(shape)
 
 
 @dataclass(frozen=True)
 class PolynomialProblem(InterpolationProblem):
+    """One-dimensional sample coordinates and values with an explicit polynomial degree."""
+
     degree: int = 3
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         super().__post_init__()
-        if isinstance(self.degree, bool) or not isinstance(self.degree, (int, np.integer)) or self.degree < 0 or self.degree >= np.size(self.x):
+        if (
+            isinstance(self.degree, bool)
+            or not isinstance(self.degree, (int, np.integer))
+            or self.degree < 0
+            or self.degree >= np.size(self.x)
+        ):
             raise ValueError("degree must be an integer in [0, number of samples)")
         if np.ndim(self.y) != 1:
             raise ValueError("polynomial approximation accepts scalar sample values")
 
-    def validate_result(self, result):
+    def validate_result(self, result: object) -> None:
         if not isinstance(result, PolynomialResult):
             raise TypeError("tool must return PolynomialResult")
         super().validate_result(result.interpolant)
-        if result.coefficients.shape != (self.degree+1,) or not 0 <= result.rank <= self.degree+1:
+        if (
+            result.coefficients.shape != (self.degree + 1,)
+            or not 0 <= result.rank <= self.degree + 1
+        ):
             raise ValueError("invalid polynomial coefficients or rank")
 
 
 @dataclass(frozen=True)
 class PolynomialResult:
     """Coefficients are in increasing ordinary powers of x, regardless of fit basis."""
+
     interpolant: Interpolant
-    coefficients: Any
+    coefficients: FloatArray
     rank: int
     diagnostics: Diagnostics
 
-    def __post_init__(self):
-        if not isinstance(self.interpolant, Interpolant) or not isinstance(self.diagnostics, Diagnostics):
+    def __post_init__(self) -> None:
+        if not isinstance(self.interpolant, Interpolant) or not isinstance(
+            self.diagnostics, Diagnostics
+        ):
             raise TypeError("expected Interpolant and Diagnostics")
-        object.__setattr__(self, "coefficients", v.array(self.coefficients, "coefficients", ndim=1, real=True))
+        object.__setattr__(
+            self,
+            "coefficients",
+            v.array(self.coefficients, "coefficients", ndim=1, real=True),
+        )
         v.integer(self.rank, "rank")
 
     def __call__(self, x):
         return self.interpolant(x)
+
+    def __init__(
+        self,
+        interpolant: Interpolant,
+        coefficients: ArrayLike,
+        rank: int,
+        diagnostics: Diagnostics,
+    ) -> None:
+        object.__setattr__(self, "interpolant", interpolant)
+        object.__setattr__(self, "coefficients", coefficients)
+        object.__setattr__(self, "rank", rank)
+        object.__setattr__(self, "diagnostics", diagnostics)
+        self.__post_init__()

@@ -1,7 +1,7 @@
 """Real scalar roots and square systems of real nonlinear equations."""
 
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Callable
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -35,7 +35,7 @@ class ScalarRootProblem:
         if self.derivative is not None:
             v.function(self.derivative, "derivative")
 
-    def validate_result(self, result: Any) -> None:
+    def validate_result(self, result: object) -> None:
         check_array_result(result, (), real=True)
 
 
@@ -53,5 +53,5 @@ class RootSystem:
         if self.jacobian is not None:
             v.function(self.jacobian, "jacobian")
 
-    def validate_result(self, result: Any) -> None:
+    def validate_result(self, result: object) -> None:
         check_array_result(result, np.shape(self.x0), real=True)

@@ -1,27 +1,50 @@
 """Intervals, uncertainty propagation and resampling of compatible estimators."""
 
+from __future__ import annotations
+
+from collections.abc import Callable, Sequence
+from typing import TYPE_CHECKING
+
+from numpy.typing import ArrayLike
+
+from ..._typing import FloatArray
+
+if TYPE_CHECKING:
+    from .. import Estimate
+
+
 import numpy as np
+
+if TYPE_CHECKING:
+    from .. import BootstrapResult, Interval
+
 
 from .. import _validation as v
 from .._backends import uncertainty
 from ..interfaces import ConvergenceError, Diagnostics, Estimate
 
 
-def wald_interval(estimate: Estimate, *, level=.95):
+def wald_interval(estimate: Estimate, *, level: float = 0.95) -> Interval:
     """Marginal two-sided confidence intervals. No clipping to parameter bounds."""
     if not isinstance(estimate, Estimate):
         raise TypeError("estimate must be Estimate")
     return uncertainty.interval(estimate, level=v.level(level), credible=False)
 
 
-def laplace_interval(estimate: Estimate, *, level=.95):
+def laplace_interval(estimate: Estimate, *, level: float = 0.95) -> Interval:
     """Marginal approximate credible intervals from local posterior curvature."""
     if not isinstance(estimate, Estimate):
         raise TypeError("estimate must be Estimate")
     return uncertainty.interval(estimate, level=v.level(level), credible=True)
 
 
-def delta_method(estimate: Estimate, function, *, jacobian=None, names=None):
+def delta_method(
+    estimate: Estimate,
+    function: Callable[[FloatArray], ArrayLike],
+    *,
+    jacobian: Callable[[FloatArray], ArrayLike] | None = None,
+    names: Sequence[str] | None = None,
+) -> Estimate:
     """Propagate covariance as J C J.T for a smooth scalar/vector transformation.
 
     Nonlinear transformations use asymptotic normal inference, not exact t
@@ -35,8 +58,10 @@ def delta_method(estimate: Estimate, function, *, jacobian=None, names=None):
         raise ValueError("delta method requires parameter covariance")
     v.function(function, "function")
 
-    def evaluate(theta):
-        value = v.array(function(v.array(theta, "parameters", ndim=1)), "transformed parameters")
+    def evaluate(theta: ArrayLike):
+        value = v.array(
+            function(v.array(theta, "parameters", ndim=1)), "transformed parameters"
+        )
         if value.ndim > 1:
             raise ValueError("function must return a scalar or vector")
         return np.atleast_1d(value)
@@ -50,15 +75,35 @@ def delta_method(estimate: Estimate, function, *, jacobian=None, names=None):
         v.function(jacobian, "Jacobian")
         matrix = v.array(jacobian(estimate.parameters), "Jacobian", ndim=2)
     if matrix.shape != (len(value), len(estimate.parameters)):
-        raise ValueError("Jacobian must have shape (output parameters,input parameters)")
-    return Estimate(value, names=names, covariance=matrix @ estimate.covariance @ matrix.T,
-                    covariance_kind="laplace" if estimate.covariance_kind == "laplace" else f"delta:{estimate.covariance_kind}",
-                    nobs=estimate.nobs, diagnostics=Diagnostics(backend="delta method",
-                                                               uncertainty_note="First-order covariance propagation; normal approximation."))
+        raise ValueError(
+            "Jacobian must have shape (output parameters,input parameters)"
+        )
+    return Estimate(
+        value,
+        names=names,
+        covariance=matrix @ estimate.covariance @ matrix.T,
+        covariance_kind="laplace"
+        if estimate.covariance_kind == "laplace"
+        else f"delta:{estimate.covariance_kind}",
+        nobs=estimate.nobs,
+        diagnostics=Diagnostics(
+            backend="delta method",
+            uncertainty_note="First-order covariance propagation; normal approximation.",
+        ),
+    )
 
 
-def bootstrap(statistic, data, *, rng, level=.95, method="BCa", n_resamples=999,
-              batch=256, names=None):
+def bootstrap(
+    statistic: Callable[..., ArrayLike | Estimate],
+    data: tuple[ArrayLike, ...],
+    *,
+    rng: np.random.Generator,
+    level: float = 0.95,
+    method: str = "BCa",
+    n_resamples: int = 999,
+    batch: int = 256,
+    names: Sequence[str] | None = None,
+) -> BootstrapResult:
     """Bootstrap independent rows, preserving pairing across a tuple of arrays.
 
     statistic(*data) returns a scalar, vector or converged Estimate. Each array
@@ -77,6 +122,13 @@ def bootstrap(statistic, data, *, rng, level=.95, method="BCa", n_resamples=999,
     if not isinstance(rng, np.random.Generator):
         raise TypeError("rng must be a numpy.random.Generator")
     v.choice(method, ("percentile", "basic", "BCa"), "method")
-    return uncertainty.bootstrap(statistic, samples, rng=rng, level=v.level(level), method=method,
-                                  n_resamples=v.integer(n_resamples, "n_resamples", minimum=2),
-                                  batch=v.integer(batch, "batch"), names=names)
+    return uncertainty.bootstrap(
+        statistic,
+        samples,
+        rng=rng,
+        level=v.level(level),
+        method=method,
+        n_resamples=v.integer(n_resamples, "n_resamples", minimum=2),
+        batch=v.integer(batch, "batch"),
+        names=names,
+    )

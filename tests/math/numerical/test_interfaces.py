@@ -64,6 +64,7 @@ def test_input_and_output_snapshots_are_not_aliases():
     result = nm.ArrayResult(b)
     a[:] = 0
     b[:] = 0
+    assert isinstance(problem.a, np.ndarray)
     assert_allclose(problem.a, np.eye(2))
     assert_allclose(np.asarray(problem.b), [1, 2])
     assert_allclose(result.value, [1, 2])

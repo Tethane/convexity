@@ -1,11 +1,19 @@
 """Quadrature and differentiation contracts for scalar/vector functions."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..._provider_types import NativeTensor
+
 from dataclasses import dataclass
-from typing import Any, Callable, Literal
+from typing import Callable, Literal
 
 import numpy as np
 from numpy.typing import ArrayLike
 
+from ..._typing import FloatArray
 from .. import _validation as v
 from .base import ArrayResult, check_array_result
 
@@ -29,7 +37,7 @@ class QuadratureProblem:
         object.__setattr__(self, "a", a)
         object.__setattr__(self, "b", b)
 
-    def validate_result(self, result: Any) -> None:
+    def validate_result(self, result: object) -> None:
         check_array_result(result, (), real=True)
 
 
@@ -42,7 +50,11 @@ class DifferentiationProblem:
     axes are (output, input); Hessians and gradients require scalar output.
     """
 
-    function: Callable[..., Any]
+    function: (
+        Callable[[FloatArray], ArrayLike]
+        | Callable[[float], ArrayLike]
+        | Callable[[NativeTensor], NativeTensor]
+    )
     x: ArrayLike
     kind: DifferentiationKind = "gradient"
 
@@ -52,7 +64,7 @@ class DifferentiationProblem:
         x = v.array(self.x, "x", ndim=0 if self.kind == "derivative" else 1, real=True)
         object.__setattr__(self, "x", x)
 
-    def validate_result(self, result: Any) -> None:
+    def validate_result(self, result: object) -> None:
         shape = np.shape(self.x)
         if self.kind == "jacobian":
             if not isinstance(result, ArrayResult):
@@ -61,5 +73,6 @@ class DifferentiationProblem:
                 raise ValueError("Jacobian must have shape (outputs, inputs)")
             check_array_result(result, result.value.shape, real=True)
         else:
-            check_array_result(result, shape + shape if self.kind == "hessian" else shape,
-                               real=True)
+            check_array_result(
+                result, shape + shape if self.kind == "hessian" else shape, real=True
+            )

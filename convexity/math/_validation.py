@@ -5,11 +5,18 @@ Numerical mathematics has a separate array contract supporting complex values.
 """
 
 from numbers import Integral
+from collections.abc import Collection
+from typing import TypeVar
 
 import numpy as np
+from numpy.typing import ArrayLike
+from ._typing import FloatArray
+
+T = TypeVar('T')
 
 
-def array(value, name, *, ndim=None, finite=True, empty=False):
+def array(value: object, name: str, *, ndim: int | None = None,
+          finite: bool = True, empty: bool = False) -> FloatArray:
     raw = np.asarray(value)
     if raw.dtype.kind not in "iuf":
         raise ValueError(f"{name} must contain real numeric values")
@@ -22,31 +29,32 @@ def array(value, name, *, ndim=None, finite=True, empty=False):
     return result
 
 
-def integer(value, name, minimum=0):
+def integer(value: object, name: str, minimum: int = 0) -> int:
     if isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral) or value < minimum:
         raise ValueError(f"{name} must be an integer >= {minimum}")
     return int(value)
 
 
-def boolean(value, name):
+def boolean(value: object, name: str) -> bool:
     if not isinstance(value, (bool, np.bool_)):
         raise TypeError(f"{name} must be boolean")
     return bool(value)
 
 
-def choice(value, choices, name):
+def choice(value: T, choices: Collection[T], name: str) -> T:
     if value not in choices:
         raise ValueError(f"{name} must be one of {choices}")
     return value
 
 
-def generator(rng):
+def generator(rng: object) -> np.random.Generator:
     if not isinstance(rng, np.random.Generator):
         raise TypeError("rng must be an explicit numpy.random.Generator")
     return rng
 
 
-def scalar(value, name, *, minimum=None, strict=False):
+def scalar(value: object, name: str, *, minimum: float | None = None,
+           strict: bool = False) -> float:
     result = float(array(value, name, ndim=0))
     if minimum is not None and (result <= minimum if strict else result < minimum):
         raise ValueError(f"{name} must be {'>' if strict else '>='} {minimum}")

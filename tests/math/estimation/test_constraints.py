@@ -31,9 +31,9 @@ def test_constrained_mle_does_not_supply_unconstrained_covariance():
 def test_explicit_solver_capability_rejection():
     space = est.ParameterSpace([1.], lower=0)
     with pytest.raises(ValueError, match="BFGS"):
-        est.minimize_estimate(lambda t: t @ t, space, estimator=est.ScipyMinimizer("BFGS"))
+        est.minimize_estimate(lambda t: float(t @ t), space, estimator=est.ScipyMinimizer("BFGS"))  # pyright: ignore[reportArgumentType]  # Exercise runtime rejection.
     with pytest.raises(ValueError, match="constraints"):
-        est.minimize_estimate(lambda t: t @ t, [1.], constraints=[est.LinearConstraint([[1.]], lower=0)],
+        est.minimize_estimate(lambda t: float(t @ t), [1.], constraints=[est.LinearConstraint([[1.]], lower=0)],  # pyright: ignore[reportArgumentType]  # Exercise runtime rejection.
                                estimator=est.ScipyMinimizer("L-BFGS-B"))
 
 
@@ -55,6 +55,6 @@ def test_custom_estimator_and_result_contract():
         est.fit(problem, lambda p: est.Estimate([3.]))
     with pytest.raises(TypeError, match="Estimate"):
         est.fit(problem, lambda p: [3.])  # type: ignore[arg-type] -- test invalid custom output
-    constrained = est.ObjectiveProblem(lambda t: t @ t, est.ParameterSpace([0.], lower=0.))
+    constrained = est.ObjectiveProblem(lambda t: float(t @ t), est.ParameterSpace([0.], lower=0.))
     with pytest.raises(ValueError, match="violates"):
         est.fit(constrained, lambda p: est.Estimate([-1.]))

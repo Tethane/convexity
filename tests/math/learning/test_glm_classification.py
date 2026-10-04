@@ -15,7 +15,7 @@ def test_gaussian_glm_matches_ols_and_frequency_replication():
     weights = rng.integers(0, 5, 100)
     result = learn.GeneralizedLinearModel().fit(x, y, frequency_weights=weights)
     ols = learn.linear_regression(np.repeat(x, weights, axis=0), np.repeat(y, weights))
-    assert_allclose(result.predict(x), ols.predict(x))
+    assert_allclose(result.predict_mean(x), ols.predict_mean(x))
 
 
 @pytest.mark.parametrize("family", ["poisson", "gamma"])
@@ -26,15 +26,18 @@ def test_log_link_generated_recovery_and_required_offsets(family):
     mean = np.exp(.8 + x @ [.6, -.5] + offset)
     y = rng.poisson(mean) if family == "poisson" else rng.gamma(4, mean / 4)
     result = learn.GeneralizedLinearModel(family).fit(x, y, offset=offset)
+    assert result.coefficients is not None
     assert_allclose(result.coefficients, [.6, -.5], atol=.08)
+    assert result.intercept is not None
     assert_allclose(result.intercept, .8, atol=.03)
+    assert result.coefficients is not None and result.intercept is not None
     assert_allclose(result.predict_mean(x, offset=offset),
                     np.exp(x @ result.coefficients + result.intercept + offset))
     assert result.predict_mean(x[:6].reshape(2, 3, 2), offset=offset[:6].reshape(2, 3)).shape == (2, 3)
     with pytest.raises(ValueError, match="explicit prediction offset"):
-        result.predict(x)
+        result.predict_mean(x)
     with pytest.raises(ValueError, match="leading axes"):
-        result.predict(x, offset=0.)
+        result.predict_mean(x, offset=0.)
 
 
 def test_grouped_binomial_matches_expanded_bernoulli():
@@ -47,11 +50,14 @@ def test_grouped_binomial_matches_expanded_bernoulli():
     expanded_x = np.repeat(x, trials, axis=0)
     expanded_y = np.concatenate([np.r_[np.ones(k), np.zeros(n-k)] for k, n in zip(successes, trials)])
     expanded = model.fit(expanded_x, expanded_y)
+    assert expanded.coefficients is not None and grouped.coefficients is not None
     assert_allclose(grouped.coefficients, expanded.coefficients, atol=1e-8)
+    assert grouped.coefficients is not None and grouped.intercept is not None
     probability = expit(x @ grouped.coefficients + grouped.intercept)
-    assert_allclose(grouped.predict(x), probability)
+    assert_allclose(grouped.predict_mean(x), probability)
     assert_allclose(grouped.predict_proba(x), np.column_stack([1-probability, probability]))
-    assert_allclose(grouped.predict_class(x), probability > .5)
+    np.testing.assert_array_equal(grouped.predict_class(x), probability > .5)
+    assert grouped.coefficients is not None
     assert_allclose(grouped.coefficients, [.8, -.5], atol=.12)
 
 
@@ -66,7 +72,7 @@ def test_binomial_offset_and_frequency_match_statsmodels():
     result = learn.GeneralizedLinearModel("binomial").fit(x, y, offset=offset, frequency_weights=w)
     design = np.column_stack([np.ones(len(x)), x])
     reference = GLM(y, design, family=Binomial(), offset=offset, freq_weights=w).fit(tol=1e-8)
-    assert_allclose(result.predict(x[:10], offset=offset[:10]), reference.predict(design[:10], offset=offset[:10]))
+    assert_allclose(result.predict_mean(x[:10], offset=offset[:10]), reference.predict(design[:10], offset=offset[:10]))
 
 
 @pytest.mark.parametrize("classes", [np.array([-3, 7]), np.array(["bear", "bull", "flat"])])
@@ -78,10 +84,13 @@ def test_logistic_class_order_and_links(classes):
     labels = np.array([classes[rng.choice(len(classes), p=p)] for p in probabilities])
     fitted = learn.logistic_regression(x, labels, C=2.)
     assert_allclose(fitted.predict_proba(x).sum(axis=-1), 1)
+    assert fitted.classes is not None
     assert np.array_equal(fitted.classes, np.sort(classes))
+    assert fitted.coefficients is not None and fitted.intercept is not None
     logits = x @ fitted.coefficients + fitted.intercept
     expected = np.column_stack([1-expit(logits[:, 0]), expit(logits[:, 0])]) if len(classes) == 2 else softmax(logits, axis=-1)
     assert_allclose(fitted.predict_proba(x), expected)
+    assert fitted.classes is not None
     assert np.array_equal(fitted.predict(x), fitted.classes[expected.argmax(axis=1)])
     assert fitted.predict_proba(np.empty((0, 3))).shape == (0, len(classes))
     with pytest.raises(NotImplementedError):
@@ -98,6 +107,7 @@ def test_logistic_weight_replication_and_zero_class_removal():
     a = tool.fit(x, y, sample_weight=w)
     b = tool.fit(np.repeat(x, w, axis=0), np.repeat(y, w))
     assert_allclose(a.predict_proba(x), b.predict_proba(x), atol=1e-9)
+    assert a.classes is not None
     assert np.array_equal(a.classes, [0, 1])
 
 

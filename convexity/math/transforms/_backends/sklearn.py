@@ -19,7 +19,7 @@ def standardize(x, *, center, scale, ddof):
         active = variance > (len(x) * np.finfo(float).eps * variance
                              + (len(x) * mean * np.finfo(float).eps)**2)
         scales[active] *= np.sqrt(len(x) / (len(x) - ddof))
-    return FittedScaling(location, scales, diagnostics=Diagnostics(backend="sklearn.StandardScaler"))
+    return FittedScaling(np.asarray(location), scales, diagnostics=Diagnostics(backend="sklearn.StandardScaler"))
 
 
 def robust_scale(x, *, center, scale, quantile_range, unit_variance):
@@ -27,8 +27,8 @@ def robust_scale(x, *, center, scale, quantile_range, unit_variance):
 
     model = RobustScaler(with_centering=center, with_scaling=scale,
                          quantile_range=quantile_range, unit_variance=unit_variance).fit(x)
-    return FittedScaling(model.center_ if center else np.zeros(x.shape[1]),
-                         model.scale_ if scale else np.ones(x.shape[1]),
+    return FittedScaling(np.asarray(model.center_) if center else np.zeros(x.shape[1]),
+                         np.asarray(model.scale_) if scale else np.ones(x.shape[1]),
                          diagnostics=Diagnostics(backend="sklearn.RobustScaler"))
 
 

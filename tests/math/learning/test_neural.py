@@ -27,12 +27,13 @@ def test_neural_linear_recovery_weights_and_rng_isolation(torch, shape):
     model = spec.fit(x, y, sample_weight=np.arange(1, 121))
     assert torch.equal(torch.random.get_rng_state(), before)
     assert model.diagnostics.converged
+    assert model.loss_history is not None
     assert model.loss_history[-1] < 1e-10
-    assert_allclose(model.predict(x), y, atol=1e-5)
-    assert model.predict(x[:6].reshape(2, 3, 2)).shape == (2, 3) + shape
-    assert model.predict(np.empty((0, 2))).shape == (0,) + shape
+    assert_allclose(model.predict_mean(x), y, atol=1e-5)
+    assert model.predict_mean(x[:6].reshape(2, 3, 2)).shape == (2, 3) + shape
+    assert model.predict_mean(np.empty((0, 2))).shape == (0,) + shape
     repeat = spec.fit(x, y, sample_weight=np.arange(1, 121))
-    assert_allclose(model.predict(x), repeat.predict(x), atol=0, rtol=0)
+    assert_allclose(model.predict_mean(x), repeat.predict_mean(x), atol=0, rtol=0)
 
 
 def test_neural_nonlinear_mean_recovery(torch):
@@ -40,7 +41,7 @@ def test_neural_nonlinear_mean_recovery(torch):
     y = np.sin(x[:, 0])
     model = learn.NeuralRegressor(hidden_layers=(12,), seed=7, maxiter=2500, tolerance=3e-4).fit(x, y)
     test = np.linspace(-1.95, 1.95, 53)[:, None]
-    assert np.mean((model.predict(test) - np.sin(test[:, 0])) ** 2) < .001
+    assert np.mean((model.predict_mean(test) - np.sin(test[:, 0])) ** 2) < .001
 
 
 def test_neural_class_probabilities_match_logistic_function(torch):
@@ -51,12 +52,15 @@ def test_neural_class_probabilities_match_logistic_function(torch):
     p = expit(.3 + x @ [1., -.5])
     y = np.where(rng.random(len(x)) < p, "yes", "no")
     model = learn.NeuralClassifier(hidden_layers=(), learning_rate=.05, maxiter=1800, tolerance=1e-6).fit(x, y)
+    assert model.classes is not None
     assert np.array_equal(model.classes, ["no", "yes"])
     probabilities = model.predict_proba(x)
     assert_allclose(probabilities.sum(axis=-1), 1)
     assert np.mean((probabilities[:, 1] - p) ** 2) < .01
+    assert model.classes is not None
     assert np.array_equal(model.predict(x), model.classes[probabilities.argmax(axis=-1)])
     assert not probabilities.flags.writeable
+    assert model.loss_history is not None
     assert not model.loss_history.flags.writeable
 
 
@@ -69,10 +73,11 @@ def test_neural_iteration_limit_and_retained_model(torch):
     result = error.value.result
     assert not result.diagnostics.converged
     assert result.diagnostics.iterations == 1
+    assert result.loss_history is not None
     assert len(result.loss_history) == 2  # initial and final losses
-    assert result.predict(x).shape == (10,)
+    assert result.predict_mean(x).shape == (10,)
     inspected = learn.NeuralRegressor(hidden_layers=(), maxiter=1, tolerance=1e-15, check_convergence=False).fit(x, y)
-    assert_allclose(result.predict(x), inspected.predict(x))
+    assert_allclose(result.predict_mean(x), inspected.predict_mean(x))
 
 
 def test_user_neural_function_snapshot_and_eval_mode(torch):
@@ -84,12 +89,12 @@ def test_user_neural_function_snapshot_and_eval_mode(torch):
     module.train()
     model = learn.neural_function(module, 2)
     x = np.array([[1., 2.], [3., 4.]])
-    assert_allclose(model.predict(x), [3., 5.])
+    assert_allclose(model.predict_mean(x), [3., 5.])
     assert module.training
     assert layer.weight.requires_grad
     with torch.no_grad():
         layer.weight.zero_()
-    assert_allclose(model.predict(x), [3., 5.])
+    assert_allclose(model.predict_mean(x), [3., 5.])
 
 
 def test_neural_function_logits_class_order_and_wrong_output(torch):

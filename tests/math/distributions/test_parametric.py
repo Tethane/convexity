@@ -54,7 +54,7 @@ def test_scalar_boundaries_tail_accuracy_and_divergent_moments():
     lambda: d.normal(loc=cast(Any, "1")), lambda: d.normal(scale=True),
     lambda: d.student_t(0), lambda: d.student_t(np.inf),
     lambda: d.lognormal(log_loc=1000), lambda: d.lognormal(log_scale=-1),
-    lambda: d.bernoulli(1.1), lambda: d.binomial(2.5, .3),
+    lambda: d.bernoulli(1.1), lambda: d.binomial(2.5, .3),  # pyright: ignore[reportArgumentType]  # Exercise runtime rejection.
     lambda: d.binomial(True, .3), lambda: d.poisson(-1),
     lambda: d.multivariate_normal([0, 0], [[1, 2], [0, 1]]),
     lambda: d.multivariate_normal([0, 0], [[1, 1], [1, 1]]),
@@ -76,7 +76,7 @@ def test_invalid_queries_and_random_state():
     with pytest.raises(ValueError):
         law.density(np.nan)
     with pytest.raises(TypeError):
-        law.sample(2, rng=1)
+        law.sample(2, rng=1)  # pyright: ignore[reportArgumentType]  # Exercise runtime rejection.
     for size in [-1, True, [2], (1, -1), (1.5,)]:
         with pytest.raises(ValueError):
             law.sample(size, rng=np.random.default_rng())

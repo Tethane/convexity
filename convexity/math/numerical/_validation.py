@@ -35,7 +35,8 @@ def square(value: ArrayLike, name: str) -> NDArray[Any]:
 
 
 def hermitian(value: NDArray[Any], name: str) -> None:
-    if not np.allclose(value, value.conj().T, rtol=1e-12, atol=1e-14):
+    scale = float(np.max(np.abs(value)))
+    if scale and not np.allclose(value / scale, value.conj().T / scale, rtol=1e-12, atol=1e-14):
         raise ValueError(f"{name} must be Hermitian (symmetric for real inputs)")
 
 

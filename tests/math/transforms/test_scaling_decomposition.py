@@ -93,6 +93,7 @@ def test_pipeline_training_only_composition_and_lossy_reconstruction():
     x = np.random.default_rng(8).normal(size=(100, 4)) * [1, 2, 3, 4] + 3
     pipeline = tx.Pipeline((tx.Standardize(), tx.PCA(2))).fit(x[:70])
     scale, pca = pipeline.steps
+    assert isinstance(scale, tx.FittedScaling)
     assert_allclose(scale.location, x[:70].mean(axis=0))
     assert_allclose(pipeline.transform(x[70:]), pca.transform(scale.transform(x[70:])))
     assert_allclose(pipeline.reconstruct(pipeline.transform(x)) + pipeline.residuals(x), x)

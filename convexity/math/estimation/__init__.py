@@ -32,3 +32,6 @@ __all__ = ["builtins", "interfaces", "ElasticNetPenalty", "IndependentPrior", "L
            "ConvergenceError", "Diagnostics", "Estimate", "EstimationProblem", "Estimator", "Interval",
            "LeastSquaresProblem", "Likelihood", "LinearConstraint", "LinearProblem", "NonlinearConstraint",
            "ObjectiveProblem", "ParameterSpace", "fit"]
+
+from .builtins.objectives import LogDensityLaw
+__all__ += ["LogDensityLaw"]

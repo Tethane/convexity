@@ -1,8 +1,13 @@
 """Caller-supplied scalar bijections; no symbolic algebra or inferred inverses."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Callable
 
+from numpy.typing import ArrayLike
+
+from ..._typing import FloatArray
 from .. import _validation as v
 
 
@@ -15,13 +20,13 @@ class MonotoneTransform:
     Callers own monotonicity, inverse correctness, and the nonzero Jacobian.
     """
 
-    forward: Callable
-    inverse: Callable
-    log_abs_derivative: Callable
+    forward: Callable[[FloatArray], ArrayLike]
+    inverse: Callable[[FloatArray], ArrayLike]
+    log_abs_derivative: Callable[[FloatArray], ArrayLike]
     increasing: bool = True
     image: tuple[float, float] = (-float("inf"), float("inf"))
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         for name in ("forward", "inverse", "log_abs_derivative"):
             if not callable(getattr(self, name)):
                 raise TypeError(f"{name} must be callable")

@@ -20,7 +20,7 @@ def test_joint_sampling_reproduces_covariance_and_uses_explicit_rng():
     assert law.sample(0, rng=np.random.default_rng(0)).shape == (0, 2)
     assert law.sample((0, 3), rng=np.random.default_rng(0)).shape == (0, 3, 2)
     with pytest.raises(TypeError, match="Generator"):
-        law.sample(2, rng=1)
+        law.sample(2, rng=1)  # pyright: ignore[reportArgumentType]  # Exercise runtime rejection.
 
 
 def test_density_intervals_and_marginal_order():
@@ -28,7 +28,7 @@ def test_density_intervals_and_marginal_order():
 
     law = gp.GaussianPrediction([1, 2], [[4, 1], [1, 9]])
     x = np.array([[[0., 1.], [2., 3.]], [[1., 0.], [3., 4.]]])
-    assert_allclose(law.log_density(x), multivariate_normal.logpdf(x, mean=law.mean, cov=law.covariance))
+    assert_allclose(law.log_density(x), multivariate_normal(mean=law.mean, cov=law.covariance).logpdf(x))  # pyright: ignore[reportArgumentType]  # SciPy infers cov=int, but supports matrices.
     assert_allclose(law.interval(.9), law.mean[:, None] + law.std[:, None]*norm.ppf([.05, .95]))
     reordered = law.marginal([1, 0])
     assert_allclose(reordered.mean, [2, 1])

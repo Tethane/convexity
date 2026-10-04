@@ -1,11 +1,27 @@
 """Rank-aware subspaces, principal angles and basis alignment."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from numpy.typing import ArrayLike
+
+from ..._typing import FloatArray
+
+if TYPE_CHECKING:
+    from .. import Subspace
+
+
+if TYPE_CHECKING:
+    from .. import Alignment
+
+
 from .. import _validation as v
 from .._backends import scipy
 from ..interfaces import Subspace
 
 
-def subspace(spanning_columns, *, rcond=None):
+def subspace(spanning_columns: ArrayLike, *, rcond: float | None = None) -> Subspace:
     """SVD range basis. Retain singular values > rcond * largest singular value."""
     a = v.array(spanning_columns, "spanning_columns", ndim=2)
     if rcond is not None:
@@ -22,13 +38,13 @@ def _compatible(source, target):
         raise ValueError("subspaces must have the same ambient dimension")
 
 
-def principal_angles(source, target):
+def principal_angles(source: Subspace, target: Subspace) -> FloatArray:
     """min(rank(source),rank(target)) angles, descending, in radians."""
     _compatible(source, target)
     return v.array(scipy.principal_angles(source, target), "angles", empty=True)
 
 
-def align_subspaces(source, target):
+def align_subspaces(source: Subspace, target: Subspace) -> Alignment:
     """Solve min_R ||Q_source R - Q_target||_F with R.T R = I.
 
     Reflections are allowed. Aligning the basis rotates scores with the same R

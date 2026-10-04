@@ -1,9 +1,21 @@
 # Mathematical framework roadmap
 
-The current repository implements families **1–7** under `convexity.math`.
-**Family 8, time-series forecasting, is next.** Later families are planned
-capabilities, not claims of existing implementations. Each family should meet
-the acceptance criteria below before work moves to the next one.
+The current repository implements families **1–36** under `convexity.math`.
+Families **16–26** have a [bounded financial catalog, contracts and verification](financial_mathematics.md),
+with QuantLib as a principal dependency. The [financial QA review](financial_qa.md)
+records architecture corrections, adversarial regressions and executed notebooks.
+The [second QA and public API readiness pass](api_readiness.md) checks the
+composition contracts needed by the remaining families.
+Families **27–36** have a [bounded risk and decision catalog](decision_mathematics.md),
+including array-based optimization, finite and belief-state control, execution,
+wealth transformations, diagnostics and optional reinforcement learning.
+Each family has executable examples, mathematical tests and executed notebooks.
+The catalogs, rather than every possible model in these broad subjects, define completion.
+
+The [2026-09-30 mathematical audit](mathematical_audit.md) records the evidence
+and limitations for families 1–12, including defects missed by the earlier
+suite. Implementation completion does not establish predictive accuracy or
+calibrated uncertainty for every model or dataset.
 
 This repository contains generic mathematical tools, their tests and generated-data
 examples. Trading runtimes, broker connectivity and market-data acquisition
@@ -30,18 +42,18 @@ SciPy already supplies the numerical foundation; scikit-learn supplies substanti
 
 | # | Mathematical family | Objects and methods to support | Implementation approach |
 |---|---|---|---|
-| **8** | **Time-series forecasting** | Forecaster, fitted forecaster, forecast horizon, exogenous regressors and forecast results. Naive/seasonal baselines; AR/ARMA/ARIMA/SARIMA/SARIMAX; exponential smoothing/ETS; VAR/VARMAX/VECM; structural and dynamic-factor models; regression-based, ensemble and neural forecasters. | statsmodels for classical models; sktime for broader forecasting interoperability; scikit-learn/PyTorch adapters for additional models. |
-| **9** | **Volatility forecasting** | Conditional variance and volatility forecasts; ARCH, GARCH, GJR-GARCH, EGARCH, realized-volatility/HAR models; distributional innovations and multi-step forecasts. Distinct from implied-volatility surfaces. | Integrate `arch`; use statsmodels for suitable regression components. |
-| **10** | **State-space models, filtering and smoothing** | Transition and observation models; latent states; Kalman filter/smoother; extended/unscented variants; particle filtering; missing observations; irregular elapsed times where supported. | statsmodels for linear state-space models; a sequential Monte Carlo library for particles; additional adapters for nonlinear filters. |
-| **11** | **Bayesian inference and parameter uncertainty** | Priors, likelihoods, posterior distributions, conjugate updates, posterior prediction, MCMC, variational inference and joint state/parameter inference. | PyMC for Bayesian inference; sequential Monte Carlo where inference must update through time. |
-| **12** | **Regimes, catalysts and event models** | Markov chains, hidden regimes, switching dynamics, scheduled event-surprise distributions, jump-size distributions and event intensities. | statsmodels regime-switching models; SciPy distributions; custom composition of event and transition laws. |
-| **13** | **Stochastic processes and differential equations** | Transition kernels, drift/diffusion functions, generators and exact/discretized transitions. Brownian motion, arithmetic/geometric Brownian motion, scalar/vector OU, CIR, Heston and jump diffusions. | QuantLib where available; SciPy for exact linear transitions; an SDE library for custom dynamics. |
-| **14** | **History-dependent and rough processes** | Fractional/Volterra Gaussian drivers, memory kernels, forward-variance states, rough Bergomi, and finite-factor approximations with approximation-error checks. Covered in the broader options volume. | Specialized implementations or verified research-code adapters; generic SDE solvers alone do not supply these models. |
-| **15** | **Simulation and joint path distributions** | Correlated innovations, weighted scenarios, joint paths across assets/time, exact sampling, Euler/Milstein and model-specific schemes, Monte Carlo/quasi-Monte Carlo, variance reduction and simulated observations. | NumPy/SciPy, QuantLib and suitable SDE backends. |
+| **8** | **Time-series forecasting** | Forecasting contracts, horizons, covariates and probabilistic results; baselines; classical and multivariate models; regression, dedicated neural architectures and generative forecasting; real foundation checkpoints and fine-tuning; elapsed-time and shared panel forecasting; ensembles, temporal stacking, backtesting, calibration, diagnostics, selection and reproducible artifacts. | Implemented with statsmodels, scikit-learn, optional PyTorch, sktime, NeuralForecast and real pretrained providers. See the [forecasting catalog and contracts](time_series_forecasting.md), and the [expanded completion record](forecasting_completion.md). |
+| **9** | **Volatility forecasting** | Conditional variance and volatility forecasts; constant/EWMA baselines, ARCH, GARCH, GJR-GARCH, EGARCH, realized variance and level/log HAR; four standardized innovation laws, multi-step analytic/simulation/bootstrap forecasts, variance backtests and diagnostics. Distinct from implied-volatility surfaces. | Implemented through the existing forecasting and distribution contracts with `arch` and statsmodels. See the [completed volatility catalog and contracts](volatility_forecasting.md). |
+| **10** | **State-space models, filtering and smoothing** | Transition/observation kernels and latent-state laws; Kalman, extended and unscented filters and smoothers; bootstrap particle filtering and backward/ancestral smoothing; missing observations; exact elapsed linear dynamics and explicit irregular-time callbacks. | Implemented through existing TimeSeries and Distribution contracts with statsmodels, FilterPy, particles and SciPy. See the [completed state-space catalog and contracts](state_space.md). |
+| **11** | **Bayesian inference and parameter uncertainty** | Priors, likelihoods, posterior distributions, conjugate updates, posterior prediction, MCMC, variational inference and joint state/parameter inference. | Implemented with exact NumPy/SciPy updates, PyMC MCMC/ADVI and joint static-parameter/state bootstrap SMC through particles. See the [completed Bayesian catalog and contracts](bayesian_inference.md). |
+| **12** | **Regimes, catalysts and event models** | Markov chains, hidden regimes, switching dynamics, scheduled event-surprise distributions, jump-size distributions and event intensities. | Implemented with statsmodels switching regression/AR, exact finite-state inference, existing distributions and composed scheduled/Poisson/Hawkes event laws. See the [completed regimes and events catalog](regimes_events.md). |
+| **13** | **Stochastic processes and differential equations** | Transition kernels, drift/diffusion functions, generators and exact/discretized transitions. Brownian motion, arithmetic/geometric Brownian motion, scalar/vector OU, CIR, Heston and jump diffusions. | Implemented with exact NumPy/SciPy laws, existing linear state-space transitions, QuantLib Heston QE, and sdeint custom Itô integration. See the [completed stochastic-process catalog and contracts](stochastic_processes.md). |
+| **14** | **History-dependent and rough processes** | Fractional/Volterra Gaussian drivers, memory kernels, forward-variance states, rough Bergomi, and finite-factor approximations with approximation-error checks. Covered in the broader options volume. | Implemented with specialized NumPy/SciPy Gaussian and kernel calculations, shared Brownian/OU factors, explicit history conditioning, and integrated kernel-error checks. See the [completed rough-process catalog and contracts](rough_processes.md). |
+| **15** | **Simulation and joint path distributions** | Correlated innovations, weighted scenarios, joint paths across assets/time, exact sampling, Euler/Milstein and model-specific schemes, Monte Carlo/quasi-Monte Carlo, variance reduction and simulated observations. | Implemented with NumPy/SciPy joint laws and drivers, scalar Milstein, existing process kernels including QuantLib/sdeint, and explicit sampling-design error estimates. See the [completed simulation catalog and contracts](simulation.md). |
 
 statsmodels already covers a substantial classical forecasting and state-space catalog. `arch` supplies volatility models and statistical tools. PyMC and `particles` address different forms of inference; they are not interchangeable. [statsmodels](https://www.statsmodels.org/stable/tsa.html), [sktime forecasting](https://www.sktime.net/docs/api-reference/forecasting/), [arch](https://bashtage.github.io/arch/), [PyMC](https://www.pymc.io/projects/docs/en/stable/learn/core_notebooks/pymc_overview.html), [particles](https://particles-sequential-monte-carlo-in-python.readthedocs.io/en/latest/). Diffrax is a candidate backend for custom ODE/SDE dynamics. [Diffrax](https://docs.kidger.site/diffrax/).
 
-**Your forecasting example should be treated as a complete, bounded project.** Its deliverable should include:
+**The forecasting family is a complete, bounded project.** Its [catalog](time_series_forecasting.md) supplies:
 
 - A public interface for user-written forecasters.
 - A declared catalog of working model adapters.
@@ -107,7 +119,7 @@ We should give each family a finite acceptance list before implementing it. “A
 
 For each family, completion means:
 
-1. **Usable mathematical interface:** documented input shapes, units, assumptions and outputs.
+1. **Usable mathematical interface:** documented input shapes, units, assumptions and outputs. Ordinary supported workflows must use public Convexity functions with arrays, dates, numbers and callbacks; provider imports, handles, settings and construction syntax belong only to optional advanced extensions.
 2. **Working implementations:** the declared models actually run, including the selected library integrations.
 3. **User extensibility:** a user can supply a compatible model without changing Convexity internals.
 4. **Mathematical verification:** analytic identities, known solutions, generated-data recovery, numerical convergence and edge cases as appropriate.

@@ -29,6 +29,7 @@ def test_root_failures_are_not_silently_successful():
     with pytest.raises(nm.ConvergenceError) as caught:
         nm.root_scalar(lambda x: x*x - 2, bracket=(0, 2),
                        tool=nm.ScalarRootSolver(method="bisect", maxiter=1))
+    assert isinstance(caught.value.result, nm.ArrayResult)
     assert not caught.value.result.diagnostics.converged
     result = nm.root(lambda x: [x[0]**2+1], [0.], check_convergence=False)
     assert not result.diagnostics.converged

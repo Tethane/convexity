@@ -1,41 +1,68 @@
 """Additional dense linear algebra contracts."""
+
+from __future__ import annotations
+
 from dataclasses import dataclass
 from types import MappingProxyType
-from typing import Any, Mapping
+from typing import Mapping
 
 import numpy as np
 from numpy.typing import ArrayLike
 
+from ..._typing import FloatArray, IntArray, NumericArray
 from .. import _validation as v
 from .base import ArrayResult, Diagnostics, check_array_result
 
 
 @dataclass(frozen=True)
 class LeastSquaresProblem:
-    a: ArrayLike
-    b: ArrayLike
+    """Minimize the Euclidean residual norm of A x - b; b may hold one or multiple right-hand sides."""
 
-    def __post_init__(self):
+    a: NumericArray
+    b: NumericArray
+
+    def __post_init__(self) -> None:
         a, b = v.array(self.a, "a", ndim=2), v.array(self.b, "b")
         if b.ndim not in (1, 2) or b.shape[0] != a.shape[0]:
             raise ValueError("b must have shape (m,) or (m,k), matching a: (m,n)")
         object.__setattr__(self, "a", a)
         object.__setattr__(self, "b", b)
 
-    def validate_result(self, result):
+    def validate_result(self, result: object) -> None:
         if not isinstance(result, LeastSquaresResult):
             raise TypeError("tool must return LeastSquaresResult")
         expected = (np.shape(self.a)[1],) + np.shape(self.b)[1:]
-        if result.value.shape != expected or result.singular_values.shape != (min(np.shape(self.a)),) or not 0 <= result.rank <= min(np.shape(self.a)):
+        if (
+            result.value.shape != expected
+            or result.singular_values.shape != (min(np.shape(self.a)),)
+            or not 0 <= result.rank <= min(np.shape(self.a))
+        ):
             raise ValueError("invalid least-squares result shape or rank")
+
+    def __init__(
+        self,
+        a: ArrayLike,
+        b: ArrayLike,
+    ) -> None:
+        object.__setattr__(self, "a", a)
+        object.__setattr__(self, "b", b)
+        self.__post_init__()
 
 
 @dataclass(frozen=True, init=False)
 class LeastSquaresResult(ArrayResult):
-    rank: int
-    singular_values: Any
+    """Least-squares solution with numerical rank, singular values and termination diagnostics."""
 
-    def __init__(self, value, rank, singular_values, diagnostics=None):
+    rank: int
+    singular_values: FloatArray
+
+    def __init__(
+        self,
+        value: ArrayLike,
+        rank: int,
+        singular_values: ArrayLike,
+        diagnostics: Diagnostics | None = None,
+    ) -> None:
         super().__init__(value, diagnostics)
         if not isinstance(rank, (int, np.integer)) or rank < 0:
             raise ValueError("rank must be a nonnegative integer")
@@ -48,11 +75,13 @@ class LeastSquaresResult(ArrayResult):
 
 @dataclass(frozen=True)
 class GeneralizedEigenproblem:
-    a: ArrayLike
-    b: ArrayLike
+    """Square matrices A and B defining A v = lambda B v; Hermitian mode also restricts B."""
+
+    a: NumericArray
+    b: NumericArray
     hermitian: bool = False
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         a, b = v.square(self.a, "a"), v.square(self.b, "b")
         v.boolean(self.hermitian, "hermitian")
         if a.shape != b.shape:
@@ -63,41 +92,74 @@ class GeneralizedEigenproblem:
         object.__setattr__(self, "a", a)
         object.__setattr__(self, "b", b)
 
-    def validate_result(self, result):
+    def validate_result(self, result: object) -> None:
         if not isinstance(result, GeneralizedEigenResult):
             raise TypeError("tool must return GeneralizedEigenResult")
         n = np.shape(self.a)[0]
-        if result.alpha.shape != (n,) or result.beta.shape != (n,) or result.vectors.shape != (n, n):
+        if (
+            result.alpha.shape != (n,)
+            or result.beta.shape != (n,)
+            or result.vectors.shape != (n, n)
+        ):
             raise ValueError("invalid generalized eigenpair shapes")
+
+    def __init__(
+        self,
+        a: ArrayLike,
+        b: ArrayLike,
+        hermitian: bool = False,
+    ) -> None:
+        object.__setattr__(self, "a", a)
+        object.__setattr__(self, "b", b)
+        object.__setattr__(self, "hermitian", hermitian)
+        self.__post_init__()
 
 
 @dataclass(frozen=True)
 class GeneralizedEigenResult:
     """beta * (A @ vectors) = alpha * (B @ vectors), including infinite eigenvalues."""
-    alpha: Any
-    beta: Any
-    vectors: Any
 
-    def __post_init__(self):
+    alpha: NumericArray
+    beta: NumericArray
+    vectors: NumericArray
+
+    def __post_init__(self) -> None:
         for name, ndim in (("alpha", 1), ("beta", 1), ("vectors", 2)):
-            object.__setattr__(self, name, v.array(getattr(self, name), name, ndim=ndim))
+            object.__setattr__(
+                self, name, v.array(getattr(self, name), name, ndim=ndim)
+            )
 
     @property
     def values(self):
         # alpha=beta=0 is an indeterminate eigenvalue, not a finite eigenvalue.
-        result = np.full(self.alpha.shape, np.inf, dtype=np.result_type(self.alpha, self.beta))
+        result = np.full(
+            self.alpha.shape, np.inf, dtype=np.result_type(self.alpha, self.beta)
+        )
         np.divide(self.alpha, self.beta, out=result, where=self.beta != 0)
         result[(self.alpha == 0) & (self.beta == 0)] = np.nan
         return result
 
+    def __init__(
+        self,
+        alpha: ArrayLike,
+        beta: ArrayLike,
+        vectors: ArrayLike,
+    ) -> None:
+        object.__setattr__(self, "alpha", alpha)
+        object.__setattr__(self, "beta", beta)
+        object.__setattr__(self, "vectors", vectors)
+        self.__post_init__()
+
 
 @dataclass(frozen=True)
 class FactorizationProblem:
-    a: ArrayLike
+    """Matrix and factorization kind, with pivoting requested explicitly where supported."""
+
+    a: NumericArray
     kind: str = "qr"
     pivoting: bool = False
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         v.choice(self.kind, ("qr", "lu", "cholesky", "schur"), "kind")
         v.boolean(self.pivoting, "pivoting")
         if self.pivoting and self.kind != "qr":
@@ -109,7 +171,7 @@ class FactorizationProblem:
             v.hermitian(a, "a")
         object.__setattr__(self, "a", a)
 
-    def validate_result(self, result):
+    def validate_result(self, result: object) -> None:
         if not isinstance(result, FactorizationResult):
             raise TypeError("tool must return FactorizationResult")
         m, n = np.shape(self.a)
@@ -117,22 +179,48 @@ class FactorizationProblem:
         shapes = {
             "qr": {"q": (m, k), "r": (k, n)},
             "lu": {"p": (m, m), "l": (m, k), "u": (k, n)},
-            "cholesky": {"l": (n, n)}, "schur": {"t": (n, n), "z": (n, n)},
+            "cholesky": {"l": (n, n)},
+            "schur": {"t": (n, n), "z": (n, n)},
         }[self.kind]
-        if set(result.factors) != set(shapes) or any(result.factors[key].shape != shape for key, shape in shapes.items()):
-            raise ValueError("factor names/shapes do not match the requested decomposition")
+        if set(result.factors) != set(shapes) or any(
+            result.factors[key].shape != shape for key, shape in shapes.items()
+        ):
+            raise ValueError(
+                "factor names/shapes do not match the requested decomposition"
+            )
         if self.kind == "qr":
-            if result.permutation is None or not np.array_equal(np.sort(result.permutation), np.arange(n)):
+            if result.permutation is None or not np.array_equal(
+                np.sort(result.permutation), np.arange(n)
+            ):
                 raise ValueError("QR must return a column permutation")
+
+    def __init__(
+        self,
+        a: ArrayLike,
+        kind: str = "qr",
+        pivoting: bool = False,
+    ) -> None:
+        object.__setattr__(self, "a", a)
+        object.__setattr__(self, "kind", kind)
+        object.__setattr__(self, "pivoting", pivoting)
+        self.__post_init__()
 
 
 @dataclass(frozen=True)
 class FactorizationResult:
-    factors: Mapping[str, Any]
-    permutation: Any = None
+    """Named matrix factors plus an optional integer permutation; conventions follow the requested factorization."""
 
-    def __post_init__(self):
-        object.__setattr__(self, "factors", MappingProxyType({k: v.array(a, k, ndim=2) for k, a in self.factors.items()}))
+    factors: Mapping[str, NumericArray]
+    permutation: IntArray | None = None
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "factors",
+            MappingProxyType(
+                {k: v.array(a, k, ndim=2) for k, a in self.factors.items()}
+            ),
+        )
         if self.permutation is not None:
             p = np.asarray(self.permutation)
             if p.ndim != 1 or p.dtype.kind not in "iu":
@@ -144,13 +232,19 @@ class FactorizationResult:
 
 @dataclass(frozen=True)
 class MatrixPropertyProblem:
-    a: ArrayLike
+    """Matrix-property request with optional norm order or numerical rank tolerance."""
+
+    a: NumericArray
     operation: str
-    order: Any = None
+    order: float | str | None = None
     tolerance: float | None = None
 
-    def __post_init__(self):
-        v.choice(self.operation, ("rank", "condition", "norm", "pinv", "det", "slogdet", "logm", "sqrtm"), "operation")
+    def __post_init__(self) -> None:
+        v.choice(
+            self.operation,
+            ("rank", "condition", "norm", "pinv", "det", "slogdet", "logm", "sqrtm"),
+            "operation",
+        )
         a = v.array(self.a, "a", ndim=None if self.operation == "norm" else 2)
         if a.ndim not in (1, 2):
             raise ValueError("norm accepts vectors or matrices")
@@ -162,7 +256,7 @@ class MatrixPropertyProblem:
             raise ValueError("unsupported matrix norm order")
         object.__setattr__(self, "a", a)
 
-    def validate_result(self, result):
+    def validate_result(self, result: object) -> None:
         if self.operation == "slogdet":
             if not isinstance(result, LogDetResult):
                 raise TypeError("tool must return LogDetResult")
@@ -177,13 +271,27 @@ class MatrixPropertyProblem:
                 shape = ()
             check_array_result(result, shape)
 
+    def __init__(
+        self,
+        a: ArrayLike,
+        operation: str,
+        order: float | str | None = None,
+        tolerance: float | None = None,
+    ) -> None:
+        object.__setattr__(self, "a", a)
+        object.__setattr__(self, "operation", operation)
+        object.__setattr__(self, "order", order)
+        object.__setattr__(self, "tolerance", tolerance)
+        self.__post_init__()
+
 
 @dataclass(frozen=True)
 class ConditionResult:
     """Infinity is a legitimate condition number for a singular matrix."""
+
     value: float
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         value = v.scalar(self.value, "condition", finite=False)
         if value < 0:
             raise ValueError("condition number must be nonnegative")
@@ -192,13 +300,20 @@ class ConditionResult:
 
 @dataclass(frozen=True)
 class LogDetResult:
-    sign: Any
+    """Determinant represented by sign/complex phase and log absolute magnitude; singular matrices have zero sign."""
+
+    sign: float | complex
     logabsdet: float
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         sign = v.array(self.sign, "sign", ndim=0).item()
         logabsdet = v.scalar(self.logabsdet, "logabsdet", finite=False)
-        if not (sign == 0 and logabsdet == -np.inf or np.isclose(abs(sign), 1) and np.isfinite(logabsdet)):
+        if not (
+            sign == 0
+            and logabsdet == -np.inf
+            or np.isclose(abs(sign), 1)
+            and np.isfinite(logabsdet)
+        ):
             raise ValueError("invalid determinant sign/log magnitude")
         object.__setattr__(self, "sign", sign)
         object.__setattr__(self, "logabsdet", logabsdet)

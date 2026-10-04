@@ -7,28 +7,41 @@ name = "convexity"
 version = "0.1.0"
 description = "Generic mathematical tools for quantitative modeling."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.14"
 dependencies = [
     "numpy>=1.26",
     "scipy>=1.15",
     "findiff>=0.12.1",
     "statsmodels>=0.14.4",
     "scikit-learn>=1.6",
+    "arch>=8.0",
+    "QuantLib>=1.43",
+    "cvxpy>=1.6",
+    "control>=0.10.2",
 ]
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "pyright>=1.1.408"]
 autodiff = ["torch>=2.2"]
 neural = ["torch>=2.2"]
+reinforcement = ["torch>=2.8", "stable-baselines3>=2.6", "gymnasium>=0.29"]
+forecasting = ["sktime>=0.39"]
+state-space = ["filterpy>=1.4.5", "particles @ git+https://github.com/nchopin/particles.git@3388c4bd30ab9acc5a27c970089230f93610b627"]
+bayesian = ["pymc>=5.20,<6", "arviz>=0.21,<1", "particles @ git+https://github.com/nchopin/particles.git@3388c4bd30ab9acc5a27c970089230f93610b627"]
+processes = ["sdeint>=0.3.0"]
+forecasting-advanced = ["neuralforecast>=3.2", "chronos-forecasting>=2.3", "timesfm>=3.0", "huggingface-hub>=1", "safetensors>=0.6"]
 notebooks = ["nbformat>=5", "nbclient>=0.10", "ipykernel>=6", "matplotlib>=3.9", "pandas>=2.2"]
 
 [tool.setuptools.packages.find]
 include = ["convexity*"]
 namespaces = false
 
+[tool.setuptools.package-data]
+convexity = ["py.typed"]
+
 [tool.pyright]
 include = ["convexity", "tests", "examples"]
-pythonVersion = "3.10"
+pythonVersion = "3.14"
 typeCheckingMode = "basic"
 
 [tool.pytest.ini_options]

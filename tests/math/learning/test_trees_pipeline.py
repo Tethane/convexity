@@ -17,15 +17,15 @@ def test_tree_conditional_mean_recovery_and_snapshot(tool):
     y = mean + .1 * rng.normal(size=len(x))
     a = tool.fit(x[:500], y[:500])
     b = tool.fit(x[:500], y[:500])
-    predictions = a.predict(x[500:])
+    predictions = a.predict_mean(x[500:])
     assert np.mean((predictions - mean[500:]) ** 2) < .15
-    assert_allclose(predictions, b.predict(x[500:]), atol=0, rtol=0)
+    assert_allclose(predictions, b.predict_mean(x[500:]), atol=0, rtol=0)
     tool.fit(x[:500], -y[:500])
-    assert_allclose(predictions, a.predict(x[500:]), atol=0, rtol=0)
+    assert_allclose(predictions, a.predict_mean(x[500:]), atol=0, rtol=0)
     x[:500] = 1e9
     y[:] = 1e9
-    assert_allclose(predictions, a.predict(x[500:]))
-    assert a.predict(x[500:506].reshape(2, 3, 2)).shape == (2, 3)
+    assert_allclose(predictions, a.predict_mean(x[500:]))
+    assert a.predict_mean(x[500:506].reshape(2, 3, 2)).shape == (2, 3)
     with pytest.raises(NotImplementedError):
         a.predict_quantiles(x[500:])
 
@@ -49,9 +49,9 @@ def test_tree_multioutput_and_weighted_leaf_mean(kind, shape):
     y = np.arange(10 * shape[0]).reshape((10,) + shape)
     w = np.arange(1, 11)
     result = kind(n_estimators=1).fit(x, y, sample_weight=w)
-    assert result.predict(x[0]).shape == shape
+    assert result.predict_mean(x[0]).shape == shape
     if kind != learn.RandomForest:  # forests bootstrap observations before weighting
-        assert_allclose(result.predict(x[0]), np.average(y, weights=w, axis=0))
+        assert_allclose(result.predict_mean(x[0]), np.average(y, weights=w, axis=0))
 
 
 def test_pipeline_matches_manual_fit_and_never_refits_test_rows():
@@ -63,12 +63,13 @@ def test_pipeline_matches_manual_fit_and_never_refits_test_rows():
     model: Any = spec.fit(training, response)
     preprocessing = tx.Pipeline(spec.transforms).fit(training)
     manual = spec.learner.fit(preprocessing.transform(training), response)
-    assert_allclose(model.predict(test), manual.predict(preprocessing.transform(test)))
-    old = model.predict(test)
+    assert_allclose(model.predict_mean(test), manual.predict_mean(preprocessing.transform(test)))
+    old = model.predict_mean(test)
     spec.fit(training + 100, response)
-    assert_allclose(model.predict(test), old)
+    assert_allclose(model.predict_mean(test), old)
     assert model.input_dimension == 4
     assert model.coefficients is None  # coefficients live in transformed coordinates
+    assert manual.coefficients is not None and model.adapter.model.coefficients is not None
     assert_allclose(model.adapter.model.coefficients, manual.coefficients)
 
 

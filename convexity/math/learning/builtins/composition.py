@@ -1,15 +1,23 @@
 """Train-only composition with the row-preserving transforms family."""
 
-from dataclasses import dataclass, field
-from typing import Any
+from __future__ import annotations
 
+from collections.abc import Sequence
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
+
+from numpy.typing import ArrayLike
+
+if TYPE_CHECKING:
+    from ...transforms.interfaces.base import Transform, TransformFitter
 from .. import _validation as v
 from ..interfaces import FittedModel, fit
+from ..interfaces.base import Learner
 
 
 @dataclass(frozen=True)
 class PipelineAdapter:
-    transform: Any = field(repr=False)
+    transform: Transform = field(repr=False)
     model: FittedModel
 
     @property
@@ -28,9 +36,14 @@ class PipelineAdapter:
     def supports_offset(self):
         return getattr(self.model.adapter, "supports_offset", False)
 
-    def evaluate(self, operation, features, *, offset=None):
+    def evaluate(
+        self, operation, features: ArrayLike, *, offset: ArrayLike | None = None
+    ):
         from ...transforms import checked_transform
-        return self.model._evaluate(operation, checked_transform(self.transform, features), offset)
+
+        return self.model._evaluate(
+            operation, checked_transform(self.transform, features), offset
+        )
 
 
 @dataclass(frozen=True)
@@ -41,10 +54,10 @@ class Pipeline:
     Callers needing weighted preprocessing should supply a custom transform.
     """
 
-    transforms: tuple[Any, ...]
-    learner: Any
+    transforms: Sequence[TransformFitter]
+    learner: Learner
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         steps = tuple(self.transforms)
         if not steps or any(not callable(getattr(s, "fit", None)) for s in steps):
             raise TypeError("transforms must contain one or more transform fitters")
@@ -52,12 +65,18 @@ class Pipeline:
             raise TypeError("learner must implement fit")
         object.__setattr__(self, "transforms", steps)
 
-    def fit(self, features, response, **kwargs):
+    def fit(self, features: ArrayLike, response: ArrayLike, **kwargs) -> FittedModel:
         from ...transforms import Pipeline as TransformPipeline
 
         x = v.features(features)
         transform = TransformPipeline(self.transforms).fit(x)
         model = fit(transform.transform(x), response, self.learner, **kwargs)
-        return FittedModel(PipelineAdapter(transform, model), model.diagnostics, model.nobs,
-                           classes=model.classes, quantiles=model.quantiles, loss_history=model.loss_history,
-                           requires_offset=model.requires_offset)
+        return FittedModel(
+            PipelineAdapter(transform, model),
+            model.diagnostics,
+            model.nobs,
+            classes=model.classes,
+            quantiles=model.quantiles,
+            loss_history=model.loss_history,
+            requires_offset=model.requires_offset,
+        )

@@ -57,7 +57,7 @@ def test_ownership_and_read_only_callback_arguments():
 
 def test_malformed_callbacks_are_rejected():
     with pytest.raises(ValueError, match="gradient"):
-        est.minimize_estimate(lambda t: t @ t, [1.], gradient=lambda t: [1., 2.])
+        est.minimize_estimate(lambda t: t @ t, [1.], gradient=lambda t: [1., 2.])  # pyright: ignore[reportArgumentType]  # Exercise runtime rejection.
     with pytest.raises(ValueError, match="Jacobian"):
         est.least_squares(lambda t: [t[0]], [1.], jacobian=lambda t: [[1., 2.]])
     with pytest.raises(ValueError, match="finite"):
@@ -65,7 +65,7 @@ def test_malformed_callbacks_are_rejected():
     with pytest.raises(ValueError, match="-inf"):
         est.minimize_estimate(lambda t: -np.inf, [1.])
     with pytest.raises(ValueError, match="constraint output"):
-        est.minimize_estimate(lambda t: t @ t, [1.],
+        est.minimize_estimate(lambda t: t @ t, [1.],  # pyright: ignore[reportArgumentType]  # Exercise runtime rejection.
                                constraints=[est.NonlinearConstraint(lambda t: 1., lower=0, upper=1)])
 
 
@@ -100,7 +100,7 @@ def test_uncertainty_requires_correct_covariance_kind_and_convergence():
 
 def test_bootstrap_requires_explicit_rng_and_paired_rows():
     with pytest.raises(TypeError, match="Generator"):
-        est.bootstrap(np.mean, ([1, 2, 3],), rng=42)
+        est.bootstrap(np.mean, ([1, 2, 3],), rng=42)  # pyright: ignore[reportArgumentType]  # Exercise runtime rejection.
     with pytest.raises(ValueError, match="row counts"):
         est.bootstrap(lambda x, y: 0, ([1, 2], [1, 2, 3]), rng=np.random.default_rng(2))
 

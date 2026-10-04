@@ -1,11 +1,13 @@
 """Scaling, principal coordinates and Gaussian latent factor models."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Any
 
 import numpy as np
-from numpy.typing import NDArray
+from numpy.typing import ArrayLike
 
+from ..._typing import FloatArray
 from .. import _validation as v
 from .affine import AffineTransform
 from .base import Diagnostics
@@ -13,10 +15,18 @@ from .base import Diagnostics
 
 @dataclass(frozen=True, init=False)
 class FittedScaling(AffineTransform):
-    scale: NDArray[Any]
+    """Fitted affine coordinate transform with its learned location and forward/inverse matrices."""
+
+    scale: FloatArray
     diagnostics: Diagnostics
 
-    def __init__(self, location, scale, *, diagnostics=None):
+    def __init__(
+        self,
+        location: ArrayLike,
+        scale: ArrayLike,
+        *,
+        diagnostics: Diagnostics | None = None,
+    ) -> None:
         scales = v.array(scale, "scale", ndim=1)
         if np.any(scales <= 0):
             raise ValueError("scale must be strictly positive")
@@ -29,23 +39,38 @@ class FittedScaling(AffineTransform):
 class PCAResult(AffineTransform):
     """Principal axes in columns; variances use the explicit n-ddof divisor."""
 
-    components: NDArray[Any]
-    explained_variance: NDArray[Any]
-    explained_variance_ratio: NDArray[Any]
-    singular_values: NDArray[Any]
+    components: FloatArray
+    explained_variance: FloatArray
+    explained_variance_ratio: FloatArray
+    singular_values: FloatArray
     nobs: int
     ddof: int
     whiten: bool
     diagnostics: Diagnostics
 
-    def __init__(self, location, components, explained_variance, total_variance,
-                 *, nobs, ddof=1, whiten=False, diagnostics=None):
+    def __init__(
+        self,
+        location: ArrayLike,
+        components: ArrayLike,
+        explained_variance: ArrayLike,
+        total_variance: float,
+        *,
+        nobs: int,
+        ddof: int = 1,
+        whiten: bool = False,
+        diagnostics: Diagnostics | None = None,
+    ) -> None:
         basis = v.array(components, "components", ndim=2)
         variance = v.array(explained_variance, "explained_variance", ndim=1)
         k = basis.shape[1]
-        if (variance.shape != (k,) or np.any(variance < 0)
-                or not np.allclose(basis.T @ basis, np.eye(k), rtol=1e-8, atol=1e-10)):
-            raise ValueError("components must be orthonormal columns with k nonnegative variances")
+        if (
+            variance.shape != (k,)
+            or np.any(variance < 0)
+            or not np.allclose(basis.T @ basis, np.eye(k), rtol=1e-8, atol=1e-10)
+        ):
+            raise ValueError(
+                "components must be orthonormal columns with k nonnegative variances"
+            )
         n = v.integer(nobs, "nobs", 2)
         divisor = v.integer(ddof, "ddof")
         v.choice(divisor, (0, 1), "ddof")
@@ -55,14 +80,26 @@ class PCAResult(AffineTransform):
         if variance.sum() > total * (1 + 1e-8):
             raise ValueError("explained variance cannot exceed total variance")
         v.boolean(whiten, "whiten")
-        if whiten and np.any(variance <= np.finfo(float).eps * max(n, basis.shape[0]) * total):
-            raise ValueError("cannot whiten numerically zero-variance components; reduce n_components")
+        if whiten and np.any(
+            variance <= np.finfo(float).eps * max(n, basis.shape[0]) * total
+        ):
+            raise ValueError(
+                "cannot whiten numerically zero-variance components; reduce n_components"
+            )
         scales = np.sqrt(variance) if whiten else np.ones(k)
         super().__init__(location, basis / scales, scales[:, None] * basis.T)
-        values = dict(components=basis, explained_variance=variance,
-                      explained_variance_ratio=v.array(variance / total, "variance ratio"),
-                      singular_values=v.array(np.sqrt(variance * (n - divisor)), "singular values"),
-                      nobs=n, ddof=divisor, whiten=bool(whiten), diagnostics=_diagnostics(diagnostics))
+        values = dict(
+            components=basis,
+            explained_variance=variance,
+            explained_variance_ratio=v.array(variance / total, "variance ratio"),
+            singular_values=v.array(
+                np.sqrt(variance * (n - divisor)), "singular values"
+            ),
+            nobs=n,
+            ddof=divisor,
+            whiten=bool(whiten),
+            diagnostics=_diagnostics(diagnostics),
+        )
         for name, value in values.items():
             object.__setattr__(self, name, value)
 
@@ -75,19 +112,29 @@ class GaussianFactorModel:
     orthogonal projection or an exact inverse of the noisy generative model.
     """
 
-    location: NDArray[Any]
-    loadings: NDArray[Any]
-    noise_variance: NDArray[Any]
+    location: FloatArray
+    loadings: FloatArray
+    noise_variance: FloatArray
 
-    def __init__(self, location, loadings, noise_variance):
+    def __init__(
+        self, location: ArrayLike, loadings: ArrayLike, noise_variance: ArrayLike
+    ) -> None:
         loc = v.array(location, "location", ndim=1)
         basis = v.array(loadings, "loadings", ndim=2)
         noise = v.array(noise_variance, "noise_variance", ndim=1)
-        if basis.shape[0] != len(loc) or noise.shape != loc.shape or basis.shape[1] > len(loc):
-            raise ValueError("loadings must be (d,k), k<=d; location and noise_variance (d,)")
+        if (
+            basis.shape[0] != len(loc)
+            or noise.shape != loc.shape
+            or basis.shape[1] > len(loc)
+        ):
+            raise ValueError(
+                "loadings must be (d,k), k<=d; location and noise_variance (d,)"
+            )
         if np.any(noise <= 0):
             raise ValueError("noise_variance must be strictly positive")
-        for name, value in dict(location=loc, loadings=basis, noise_variance=noise).items():
+        for name, value in dict(
+            location=loc, loadings=basis, noise_variance=noise
+        ).items():
             object.__setattr__(self, name, value)
 
     @property
@@ -99,39 +146,56 @@ class GaussianFactorModel:
         return self.loadings.shape[1]
 
     @property
-    def covariance(self):
-        return v.array(self.loadings @ self.loadings.T + np.diag(self.noise_variance), "covariance")
+    def covariance(self) -> FloatArray:
+        return v.array(
+            self.loadings @ self.loadings.T + np.diag(self.noise_variance), "covariance"
+        )
 
     @property
-    def posterior_covariance(self):
+    def posterior_covariance(self) -> FloatArray:
         from .._backends.scipy import factor_posterior
+
         return v.array(factor_posterior(self)[1], "posterior covariance")
 
-    def transform(self, values):
+    def transform(self, values: ArrayLike) -> FloatArray:
         from .._backends.scipy import factor_posterior
+
         x = v.coordinates(values, self.input_dimension, "values")
         encoder, _ = factor_posterior(self)
         return v.array((x - self.location) @ encoder, "posterior factor means")
 
-    def reconstruct(self, factors):
+    def reconstruct(self, factors: ArrayLike) -> FloatArray:
         z = v.coordinates(factors, self.output_dimension, "factors")
         return v.array(z @ self.loadings.T + self.location, "common component")
 
-    def residuals(self, values):
+    def residuals(self, values: ArrayLike) -> FloatArray:
         x = v.coordinates(values, self.input_dimension, "values")
         return v.array(x - self.reconstruct(self.transform(x)), "residuals")
 
 
 @dataclass(frozen=True, init=False)
 class FactorAnalysisResult(GaussianFactorModel):
+    """Fitted factor model with loadings, residual variances and diagnostics in training feature order."""
+
     diagnostics: Diagnostics
-    log_likelihood: NDArray[Any]
+    log_likelihood: FloatArray
     nobs: int
 
-    def __init__(self, location, loadings, noise_variance, *, diagnostics, log_likelihood, nobs):
+    def __init__(
+        self,
+        location: ArrayLike,
+        loadings: ArrayLike,
+        noise_variance: ArrayLike,
+        *,
+        diagnostics: Diagnostics,
+        log_likelihood: ArrayLike,
+        nobs: int,
+    ) -> None:
         super().__init__(location, loadings, noise_variance)
         object.__setattr__(self, "diagnostics", _diagnostics(diagnostics))
-        object.__setattr__(self, "log_likelihood", v.array(log_likelihood, "log_likelihood", ndim=1))
+        object.__setattr__(
+            self, "log_likelihood", v.array(log_likelihood, "log_likelihood", ndim=1)
+        )
         object.__setattr__(self, "nobs", v.integer(nobs, "nobs", 2))
 
 

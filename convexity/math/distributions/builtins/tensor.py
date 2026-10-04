@@ -6,9 +6,17 @@ torch.manual_seed and torch.random.fork_rng control reproducibility. Discrete
 laws have no pathwise rsample. No automatic numerical or Monte Carlo fallback.
 """
 
-from dataclasses import dataclass
-from typing import Any
+from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+from numpy.typing import ArrayLike
+
+if TYPE_CHECKING:
+    from torch.distributions import Distribution as TorchDistribution
+from dataclasses import dataclass
+
+from ..._typing import SampleSize
 from .. import _validation as v
 from .._backends.torch import make, torch_module
 
@@ -22,11 +30,11 @@ class TensorDistribution:
     Native support validation and NotImplementedError behavior propagate.
     """
 
-    native: Any
+    native: TorchDistribution
     _cdf: bool = False
     _quantile: bool = False
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         torch = torch_module()
         if not isinstance(self.native, torch.distributions.Distribution):
             raise TypeError("native must be a torch.distributions.Distribution")
@@ -43,7 +51,11 @@ class TensorDistribution:
 
     @property
     def measure(self):
-        return "discrete" if self.native.support.is_discrete else "continuous"
+        return (
+            "discrete"
+            if getattr(self.native.support, "is_discrete", False)
+            else "continuous"
+        )
 
     @property
     def capabilities(self):
@@ -57,10 +69,18 @@ class TensorDistribution:
         # Native properties may explicitly raise NotImplementedError for custom
         # or composite torch distributions, so these are not globally advertised.
         torch = torch_module()
-        if isinstance(self.native, (torch.distributions.Normal, torch.distributions.StudentT,
-                                    torch.distributions.LogNormal, torch.distributions.Bernoulli,
-                                    torch.distributions.Binomial, torch.distributions.Poisson,
-                                    torch.distributions.MultivariateNormal)):
+        if isinstance(
+            self.native,
+            (
+                torch.distributions.Normal,
+                torch.distributions.StudentT,
+                torch.distributions.LogNormal,
+                torch.distributions.Bernoulli,
+                torch.distributions.Binomial,
+                torch.distributions.Poisson,
+                torch.distributions.MultivariateNormal,
+            ),
+        ):
             capabilities |= {"mean", "variance", "std"}
             if not self.event_shape:
                 capabilities.add("covariance")
@@ -79,20 +99,27 @@ class TensorDistribution:
             raise NotImplementedError("CDF is not declared for this tensor law")
         return self.native.cdf(value)
 
-    def quantile(self, probability):
+    def quantile(self, probability: ArrayLike):
         if not self._quantile:
             raise NotImplementedError("quantile is not declared for this tensor law")
         torch = torch_module()
-        if not isinstance(probability, torch.Tensor) or not probability.is_floating_point():
+        if (
+            not isinstance(probability, torch.Tensor)
+            or not probability.is_floating_point()
+        ):
             raise TypeError("probability must be a real floating-point tensor")
-        if not bool((torch.isfinite(probability) & (probability >= 0) & (probability <= 1)).all()):
+        if not bool(
+            (
+                torch.isfinite(probability) & (probability >= 0) & (probability <= 1)
+            ).all()
+        ):
             raise ValueError("probability must lie in [0, 1]")
         return self.native.icdf(probability)
 
-    def sample(self, size=()):
+    def sample(self, size: SampleSize = ()):
         return self.native.sample(v.sample_shape(size))
 
-    def rsample(self, size=()):
+    def rsample(self, size: SampleSize = ()):
         """Pathwise differentiable samples, only when the backend supports them."""
         if not self.native.has_rsample:
             raise NotImplementedError("this tensor law has no reparameterized sampler")
@@ -111,50 +138,56 @@ class TensorDistribution:
         if not self.event_shape:
             return self.variance()
         if not hasattr(self.native, "covariance_matrix"):
-            raise NotImplementedError("native tensor law does not expose covariance_matrix")
-        return self.native.covariance_matrix
+            raise NotImplementedError(
+                "native tensor law does not expose covariance_matrix"
+            )
+        return getattr(self.native, "covariance_matrix")
 
 
-def from_torch(law, *, cdf=False, quantile=False) -> TensorDistribution:
+def from_torch(law, *, cdf: bool = False, quantile: bool = False) -> TensorDistribution:
     """Wrap a native law; explicitly declare any supported CDF/ICDF operations."""
     return TensorDistribution(law, cdf, quantile)
 
 
-def normal(loc=0., scale=1.) -> TensorDistribution:
+def normal(loc: float = 0.0, scale: float = 1.0) -> TensorDistribution:
     return TensorDistribution(make("Normal", loc, scale), True, True)
 
 
-def student_t(df, loc=0., scale=1.) -> TensorDistribution:
+def student_t(df: float, loc: float = 0.0, scale: float = 1.0) -> TensorDistribution:
     return TensorDistribution(make("StudentT", df, loc, scale))
 
 
-def lognormal(log_loc=0., log_scale=1.) -> TensorDistribution:
+def lognormal(log_loc: float = 0.0, log_scale: float = 1.0) -> TensorDistribution:
     return TensorDistribution(make("LogNormal", log_loc, log_scale), True, True)
 
 
-def bernoulli(p) -> TensorDistribution:
+def bernoulli(p: float) -> TensorDistribution:
     return TensorDistribution(make("Bernoulli", probs=p))
 
 
-def binomial(n, p) -> TensorDistribution:
+def binomial(n: int, p: float) -> TensorDistribution:
     return TensorDistribution(make("Binomial", total_count=n, probs=p))
 
 
-def poisson(rate) -> TensorDistribution:
+def poisson(rate: float) -> TensorDistribution:
     return TensorDistribution(make("Poisson", rate))
 
 
-def multivariate_normal(mean, covariance) -> TensorDistribution:
-    return TensorDistribution(make("MultivariateNormal", mean, covariance_matrix=covariance))
+def multivariate_normal(mean: ArrayLike, covariance: ArrayLike) -> TensorDistribution:
+    return TensorDistribution(
+        make("MultivariateNormal", mean, covariance_matrix=covariance)
+    )
 
 
-def independent(base: TensorDistribution, reinterpreted_batch_ndims=1) -> TensorDistribution:
+def independent(
+    base: TensorDistribution, reinterpreted_batch_ndims: int = 1
+) -> TensorDistribution:
     """Reinterpret trailing parameter batch axes as independent event axes."""
     n = v.integer(reinterpreted_batch_ndims, "reinterpreted_batch_ndims", minimum=1)
     return TensorDistribution(make("Independent", base.native, n))
 
 
-def mixture(weights, components: TensorDistribution) -> TensorDistribution:
+def mixture(weights: ArrayLike, components: TensorDistribution) -> TensorDistribution:
     """Same-family mixture; the last component batch axis indexes mixture members."""
     selector = make("Categorical", probs=weights)
     return TensorDistribution(make("MixtureSameFamily", selector, components.native))
@@ -165,6 +198,17 @@ def transformed(base: TensorDistribution, transforms) -> TensorDistribution:
     return TensorDistribution(make("TransformedDistribution", base.native, transforms))
 
 
-__all__ = ["TensorDistribution", "from_torch", "normal", "student_t", "lognormal",
-           "bernoulli", "binomial", "poisson", "multivariate_normal", "independent",
-           "mixture", "transformed"]
+__all__ = [
+    "TensorDistribution",
+    "from_torch",
+    "normal",
+    "student_t",
+    "lognormal",
+    "bernoulli",
+    "binomial",
+    "poisson",
+    "multivariate_normal",
+    "independent",
+    "mixture",
+    "transformed",
+]

@@ -1,11 +1,14 @@
 """Univariate interpolation with scalar or multichannel sample values."""
 
+from __future__ import annotations
+
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable
 
 import numpy as np
-from numpy.typing import ArrayLike, NDArray
+from numpy.typing import ArrayLike
 
+from ..._typing import NumericArray
 from .. import _validation as v
 
 
@@ -27,28 +30,36 @@ class InterpolationProblem:
         object.__setattr__(self, "x", x)
         object.__setattr__(self, "y", y)
 
-    def validate_result(self, result: Any) -> None:
+    def validate_result(self, result: object) -> None:
         if not isinstance(result, Interpolant):
             raise TypeError("tool must return Interpolant")
         x = np.asarray(self.x)
-        if (result.domain != (x[0], x[-1]) or
-                result.output_shape != np.shape(self.y)[1:] or
-                result.extrapolate != self.extrapolate):
-            raise ValueError("interpolant domain, output shape, or extrapolation policy mismatch")
+        if (
+            result.domain != (x[0], x[-1])
+            or result.output_shape != np.shape(self.y)[1:]
+            or result.extrapolate != self.extrapolate
+        ):
+            raise ValueError(
+                "interpolant domain, output shape, or extrapolation policy mismatch"
+            )
 
 
 @dataclass(frozen=True, init=False)
 class Interpolant:
     """Checked callable. Query shape S returns shape S + output_shape."""
 
-    _evaluate: Callable[[NDArray[Any]], ArrayLike] = field(repr=False)
+    _evaluate: Callable[[NumericArray], ArrayLike] = field(repr=False)
     domain: tuple[float, float]
     output_shape: tuple[int, ...] = ()
     extrapolate: bool = False
 
-    def __init__(self, evaluate: Callable[[NDArray[Any]], ArrayLike],
-                 domain: tuple[float, float], output_shape: tuple[int, ...] = (),
-                 extrapolate: bool = False):
+    def __init__(
+        self,
+        evaluate: Callable[[NumericArray], ArrayLike],
+        domain: tuple[float, float],
+        output_shape: tuple[int, ...] = (),
+        extrapolate: bool = False,
+    ) -> None:
         v.boolean(extrapolate, "extrapolate")
         v.function(evaluate, "evaluate")
         endpoints = v.array(domain, "domain", ndim=1, real=True)
@@ -61,9 +72,11 @@ class Interpolant:
         object.__setattr__(self, "extrapolate", extrapolate)
         object.__setattr__(self, "_evaluate", evaluate)
 
-    def __call__(self, x: ArrayLike) -> NDArray[Any]:
+    def __call__(self, x: ArrayLike) -> NumericArray:
         points = v.array(x, "query", real=True)
-        if not self.extrapolate and np.any((points < self.domain[0]) | (points > self.domain[1])):
+        if not self.extrapolate and np.any(
+            (points < self.domain[0]) | (points > self.domain[1])
+        ):
             raise ValueError("query lies outside the interpolation domain")
         result = v.array(self._evaluate(points), "interpolated values", real=True)
         if result.shape != points.shape + self.output_shape:

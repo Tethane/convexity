@@ -1,0 +1,3669 @@
+{
+  "date": "2026-09-30",
+  "scope": "Existing 36 mathematical families; Python 3.14 quant environment",
+  "verdict": "Public-contract follow-up complete for the documented quant workflows; no known reproduced blocker remains within this scope. Numerical and integration limitations remain explicit.",
+  "python": "3.14.7",
+  "dependencies": {
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "scikit-learn": "1.9.1",
+    "statsmodels": "0.15.0",
+    "QuantLib": "1.43",
+    "cvxpy": "1.9.2",
+    "control": "0.10.2",
+    "torch": "2.14.0",
+    "arch": "8.0.0",
+    "pymc": "5.28.5",
+    "particles": "0.4",
+    "filterpy": "1.4.5",
+    "sdeint": "0.3.0",
+    "sktime": "1.2.0",
+    "neuralforecast": "3.2.2",
+    "chronos-forecasting": "2.3.2",
+    "timesfm": "3.0.2",
+    "stable-baselines3": "2.9.0"
+  },
+  "public_export_names": 908,
+  "owned_callable_export_entries": 831,
+  "public_contract_metrics": {
+    "missing_owned_callable_docs": 0,
+    "explicit_any_in_owned_callable_signatures": 0,
+    "ordinary_signatures_with_missing_annotations": 0,
+    "bare_callable_or_container_parameters": 0,
+    "protocol_constructor_signatures_excluded": true,
+    "type_aliases_without_runtime_docstrings": [
+      {
+        "family": "numerical",
+        "name": "DifferentiationKind"
+      },
+      {
+        "family": "numerical",
+        "name": "TimeDomain"
+      },
+      {
+        "family": "distributions",
+        "name": "Measure"
+      }
+    ],
+    "type_aliases_documented_in_generated_reference": true
+  },
+  "families": [
+    {
+      "family": "numerical",
+      "exports": 162,
+      "owned_callables": 158,
+      "violations": []
+    },
+    {
+      "family": "distributions",
+      "exports": 21,
+      "owned_callables": 17,
+      "violations": []
+    },
+    {
+      "family": "estimation",
+      "exports": 45,
+      "owned_callables": 43,
+      "violations": []
+    },
+    {
+      "family": "transforms",
+      "exports": 42,
+      "owned_callables": 40,
+      "violations": []
+    },
+    {
+      "family": "dependence",
+      "exports": 49,
+      "owned_callables": 47,
+      "violations": []
+    },
+    {
+      "family": "learning",
+      "exports": 32,
+      "owned_callables": 30,
+      "violations": []
+    },
+    {
+      "family": "gaussian_processes",
+      "exports": 18,
+      "owned_callables": 16,
+      "violations": []
+    },
+    {
+      "family": "forecasting",
+      "exports": 85,
+      "owned_callables": 82,
+      "violations": []
+    },
+    {
+      "family": "volatility",
+      "exports": 30,
+      "owned_callables": 28,
+      "violations": []
+    },
+    {
+      "family": "state_space",
+      "exports": 30,
+      "owned_callables": 28,
+      "violations": []
+    },
+    {
+      "family": "bayesian",
+      "exports": 22,
+      "owned_callables": 20,
+      "violations": []
+    },
+    {
+      "family": "regimes",
+      "exports": 23,
+      "owned_callables": 21,
+      "violations": []
+    },
+    {
+      "family": "processes",
+      "exports": 20,
+      "owned_callables": 18,
+      "violations": []
+    },
+    {
+      "family": "rough",
+      "exports": 20,
+      "owned_callables": 18,
+      "violations": []
+    },
+    {
+      "family": "simulation",
+      "exports": 20,
+      "owned_callables": 18,
+      "violations": []
+    },
+    {
+      "family": "measures",
+      "exports": 11,
+      "owned_callables": 9,
+      "violations": []
+    },
+    {
+      "family": "contracts",
+      "exports": 19,
+      "owned_callables": 17,
+      "violations": []
+    },
+    {
+      "family": "curves",
+      "exports": 15,
+      "owned_callables": 13,
+      "violations": []
+    },
+    {
+      "family": "pricing",
+      "exports": 17,
+      "owned_callables": 15,
+      "violations": []
+    },
+    {
+      "family": "implied_volatility",
+      "exports": 12,
+      "owned_callables": 10,
+      "violations": []
+    },
+    {
+      "family": "calibration",
+      "exports": 9,
+      "owned_callables": 7,
+      "violations": []
+    },
+    {
+      "family": "stopping",
+      "exports": 10,
+      "owned_callables": 8,
+      "violations": []
+    },
+    {
+      "family": "sensitivities",
+      "exports": 7,
+      "owned_callables": 5,
+      "violations": []
+    },
+    {
+      "family": "fixed_income",
+      "exports": 18,
+      "owned_callables": 16,
+      "violations": []
+    },
+    {
+      "family": "rates",
+      "exports": 23,
+      "owned_callables": 21,
+      "violations": []
+    },
+    {
+      "family": "credit",
+      "exports": 16,
+      "owned_callables": 14,
+      "violations": []
+    },
+    {
+      "family": "risk",
+      "exports": 16,
+      "owned_callables": 14,
+      "violations": []
+    },
+    {
+      "family": "utility",
+      "exports": 13,
+      "owned_callables": 11,
+      "violations": []
+    },
+    {
+      "family": "optimization",
+      "exports": 12,
+      "owned_callables": 10,
+      "violations": []
+    },
+    {
+      "family": "robust",
+      "exports": 11,
+      "owned_callables": 9,
+      "violations": []
+    },
+    {
+      "family": "control",
+      "exports": 17,
+      "owned_callables": 15,
+      "violations": []
+    },
+    {
+      "family": "policies",
+      "exports": 7,
+      "owned_callables": 5,
+      "violations": []
+    },
+    {
+      "family": "execution",
+      "exports": 11,
+      "owned_callables": 9,
+      "violations": []
+    },
+    {
+      "family": "wealth",
+      "exports": 15,
+      "owned_callables": 13,
+      "violations": []
+    },
+    {
+      "family": "diagnostics",
+      "exports": 19,
+      "owned_callables": 17,
+      "violations": []
+    },
+    {
+      "family": "reinforcement",
+      "exports": 11,
+      "owned_callables": 9,
+      "violations": []
+    }
+  ],
+  "verification": {
+    "pytest": {
+      "tests": 2020,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "expected_failures": 0,
+      "warnings": 70,
+      "seconds": 271.23,
+      "command": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python -m pytest tests -q"
+    },
+    "pyright": {
+      "version": "1.1.414",
+      "filesAnalyzed": 612,
+      "errorCount": 0,
+      "warningCount": 0,
+      "informationCount": 0,
+      "timeInSec": 169.89,
+      "command": "python -m pyright --pythonpath /home/ethan/miniconda3/envs/quant/bin/python"
+    },
+    "public_contract_regression_gate": {
+      "passed": 46,
+      "includes_reference_freshness": true
+    },
+    "focused_constructor_finance_forecasting_numerical_checks": {
+      "passed": 230
+    },
+    "chronos2_real_checkpoint_finetuning_after_provider_typing": "passed",
+    "examples": [
+      {
+        "file": "bayesian.py",
+        "status": "passed",
+        "seconds": 7.02
+      },
+      {
+        "file": "bayesian_pymc.py",
+        "status": "passed",
+        "seconds": 12.69
+      },
+      {
+        "file": "bayesian_sequential.py",
+        "status": "passed",
+        "seconds": 40.85
+      },
+      {
+        "file": "calibration.py",
+        "status": "passed",
+        "seconds": 1.09
+      },
+      {
+        "file": "contracts.py",
+        "status": "passed",
+        "seconds": 0.38
+      },
+      {
+        "file": "credit.py",
+        "status": "passed",
+        "seconds": 1.89
+      },
+      {
+        "file": "curves.py",
+        "status": "passed",
+        "seconds": 1.04
+      },
+      {
+        "file": "decision_workflows.py",
+        "status": "passed",
+        "seconds": 2.02
+      },
+      {
+        "file": "dependence.py",
+        "status": "passed",
+        "seconds": 3.52
+      },
+      {
+        "file": "diagnostics.py",
+        "status": "passed",
+        "seconds": 2.86
+      },
+      {
+        "file": "distributions.py",
+        "status": "passed",
+        "seconds": 1.85
+      },
+      {
+        "file": "events.py",
+        "status": "passed",
+        "seconds": 4.67
+      },
+      {
+        "file": "execution.py",
+        "status": "passed",
+        "seconds": 2.42
+      },
+      {
+        "file": "financial_workflows.py",
+        "status": "passed",
+        "seconds": 2.4
+      },
+      {
+        "file": "fixed_income.py",
+        "status": "passed",
+        "seconds": 0.93
+      },
+      {
+        "file": "forecasting.py",
+        "status": "passed",
+        "seconds": 4.3
+      },
+      {
+        "file": "forecasting_advanced.py",
+        "status": "passed",
+        "seconds": 17.9
+      },
+      {
+        "file": "forecasting_pretrained.py",
+        "status": "passed",
+        "seconds": 73.5
+      },
+      {
+        "file": "gaussian_processes.py",
+        "status": "passed",
+        "seconds": 2.78
+      },
+      {
+        "file": "implied_volatility.py",
+        "status": "passed",
+        "seconds": 1.18
+      },
+      {
+        "file": "measures.py",
+        "status": "passed",
+        "seconds": 1.05
+      },
+      {
+        "file": "numerical_mathematics.py",
+        "status": "passed",
+        "seconds": 2.0
+      },
+      {
+        "file": "optimal_control.py",
+        "status": "passed",
+        "seconds": 3.62
+      },
+      {
+        "file": "optimization.py",
+        "status": "passed",
+        "seconds": 2.0
+      },
+      {
+        "file": "policies.py",
+        "status": "passed",
+        "seconds": 0.17
+      },
+      {
+        "file": "predictive_learning.py",
+        "status": "passed",
+        "seconds": 3.34
+      },
+      {
+        "file": "pricing.py",
+        "status": "passed",
+        "seconds": 0.93
+      },
+      {
+        "file": "processes.py",
+        "status": "passed",
+        "seconds": 1.58
+      },
+      {
+        "file": "processes_backends.py",
+        "status": "passed",
+        "seconds": 1.68
+      },
+      {
+        "file": "rates.py",
+        "status": "passed",
+        "seconds": 1.64
+      },
+      {
+        "file": "regimes.py",
+        "status": "passed",
+        "seconds": 3.12
+      },
+      {
+        "file": "reinforcement.py",
+        "status": "passed",
+        "seconds": 1.39
+      },
+      {
+        "file": "risk.py",
+        "status": "passed",
+        "seconds": 1.35
+      },
+      {
+        "file": "robust.py",
+        "status": "passed",
+        "seconds": 2.16
+      },
+      {
+        "file": "rough.py",
+        "status": "passed",
+        "seconds": 1.11
+      },
+      {
+        "file": "sensitivities.py",
+        "status": "passed",
+        "seconds": 1.14
+      },
+      {
+        "file": "simulation.py",
+        "status": "passed",
+        "seconds": 2.37
+      },
+      {
+        "file": "state_space.py",
+        "status": "passed",
+        "seconds": 2.4
+      },
+      {
+        "file": "state_space_estimation.py",
+        "status": "passed",
+        "seconds": 45.75
+      },
+      {
+        "file": "state_space_nonlinear.py",
+        "status": "passed",
+        "seconds": 17.46
+      },
+      {
+        "file": "statistical_estimation.py",
+        "status": "passed",
+        "seconds": 4.85
+      },
+      {
+        "file": "stopping.py",
+        "status": "passed",
+        "seconds": 2.86
+      },
+      {
+        "file": "transforms.py",
+        "status": "passed",
+        "seconds": 2.94
+      },
+      {
+        "file": "utility.py",
+        "status": "passed",
+        "seconds": 0.62
+      },
+      {
+        "file": "volatility.py",
+        "status": "passed",
+        "seconds": 4.37
+      },
+      {
+        "file": "volatility_har.py",
+        "status": "passed",
+        "seconds": 2.94
+      },
+      {
+        "file": "wealth.py",
+        "status": "passed",
+        "seconds": 0.35
+      }
+    ],
+    "notebooks": [
+      {
+        "file": "bayesian.ipynb",
+        "status": "passed",
+        "seconds": 10.34
+      },
+      {
+        "file": "calibration.ipynb",
+        "status": "passed",
+        "seconds": 2.75
+      },
+      {
+        "file": "contracts.ipynb",
+        "status": "passed",
+        "seconds": 4.37
+      },
+      {
+        "file": "control.ipynb",
+        "status": "passed",
+        "seconds": 5.48
+      },
+      {
+        "file": "credit.ipynb",
+        "status": "passed",
+        "seconds": 4.65
+      },
+      {
+        "file": "curves.ipynb",
+        "status": "passed",
+        "seconds": 3.35
+      },
+      {
+        "file": "dependence.ipynb",
+        "status": "passed",
+        "seconds": 5.92
+      },
+      {
+        "file": "diagnostics.ipynb",
+        "status": "passed",
+        "seconds": 4.3
+      },
+      {
+        "file": "distributions.ipynb",
+        "status": "passed",
+        "seconds": 9.31
+      },
+      {
+        "file": "execution.ipynb",
+        "status": "passed",
+        "seconds": 4.89
+      },
+      {
+        "file": "fixed_income.ipynb",
+        "status": "passed",
+        "seconds": 4.58
+      },
+      {
+        "file": "forecasting.ipynb",
+        "status": "passed",
+        "seconds": 8.49
+      },
+      {
+        "file": "gaussian_processes.ipynb",
+        "status": "passed",
+        "seconds": 4.08
+      },
+      {
+        "file": "implied_volatility.ipynb",
+        "status": "passed",
+        "seconds": 4.1
+      },
+      {
+        "file": "measures.ipynb",
+        "status": "passed",
+        "seconds": 4.77
+      },
+      {
+        "file": "numerical_mathematics.ipynb",
+        "status": "passed",
+        "seconds": 8.09
+      },
+      {
+        "file": "optimization.ipynb",
+        "status": "passed",
+        "seconds": 4.66
+      },
+      {
+        "file": "policies.ipynb",
+        "status": "passed",
+        "seconds": 2.43
+      },
+      {
+        "file": "predictive_learning.ipynb",
+        "status": "passed",
+        "seconds": 11.56
+      },
+      {
+        "file": "pricing.ipynb",
+        "status": "passed",
+        "seconds": 3.48
+      },
+      {
+        "file": "processes.ipynb",
+        "status": "passed",
+        "seconds": 7.54
+      },
+      {
+        "file": "rates.ipynb",
+        "status": "passed",
+        "seconds": 4.81
+      },
+      {
+        "file": "regimes.ipynb",
+        "status": "passed",
+        "seconds": 10.45
+      },
+      {
+        "file": "reinforcement.ipynb",
+        "status": "passed",
+        "seconds": 12.42
+      },
+      {
+        "file": "risk.ipynb",
+        "status": "passed",
+        "seconds": 3.39
+      },
+      {
+        "file": "robust.ipynb",
+        "status": "passed",
+        "seconds": 5.05
+      },
+      {
+        "file": "rough.ipynb",
+        "status": "passed",
+        "seconds": 4.35
+      },
+      {
+        "file": "sensitivities.ipynb",
+        "status": "passed",
+        "seconds": 3.97
+      },
+      {
+        "file": "state_space.ipynb",
+        "status": "passed",
+        "seconds": 102.45
+      },
+      {
+        "file": "statistical_estimation.ipynb",
+        "status": "passed",
+        "seconds": 7.28
+      },
+      {
+        "file": "stopping.ipynb",
+        "status": "passed",
+        "seconds": 4.77
+      },
+      {
+        "file": "transforms.ipynb",
+        "status": "passed",
+        "seconds": 5.01
+      },
+      {
+        "file": "utility.ipynb",
+        "status": "passed",
+        "seconds": 2.88
+      },
+      {
+        "file": "volatility.ipynb",
+        "status": "passed",
+        "seconds": 5.84
+      },
+      {
+        "file": "wealth.ipynb",
+        "status": "passed",
+        "seconds": 2.71
+      }
+    ],
+    "ruff": "F401,F811,I001 passed on changed interfaces/builtins and new verification files; not a whole-repository style certification",
+    "git_diff_check": "passed"
+  },
+  "source_tree_hash_algorithm": "SHA256 of UTF-8 json.dumps(source_sha256, sort_keys=True)",
+  "source_tree_sha256": "f18774a3a7a4bfc07139151d362e9adab2bfebaa22a6206474ce6f1f874a4ae0",
+  "source_sha256": {
+    "__init__.py": "23bbbd5e13ba64eab08e5aa75b72d579514ff8c5ff3784d66a6ab7b66cbd1a66",
+    "_backends/__init__.py": "235f2ab956f7bd5d1bf4bc2dac5d903d45e3c2eff0345195af6dad7c50247e85",
+    "_backends/gaussian.py": "af0ecaae052609cfe38918443e30c321f17bdd1c063ec4a5855036a0dbead9c4",
+    "_backends/quantlib.py": "5cf238aa528e409b94dc7b5a438065d7a7efc8b7196db8671b3a9252d2ba75ee",
+    "_covariance.py": "ea443657921e02d2490a71f7b32f8ea214f4e2ad6a57566fba2c2048ae762f66",
+    "_decision.py": "ab1e83bae6910d065b8ec79a096cdeb68ae98fea5ed35f3aa1b4aefdaf9f525d",
+    "_finance.py": "a0347e27c15fe7385185efaefd966e6b862e147a6659ff798705be16fa8d8a52",
+    "_finance_types.py": "e5634e41506f1fd51d3cece298c0c5790221e3a9ad246851a80e12e4201a8f63",
+    "_provider_types.py": "9479d9307061594e699854a7c0f8792a82883ff80773931c86a6bc09a1703f27",
+    "_typing.py": "8b743303c5cf181450aa90432927d056756f370cb39c294b92a08d8b9794a54f",
+    "_validation.py": "66ca0c4f0206ccfbd912fc70401bae4c91c2c05a6918354f81f2715782d2c764",
+    "bayesian/__init__.py": "c5f8c6b49aeb9a56f47f7b52aeda26e8a2d6e0dc9351378d6e8084fea8ea3a42",
+    "bayesian/_backends/__init__.py": "4dc7a4d7f4f3d9f1068e8bf1ca3e1db65a6b15a3a755a0d1155d2d1c29ee73ad",
+    "bayesian/_backends/conjugate.py": "2cb7c55655294a1c56b703c5d93e80911208385a317bccc653550784af82234b",
+    "bayesian/_backends/pymc.py": "0ba43fe1e5048a6dc3878cce863ec25a842d7a3b40424ffe78a3ef0bfdb7ba56",
+    "bayesian/_backends/sequential.py": "2a98c75bafe5d5d2533e0e30c6fdcd7506dc330bb3c452ce6d2c7aafb1131e30",
+    "bayesian/_validation.py": "261b15b3f59de6fd065f901cd3c6cc25cd9564081086f9166529020f0cb8d76f",
+    "bayesian/builtins/__init__.py": "71b0f59ddc6f1088ae912d94e93cf022543b426460dfa030476d75a9136d71b7",
+    "bayesian/builtins/conjugate.py": "e981e3f77729ae49e1a5ff3846a76a080912616916515148acfacf449e8bd013",
+    "bayesian/builtins/inference.py": "43ea7638f4df48d27fea74e94c31674d94a8d2949a0ed1272cf090cc5c0e51c5",
+    "bayesian/builtins/prediction.py": "bdf0266b94f2cc45acdf5016e73909c62f281bd1a77210bdfc9596522357e5c0",
+    "bayesian/builtins/sequential.py": "d61cf829bf675b1366fe341a0fb3ba3c74d4aecd70c46c08477faae941e23df3",
+    "bayesian/interfaces/__init__.py": "014e962e03b9a6c98991aa0eac446599fa04c029d9b4cecc3502142dd6fa7811",
+    "bayesian/interfaces/models.py": "bd72503a6e2bc25d845941c70ad24f6ce3c4e4604f200e7b93e29a7370f82aab",
+    "bayesian/interfaces/results.py": "54f2338fb601a5b17424097483a0b307502d45ba4e1fd0e4ba7ca4bdfd0c5bd2",
+    "bayesian/interfaces/sequential.py": "6683bf0fecd9a572e05dba94057f460025b4a93635f6f7843f3baf0f530a43f8",
+    "calibration/__init__.py": "a348066de51c7914830d57f05d0ae251b86211c737929826dc43769292932b7d",
+    "calibration/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+    "calibration/_backends/quantlib.py": "486a3c371cb46b837864e8a82ef8901d30ad8fc2f417dc5988808c2b2426b422",
+    "calibration/_backends/scipy.py": "f181a51a16597ff8cdce17876e83bf96c30deff350efeeac3856ed50ded9a7bd",
+    "calibration/builtins/__init__.py": "65938abd3950f5aff69e2f9fe432e4ea2be00b882665f9c63f973eedc144dc17",
+    "calibration/builtins/solvers.py": "267a0bae59c255be8f450ece7d0062006c95dbcc8504968115d498f56d7a8acc",
+    "calibration/interfaces/__init__.py": "2d6feda1a5ae69e3f1f0cc93801e1540e87c957af5653a3f095fc94150c98f9b",
+    "calibration/interfaces/base.py": "045bd0bc6ca07c0b9b8826e5fc53ae5c941457f496a261172530eb87f9f22d98",
+    "calibration/interfaces/results.py": "536ca9668e2a1bc288fff2c765438341208893c1287a1cd8cdd9af1692d91a8b",
+    "contracts/__init__.py": "6fc4ac992fadaf189607063152b85d7cc9c78a00a57239d11b3ddbb4b9a77376",
+    "contracts/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+    "contracts/_backends/quantlib.py": "7b234584bde30be1526d8c86488d0f7614dbea508570e69985b9d5e1f67e13b9",
+    "contracts/builtins/__init__.py": "a2460d52fcc24ae66e578e930816c46c74d9ad7c5abcd169471ac5011a42954b",
+    "contracts/builtins/cashflows.py": "9e8970a7f464a4805fb5362014fa869e1f1112a554cc0e8c5b3425e431f36ad8",
+    "contracts/builtins/conventions.py": "b3deac6b4b32d6fd3d370ac7be3033ee9638b216309c161c1d3a75d3646ec838",
+    "contracts/interfaces/__init__.py": "d0e08bf3cde67d664bebab407a55c41c1e853cff326b850698f8a1fc1bbf93e4",
+    "contracts/interfaces/base.py": "72782cd14f9280789f7703f8b192c0c5a4050ae8f0c65200c9a6deb85932fc29",
+    "control/__init__.py": "94ce7ca536851e62759126da33ea0edc9b41a5ede9e820aea866ba8c041f1f96",
+    "control/_backends/__init__.py": "f7416540369e35aed38f8745be7fe7ac64efd1ed427432caeb80e5135c973495",
+    "control/_backends/dynamic.py": "d30972d63b17331cbf2161d6e73e4e108e255af19b892105df09e9f17e3a57ae",
+    "control/_backends/lqr.py": "433d2e7a136c3a77d97261750235be570a53db17123965f0fc3edc5a76e46c0c",
+    "control/_backends/tree.py": "4cd0196284ec911a34a15f1d1e3897c075090a65787285de018eea823ee86707",
+    "control/builtins/__init__.py": "c848989c79dc8ab7539d896c8500c1b21caee3593621c391f5482e826aefd5c0",
+    "control/builtins/solvers.py": "14ceadd2191ddf49475ba6a99c21907928080881ec651342c92f6ebb9aaec24c",
+    "control/interfaces/__init__.py": "06b02ad5216aba92f91ad043ac5277ee6f365df6672cae8223be70b74ceb4cd8",
+    "control/interfaces/problems.py": "53b9903d4f896e05ef8d49ea03b0d67cb0e18f8a019cfcb711bb73923acd2d36",
+    "credit/__init__.py": "a41f1a23f2f7766cba60863d8ecdbc7f06dce77a2a432f341eee5b43c422e29b",
+    "credit/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+    "credit/_backends/quantlib.py": "615f4e5774838f110a2158d3b56a67e9bcd1c9b6a1c3237e3308dbcee0b8583d",
+    "credit/_backends/scipy.py": "ff1faabcd05c180e4bfeb8a2881d1eb8ff2a87c1a7ac5f3f21a6e22457745c73",
+    "credit/builtins/__init__.py": "9c6086a71c267bee38c1d0b96a72ad05e6d4c012a0ea0b55e4c050b08c10035e",
+    "credit/builtins/default.py": "e2d90bb1b3ea209aec0e25da351e0f02ab2a5773a3219cd8d6e19b17dd43b98a",
+    "credit/interfaces/__init__.py": "d48fb4f0b922740a6c5b779f7d613899cfc538dd3e157bb371d5e7e51aaeaee2",
+    "credit/interfaces/base.py": "db68ece4e797d61db1a1afef59d3997b3decda7fd25e91a10f57f7f74d25f0a6",
+    "credit/interfaces/results.py": "9bcc41e4e974765fd9eccb0c054c2ea39991fbf8d861ee43769c6cad3597c197",
+    "curves/__init__.py": "6c5c43fda8f7cc1e6d13a6d993cc9e02eb23312336d37e24bb7362f8151e81c9",
+    "curves/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+    "curves/_backends/quantlib.py": "72c88d22b6321987c5b348b1f3b6038152fdb8d0da7296a5d4f41786a1f6b9ef",
+    "curves/_backends/scipy.py": "67400b313e63c3d0e0e7446a2f0dfd12a01e97809a71d2107a5154de8bd59edb",
+    "curves/builtins/__init__.py": "f28505836eb2fda97f4c3868b1df295661d0024422227da5fdf31f4c2bd4f6b9",
+    "curves/builtins/curves.py": "8b41a6c3ed12168285a59987ddbc1a231f1575f2787e9ac1f1a673e4ef268891",
+    "curves/interfaces/__init__.py": "515772770c6ab0bd38e03b514b76c474a9fb742af0f02e78dcbb16c5dc9ee002",
+    "curves/interfaces/base.py": "e68704d6fc01844e3ce8ae00508922bdcd96dded6f85f723d29d8f78e3d143f4",
+    "dependence/__init__.py": "5cd75bc0aa477547250bec91792ad21db14dd5f3da8062224fca7ef4d281d357",
+    "dependence/_backends/__init__.py": "b6a31b938b030e407aeac40c770320d033b31b3c877c1350802857a3c503cccd",
+    "dependence/_backends/copulas.py": "be07424beda0b55c48a9e9f4d2600777bfc0c198453b0b415ae9c5ee2913a46e",
+    "dependence/_backends/covariance.py": "a6bfa04396896cf3ceb37069120806cb93c6cab32138e7bf45a20e06cd91298b",
+    "dependence/_backends/tails.py": "22f51608b2414e948307b59241b94f781a593d2cf9425ee8ac15ecce3cadfad6",
+    "dependence/_validation.py": "403e97542c81a178971b8f8563f4a3368ef156dddee5bad8a8114d87a9c9062a",
+    "dependence/builtins/__init__.py": "e655fad4597254e23755038f6d96e48bca5046cbb462519c78b6c0a6adccb103",
+    "dependence/builtins/copulas.py": "f4f6044ff5b97d43f6d9cc6573377776931f2e10ec5505bea21665909cfc1e8a",
+    "dependence/builtins/covariance.py": "e3e69e9d97b4cfe00df2f6d4b8eb8c917bd3bb013e51cccc9c04b5e93aaf43df",
+    "dependence/builtins/matrices.py": "ef7103bd01519083ba0f5be0ff5286eba175ce4b3910122507f3666dde7c59a2",
+    "dependence/builtins/tails.py": "5335366514e15533863e4f9bdca45c4126454e7d86bd3e9039dcdb32726e23bf",
+    "dependence/interfaces/__init__.py": "72f268bb33ecde78f2a31780c6fcc2945f723fabc4eebc19f4ab419da0e19403",
+    "dependence/interfaces/base.py": "599aecf720fac38bf1d7aa03b539e3302437c1eac8eacc8f79ca327abfede55d",
+    "dependence/interfaces/copulas.py": "4142d1ea100e5b2151037c3dc6ae01b00bd2d99266c2e4d90af8c36338135f86",
+    "dependence/interfaces/covariance.py": "81c90534e99028af6d7a205a829e15c41afec06aa99d52b2d8d53c1b6faa0fe0",
+    "dependence/interfaces/tails.py": "01a8afe7e92e17df1a7ef42f10cadddb10c6e36be3b0438bd56e3d5187841897",
+    "diagnostics/__init__.py": "32ebda04a09a7b2ad416d02d286be7861d5da7a34ddedeccb7c22b9f5ed68bc0",
+    "diagnostics/_backends/__init__.py": "f7416540369e35aed38f8745be7fe7ac64efd1ed427432caeb80e5135c973495",
+    "diagnostics/_backends/scoring.py": "4964581f58219af9e428ab873822192efc0ef09884800832946d55ce7a3b53c3",
+    "diagnostics/_backends/statistical.py": "a442a03f822b98cc888c6ebe4a187c649d1572b76d1ffbde3a6925138b22d252",
+    "diagnostics/builtins/__init__.py": "dbb9675d7a7651a33025dc85180e5be1895a23bd0ce5d25083ca2c1babe289db",
+    "diagnostics/builtins/scores.py": "07bd09f42dc69e0ce42c4a94b0fa7f5ba2d7f196128a12d7cea27efd41889a47",
+    "diagnostics/builtins/tests.py": "7094e7e22cd30812553b8311bbfbb7cbd099b5002d37e060016005ae637450db",
+    "diagnostics/interfaces/__init__.py": "85ed2beb99bcd4d11805bdab00230c663136197ccf7a2be3a1eb3f00862613c1",
+    "diagnostics/interfaces/base.py": "284752a1c17d4ccf053aedad407d6313d09288131e609b3deec404b6b81182c2",
+    "distributions/__init__.py": "d020d7cd710b50e21c27672539d79cceb1e7901abf6d8f96a783d6930b318a32",
+    "distributions/_backends/__init__.py": "1ebd751b4f63aff1eb8997dcd9833b6b18652008a4c9c0bc2c23764df87953ad",
+    "distributions/_backends/composition.py": "b9b87f854feab85c846ac2e8b728637681c69b0c58e41e0f7d5c2b1bce65b633",
+    "distributions/_backends/empirical.py": "f4514fdc001e1859c70160383628e15d12a63622d1fe35ce6f49c706e5898afb",
+    "distributions/_backends/scipy.py": "3657ea29160d8275570403bb7ccef77b35192f74a0157af93accac1debe792a5",
+    "distributions/_backends/torch.py": "30bfe05aaa9f9d4af4c78b13a1457992ba4d4fe698f8ec690b9fb083618f93a3",
+    "distributions/_backends/transforms.py": "00dda08d02efa9a674bec46e98fef016eaf23fd00f9bb04e92e8a8b7760f4bdb",
+    "distributions/_validation.py": "b8336813a0853bd7b63754cec776d0ce0f94f8c26e78f4dee41b32cf55fa82db",
+    "distributions/builtins/__init__.py": "e00c08a1a42cf40f96636861249b7f02321f71462af77ca15d516a833b14c774",
+    "distributions/builtins/composition.py": "b2720844b67ea2a9414bdbf74797a4f0f283447b5fcb222a917493995ac68288",
+    "distributions/builtins/empirical.py": "8d981a2b6d40dd120f8f2297e9e541245d4d7869b8f5d1d57a7bda4c4da556fa",
+    "distributions/builtins/parametric.py": "46586e77d4eb4dad8e915ea9d5aab0d3db594df0d3e1e8e51ab69d071532aa10",
+    "distributions/builtins/tensor.py": "ab1d49aa4cd6daac347e6c04a55ab5af3221d15a76e700f4852d610a728f59f6",
+    "distributions/builtins/transforms.py": "0806944b09d9222f1923e5bc951023ee36199ce9071cfe0568360ebe7e721e8e",
+    "distributions/interfaces/__init__.py": "d898e36b608e987c2ea2a3d4f97ac46f56d604316f4f82eb98504f15d88fe7ea",
+    "distributions/interfaces/base.py": "51e06e4c8bb5aa4b3526a1a91339dcad8a9041c4a44876c61a716adca817bce9",
+    "distributions/interfaces/transforms.py": "e1d618aea0d2d4c1c3703221d70ba57e3d2d2fc4017787141d5430c41aef2c31",
+    "distributions/tensor.py": "1e9b008c9e9c2ae4128f1f12f49b10201a72d219d10108123605ec031bb62e26",
+    "estimation/__init__.py": "1fe68739e42c003f978d074f6e648edee32e31782cd908f2e692edb48e0d7ca4",
+    "estimation/_backends/__init__.py": "c394da87f3962d563f7dce57556f780d12b6b1e536641bd8e1339d2b4774917d",
+    "estimation/_backends/priors.py": "91b0348e805799683cb57d5139a0575136adb69f648dc6f691fe0e051e68411c",
+    "estimation/_backends/scipy.py": "4314356aaa15ce0baf4cf6c62ab8424d3b7e16c3b8760f0a1e70d8c85e5aeed6",
+    "estimation/_backends/sklearn.py": "0692816e3655c8022254e8f4017e6bffd0de9529b8ed42631685ddda7bbb9408",
+    "estimation/_backends/statsmodels.py": "0256fe4e01ac22ae7c3f5e56ac275e674d3c068c041f7c36cc62273f9e88434c",
+    "estimation/_backends/uncertainty.py": "c4b64a08a50d22a2ea83cf2486c8c8133ff1da2f629738cf1e82c5af79ba6b4d",
+    "estimation/_validation.py": "a7a5294893628c72b8960608be6072041d38f007d4982de06d9dd0a9a3ce9d92",
+    "estimation/builtins/__init__.py": "b391097438b7460d07c0a41d24a864941ec5c018787b5dc77fb9e94274fbf2a2",
+    "estimation/builtins/least_squares.py": "b05dc974ac22324b4185d118286dbae0dd369bf8fc53cfe88108f939ea79e5a7",
+    "estimation/builtins/linear.py": "0c036689d30489a955440e233706023d38f1aec7865cb504ed8f88bd2f8072c7",
+    "estimation/builtins/objectives.py": "1961269c34d807e5190434ef85adad5d3e541c116a5cf60ddc841bc82877a2d6",
+    "estimation/builtins/penalties.py": "cc3d03eb0aacf948a95a1aa89b2febbbdd66bcc522067cc3421214ba9d160c0e",
+    "estimation/builtins/uncertainty.py": "144f1ca94808a4c485b3c0366efcf69d02ef933211ea20c99c7dde82c6265699",
+    "estimation/interfaces/__init__.py": "1102a5276db6ecb04382d512e570de87fe58b966ac287a3f1546f02b9ba657ee",
+    "estimation/interfaces/base.py": "d1cc3d55eeac64575d9a62665371efa041605153500d36b34af1cbeb3d4e0c4c",
+    "estimation/interfaces/parameters.py": "50eb73393934dfac2a20bc64727707816a8cfebd937175efb52f159cbdddb5cb",
+    "estimation/interfaces/problems.py": "9e2594e4f218facc2d92707fb258f8cf71cdd38cc342990580d887a8bfdc424e",
+    "estimation/interfaces/uncertainty.py": "78df83b8d2b47d2e8eb42f501d525290bf948ea2768a73c146f635f39e7f7935",
+    "execution/__init__.py": "f3b8d1ffded6c4b73c48fd0b4de7fa756098e053267e6d850a1a02e9e57ed0a0",
+    "execution/_backends/__init__.py": "f7416540369e35aed38f8745be7fe7ac64efd1ed427432caeb80e5135c973495",
+    "execution/_backends/liquidation.py": "b984ddb652aa487eaf0ba8f610169ec6af7c414dcf09a544ff68f3e280f8142a",
+    "execution/_backends/statistical.py": "bbb435f304d7a51e2fa254b6e22b6b2f19128ef578e16e079ebdb6d270e88cba",
+    "execution/builtins/__init__.py": "eba6eb3b16d169762371708c12b5de6c4f6eede111d7015be5f98f4a4be3cc5e",
+    "execution/builtins/models.py": "0c6d794143b1200ba294976057f63b415b99ad0dad9757ba81a0cec0eab44da2",
+    "execution/interfaces/__init__.py": "2d3785c7518f0079d2131db8e12896d83a1deeeec740ea30a6d6fb7caaa0c82d",
+    "execution/interfaces/base.py": "9976ba2bd550ce7eef90958c994c4e0afcf3965df8186dab930b0fea51d8aa06",
+    "fixed_income/__init__.py": "eb300d21f10be55bf4e06e883c7a340b23218aa2c53b59d74aef5b3a9319ceb3",
+    "fixed_income/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+    "fixed_income/_backends/quantlib.py": "5009a8e36be669c929238b0e423d4cc880fa9e66d461cc9f4312cd1e1139d5b5",
+    "fixed_income/builtins/__init__.py": "4d811bc85962c933a64616fb50144084de81f9d17c697bc17ff745f7bd352be1",
+    "fixed_income/builtins/bonds.py": "12b4055ccc36c497cf4898b831536276217b0863a95186a3358e2725e9823dd3",
+    "fixed_income/interfaces/__init__.py": "d8ac77dc7c93f80200908b65bfc94c2994b66dc499def59f0db5498c60e35b85",
+    "fixed_income/interfaces/base.py": "eae4efb3d668c5b354b7d42acae297b43e2bde382ac122ad81c52e05bf0011ac",
+    "forecasting/__init__.py": "aae7559b9c684e5e882cc09aca4134822efeae1ff6e22cc992310cf3ac40028a",
+    "forecasting/_backends/__init__.py": "e3e4b1ab1af158bfe120cd5b3c52160a39eceb1764b90df36aad28d69b3226dd",
+    "forecasting/_backends/diffusion.py": "89d13ff0333e3aaa06a8386301aedd64153a56a03eb0a2ee179bdd406646b7a2",
+    "forecasting/_backends/generative.py": "79bfea519c747b02b498e4da0708a5a85e5dcd3e236e8f84ef13425169d1909e",
+    "forecasting/_backends/heads.py": "aba3ec91f46c02f51ce204d1ae43797b558c24105c88cdc0cfd4728b7153d6a6",
+    "forecasting/_backends/specialist.py": "873e0fc7d4e47c6ca4e17a837b6b2e7a20522beca81a6e5439ff41b81d5f7e27",
+    "forecasting/_backends/statsmodels.py": "c0fe41df689c479e8fccb18479911ce2e8ff2318ec77f6728e9c32291e6976ba",
+    "forecasting/_backends/torch.py": "d27384a081dc341135aa10b660c7a5d18885580dff38c2e7d1e2883727f5e943",
+    "forecasting/_validation.py": "0716ea060ba73953b6d8d6318c8d8461ed46c493ba277a7e6e0167ff2ae112d4",
+    "forecasting/artifacts.py": "959b594be752797b8aca747c8f7198cb80742bdc378c0b40783e3caada7723c4",
+    "forecasting/builtins/__init__.py": "840b21a30febd7e7f8a21d9a2dd66fbf72c59655361adae5f66b9c06512c50d6",
+    "forecasting/builtins/adapters.py": "3e99c222a159f6a2db5564726dc5e16045da0a58844ccc28e4a9656397412c15",
+    "forecasting/builtins/baselines.py": "b0373af8e068e5e74d77ebe18e65e9af166b93b112c27e727b6d53ae11edb280",
+    "forecasting/builtins/classical.py": "45324df90f9fdca8c4911e26dac12193a44c6ce85efbb8d85585f40b4331ba91",
+    "forecasting/builtins/composition.py": "cbb0f58a9bcb98481c403e17fb5ef9d2d051d6d4b0459a5c1006f17742c23052",
+    "forecasting/builtins/elapsed.py": "9037a7c3a337d2a2bdd90c5cde4210459195304f11a322a72f9d855f07e9d256",
+    "forecasting/builtins/generative.py": "63f04e806fd4bec31ab87d51b90b5936407ffe35371a12f896f4c3c5cdd7ed35",
+    "forecasting/builtins/neural.py": "37c0de8ad0ca4ea0c13bb5bbad84a2d6ae11ea0c0f65dd5dcc23b4aab45d5e67",
+    "forecasting/builtins/pretrained.py": "14aff2c6a8d71605baf6d38009449379ad85787bbf1fc7266f02a307b44fad40",
+    "forecasting/builtins/regression.py": "1c58426df264305a349184d63425c995fa54a06f31ec3d8dd9f3363c24020004",
+    "forecasting/builtins/specialist.py": "a4069c817d407ddb0fd630ccbfb65ee8a1e45b6d53d715ad25b8c547a35cf94c",
+    "forecasting/builtins/uncertainty.py": "49fad4684451605e02f7cca0b4b0a04c4ab5a257a81ebd3df34d9a5f3230841a",
+    "forecasting/diagnostics.py": "2768fb6860e5af2e55efa4dced7de1f3e4510926b8124ffe235883b49b25ab96",
+    "forecasting/evaluation.py": "5e807a0fde807746cc55491093ee35eb7bff7c26315998bec022c95c9f097516",
+    "forecasting/interfaces/__init__.py": "140f80d2d013294f993bb69a9fe056e567ac84ffb587283284752f70ed224953",
+    "forecasting/interfaces/base.py": "ee7dbaee322a5cd0859c917de5987be15fb611a0c3033b0241003b1b54e49514",
+    "forecasting/interfaces/data.py": "89b609e0e1dfc75158e19739133abfb5edbb0d1a6bbf115f2af360a56d332216",
+    "forecasting/interfaces/result.py": "c2818f591e69e2f0863747c8405ce0fc4ec8329da055cf9834694d52d31aaa88",
+    "forecasting/metrics.py": "5c9c1abb1f84de30dca8adf3c1454c333c7d701f1a38da1d9de0913d133ad5b2",
+    "gaussian_processes/__init__.py": "fdd5afb46b47f8a050ba57d1abcab9fd458156a3e6237cd9d4803db769be4a73",
+    "gaussian_processes/_backends/__init__.py": "b148206b4a4173c1c38c917035e89a92436e822b064a2fca39551dcc0978c267",
+    "gaussian_processes/_backends/sklearn.py": "2df86abf5fb09e977d3c541e0bc8c33238e66c5f0a72970a2f83e3e3a0d3a6f8",
+    "gaussian_processes/_validation.py": "c7e8dc7797c831cd19f87e5f9b3f6c47ea30a132e1c2f30e35fd96bb9263683e",
+    "gaussian_processes/builtins/__init__.py": "51255f2c806302001d3bee82b5c6abcea6eaa23d77c86bd6943acdb9fb9504b3",
+    "gaussian_processes/builtins/kernels.py": "98f3d534a6e524062220417840793851a0ce8614d26062e34869278362dab2fd",
+    "gaussian_processes/builtins/regression.py": "65549d1d2cf80a95ca2db2f48a7d37073a45886ac7ccb65f1c411f9963bdb2d2",
+    "gaussian_processes/interfaces/__init__.py": "19bdb0c5bee3e32eb79fef0ca1487bab8a6dd4f847f6b37a2ca928cedc6d8f4c",
+    "gaussian_processes/interfaces/kernels.py": "e4856bcb92a02db9fd46f353e05b1049719555d00a0ae6196e164e18be00c388",
+    "gaussian_processes/interfaces/prediction.py": "038390c5525ae65f390173ae76bed0ffb8b53dcf8b8c3b75a40c6a1d2c1bbbf7",
+    "gaussian_processes/interfaces/regression.py": "f2dd7fd0c00a2086a7d04e6cdc0dd3dfbf81c7bdd5e9e34b2854aa9696c07237",
+    "implied_volatility/__init__.py": "f89b1a2cc1cd09e6b0f772dcc2b8c8a9118986071f0f4a4109ece2b9db118655",
+    "implied_volatility/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+    "implied_volatility/_backends/quantlib.py": "a719a20075b4ed04923315e7793bc43a1c1382b8b6265ffe866857a8bc2d495c",
+    "implied_volatility/_backends/scipy.py": "92cd92e443b1db6e6a16ed495d08fa10ce33c29c4aca23c4e8b1a0b337547960",
+    "implied_volatility/builtins/__init__.py": "d80d250cebd5db55500c4362b8984fbaf3a1fb3f208431dfa1bcd26d29bd58c0",
+    "implied_volatility/builtins/surfaces.py": "acf97ca332f4c5d6f917ece5d8f674491fcbac0e1ff6960142f895676454613e",
+    "implied_volatility/interfaces/__init__.py": "486b57582aeb89952f52f743162409ed913c1af1bff6ba22a05d7b63244735ba",
+    "implied_volatility/interfaces/base.py": "0759f558565d90e44c1edde556e7045e727a8ed0233c17620f64159e28b42084",
+    "learning/__init__.py": "745409491994c737060083799b9bb3ccebf10548a312f9a1b5d203657661b169",
+    "learning/_backends/__init__.py": "eb3c6a5d7eade08021a2ffb0dcd2b791828503781a57a795599a3c9a8c769a81",
+    "learning/_backends/sklearn.py": "16b028c341d949fda8cfcbfe4237ba0f9eeb1554d38d56bbcf28e7729f9b85ea",
+    "learning/_backends/statsmodels.py": "1e9edfa68b7c5cc33718b7d9e2c38d69d7efd54995c8d2750e405dd0a4ccc957",
+    "learning/_backends/torch.py": "4304bb90c253326b16f2a3e3ce9840da2e5bb98142ad2baaa4009f15ddea36c0",
+    "learning/_validation.py": "23ed3422c90ff4c5e531011a54babcda01f7a591878ef8451a19581f270fbd93",
+    "learning/builtins/__init__.py": "b4d8bbe5f79fbb3055e419c9473d599c4f65301de036decbbdba57d6560885b7",
+    "learning/builtins/composition.py": "cc4b17d7fcd8757ff7130a444b95e37569c1c684b96bd1742244effc8162f812",
+    "learning/builtins/glm.py": "64b1390508786b799568c6d21e255fc9b4d5f11339657464c6625b771f0ffe52",
+    "learning/builtins/linear.py": "94f25cd4798b3654125638940856a498df61326b372852b673c4e56b773d62a3",
+    "learning/builtins/neural.py": "f1c8b963d878d3a48cd4e02245b149e9c07804ddfa057bffa797c825cae56c9b",
+    "learning/builtins/trees.py": "5226c491d2e70e31604c93bb087f2a1ca635453df6aa6b28620e8b5477edd9f2",
+    "learning/interfaces/__init__.py": "5eaa08f85a870ee0cd65dfca81415e5b4a981e927b9ac5dc172713acbdf92c5c",
+    "learning/interfaces/base.py": "014bd29d357fcb7cdece2cd4d0d1eb92f8022b5457a78ef4fb394da04ccddc28",
+    "measures/__init__.py": "998c48d80e983eda5e9661f9e60f295d4d03001e4d467bbb029f83236497653b",
+    "measures/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+    "measures/_backends/scipy.py": "c9af26d22c66a6107b6bf4d625f353f27f635054d946742aad04a52445ef9072",
+    "measures/builtins/__init__.py": "bf8678b06607a2abccbee33a2130305b7f0cfa678ead6554047b84ff3ec54c16",
+    "measures/builtins/models.py": "a33d308ee75070a7e856d9ec830d572a3736771d0cc54721554dff891412ada8",
+    "measures/interfaces/__init__.py": "8a46496e0d6f13eae4cd4cb1e3c2f1dd024cc624f6d6d23ebfad42770ef913e2",
+    "measures/interfaces/base.py": "ac1556ca85feb8e5d65d8e5bbb3d39e21cac8fcc0ace55991c68c6e7d45a51b5",
+    "numerical/__init__.py": "30c0d34c65e5cf17f6a2939ede9a8743e2c3ef63bc0665621b0b75f2095b010f",
+    "numerical/_backends/__init__.py": "56aa506ebfb4ab7d2add9c20a74216cabc1da6ab1ed3c94ebc1a1099df6dfd77",
+    "numerical/_backends/accuracy.py": "93d20ed084feede90bac88eeb98410931dc4aa40044fd0b9807fc1b6fcc3a2a4",
+    "numerical/_backends/approximation.py": "a8c1cd8ed98f2426e455c3827545d6e67f0bf06c452b3d0af007b19c9c8cc7db",
+    "numerical/_backends/autodiff.py": "e9577e74d6684c6d2c32980cfb8e31eae181a59008727614488bafbee72b40eb",
+    "numerical/_backends/calculus.py": "1eecea6e4d44b7001a1f35d858511e33faec14b5bc8383d7335bca3fbbea7ec5",
+    "numerical/_backends/construction.py": "536641ffcc8188945a636ec26fd5a2f2c3237174e9e08e2c69e8ff12f196256f",
+    "numerical/_backends/fixed_point.py": "d9e464aaae465da37afb25efeb351b4cc264aa66c67cd4ed60ef3480a7e3b607",
+    "numerical/_backends/integration.py": "c80812871f6ec1c59b54543ac016179f9efefe882b25cffc2cb4e8268e0c807b",
+    "numerical/_backends/interpolation.py": "f81902634cf208229f601363fd70387a00c39e383e071f3d7cee65f6d681d636",
+    "numerical/_backends/linalg.py": "5af80b4eecb54a2e707d484717c5f5973cb8d2a7b54137918a43c2cd7abba1ca",
+    "numerical/_backends/linear_algebra.py": "0eb9ab52a29e0b33c21ed4085fe209f1a957bd2a6113153bd4efc334635d3673",
+    "numerical/_backends/matrix_equations.py": "35a033e66aca9adc74a18ebe7a8ce8b4b8138b56c892d124647248d0f40eec33",
+    "numerical/_backends/ode.py": "cb15d5f5b3f7312148b971f7c1a0c00ecfe8f12a4fb68595775b8bb3c78d9ba4",
+    "numerical/_backends/products.py": "4e613d804980cfb4cf249fa457dfd8467b60a7515354ba395cc8a8ba35b5db3b",
+    "numerical/_backends/roots.py": "74446bb5c7d9fa89348ddf47916298ce4bd40da3848fc36f6fda677f3b35d19f",
+    "numerical/_backends/sparse.py": "8c2a60b59c806e391597ef8f013d8ed7c16085824814fcb073dcd5df971c368a",
+    "numerical/_validation.py": "6d1194f6373f2d62b79199e2116ce82d3f977079c610c31f1c6f36051d2229ad",
+    "numerical/builtins/__init__.py": "b4f987a7fb5812c88bccffceebd641096ebf3d58c52bb7a1825189e1988351b5",
+    "numerical/builtins/accuracy.py": "e217d7707946b08fa8be40a4535d9e985fce8a2b275a0e49833e16a40970be24",
+    "numerical/builtins/approximation.py": "13d5ed2a76a500c9003500c6639247a90a6538271b083fe89330f45b00aa86de",
+    "numerical/builtins/backends.py": "2a3d55e02c23ec1038a839259abb471deb5f98e153a2d783da321a50ef48b39e",
+    "numerical/builtins/calculus.py": "cda05f0a282cd7af5d2b490213f3a2f8b3df7fdff5bfc780a974e0c7f1fd9619",
+    "numerical/builtins/fixed_point.py": "7b84e4c618b560fe82f09e6e1179745fd10c93ebd376325d9462312d763b7c10",
+    "numerical/builtins/grids.py": "ddbd8ca1a86a475eb8bb04d5a4bc5b3de780c4e60eec81d0ab4f13d97cbbf1ad",
+    "numerical/builtins/integrate.py": "e4c048f7a5bf028821b3602689bb6e3df1e3963f2274d2c628b4fb7150bbfabe",
+    "numerical/builtins/interpolation.py": "a84508592b0e3fda1deb0d9b30ff35a044d1954fecbd5bff9c13862290591db1",
+    "numerical/builtins/linalg.py": "5ca2d30a9793317fe122e920e6d123521f41f1098d49cda17d28e71fa3e309b1",
+    "numerical/builtins/linear_algebra.py": "980f16f06a1e621e111dd3881ed36e5122dde1b2c26966d414e7c2a373fd5d3a",
+    "numerical/builtins/matrix_equations.py": "d04ba834fc6ac57038fbd01bb34385f984e76ea504771d6075e280391c267d76",
+    "numerical/builtins/ode.py": "cdf63e05f15b94712c3f4d51f5e6a4a0af54447137b77740eb867c0d4a539f1d",
+    "numerical/builtins/operators.py": "b7bf2d4bffe20fbbdc2577b7158b93e6c044e5f46940fb885bd744a8a1ab0162",
+    "numerical/builtins/products.py": "3264d1b00b9d5fb8c259a380472dbf8e54de4047b380c90fd9244cbc8cfe87a4",
+    "numerical/builtins/roots.py": "84453b9bec811dddc576ff1f2d18fafcef57c782c13de2f5e363a1fbfde63f4c",
+    "numerical/builtins/sparse.py": "cbe1ac064aca9ee6837de697846855f90c7b220535489a85d1a6e56ac5cb716c",
+    "numerical/interfaces/__init__.py": "303318e897661e61a4f75f8acc94ff58aff5bd9e4922e15c07ffe979ede1f195",
+    "numerical/interfaces/accuracy.py": "d417fdd938b8b65fd9151d2b1266d8a9e1fe8f6282925fb04145fcbf61d57558",
+    "numerical/interfaces/approximation.py": "5da0c4e5208363e801fed0b5de8e19a78a358eefdfc546bf3f21db5d3b603fd5",
+    "numerical/interfaces/backend.py": "ad52aa3f2eef1ef3a9dd4ff823de3a87ac64f7eea4b0b888cbdb3063cfe6fc42",
+    "numerical/interfaces/base.py": "ebccb8a79390728df33ed9b27afcef8d07721f32c77d2a11de4d3265f545c288",
+    "numerical/interfaces/calculus.py": "3105586fc032c81ac90595533e06a9ce3721e95e4e1cb03d3d5456f55a12b6fd",
+    "numerical/interfaces/construction.py": "af00a1a49bdf407204091b0a38f253fed7ae2c45edce1f986bbba1acdfedbf22",
+    "numerical/interfaces/fixed_point.py": "1ae13a4e2ace36ce5c59519745b5050d622466a8878e1834fd5ad67cc676ef5a",
+    "numerical/interfaces/integration.py": "60d46acfecf1c7f1ac306438e191b8c498f63f87a4e286e83cef3ab7d3dd958c",
+    "numerical/interfaces/interpolation.py": "05e6c6a3ca85cfca01c9a23b67119d2e71d9be2fb74225839b315eb260acce24",
+    "numerical/interfaces/linalg.py": "9ac51d73835d65a4af28c7c1cbb23b778a6546cda13e2c16a1dca314ab5770ed",
+    "numerical/interfaces/linear_algebra.py": "7a8f144cb10a929560cfe2f85fd30e6f29ed5b625e869f12bac53845de4d5ae2",
+    "numerical/interfaces/matrix_equations.py": "23c19fe36e1cbb5793214df863eec1ac7d7a874f8d4809e33462f702e84da5b9",
+    "numerical/interfaces/ode.py": "dd9e96d6a90c14097bd548061214dc30a7cb8f9a638c9324a69aef28ea8ad036",
+    "numerical/interfaces/products.py": "50e7dc3cecc77e27ab19c0cd90f3e3b7a3f7bb75fbedda301a1e03907273b921",
+    "numerical/interfaces/roots.py": "53199f535ec25aab2ad50ee304ce0dd2bebc24d536dedbc936c983c5bf6e489b",
+    "numerical/interfaces/sparse.py": "91a17daa04bd6aa61630f724ba6d8a163a48164933536f9d756bf7c59d040099",
+    "optimization/__init__.py": "d6230598d64033a3a71fa48984cf0371c47fb333c996707e2d36fb4c58068dc1",
+    "optimization/_backends/__init__.py": "f7416540369e35aed38f8745be7fe7ac64efd1ed427432caeb80e5135c973495",
+    "optimization/_backends/cvxpy.py": "fe4b1b9a553166bcee159a8452cfa7caea1852ae377874000a94df7134d6455f",
+    "optimization/_backends/scipy.py": "33f225c8a436e44baca42eb7f4707d80ca4165c9f4468b0fe9eb1b111607f102",
+    "optimization/builtins/__init__.py": "1abd08792c64134c8d100cad19a587dfa049fdf7bf56482ccc0f8dece31d60e7",
+    "optimization/builtins/solvers.py": "fd695c2cf301839588da797768dc691b4d6e9a5c910873f83bf2bc25f8d9b7be",
+    "optimization/interfaces/__init__.py": "ad5edbcbe712d69829d93b7b8eee8a5381ef9fb53bd3ea72f6b4d4cb56ba314d",
+    "optimization/interfaces/problems.py": "6f585708cffcbb41c88d0634148c123cf9df364d920ae0be32798b35471612bb",
+    "policies/__init__.py": "4c5b9dbc0cee444bda8877ab86dd88da7baed3ca1c77646e38be4ee6986a1824",
+    "policies/_backends/__init__.py": "f7416540369e35aed38f8745be7fe7ac64efd1ed427432caeb80e5135c973495",
+    "policies/_backends/transitions.py": "dd297d4c0ee3cc2e3a3383a11ed6363c75b42c4688199d6d16f0bb33bb071414",
+    "policies/builtins/__init__.py": "dfc1395b7eacb53a0e03f85238321bfb8fd1b66c80d99baba18d2ebd810f4b8e",
+    "policies/builtins/thresholds.py": "5963da67d0056e48a00b85c1835ecdbddeb8d3488b9432f4afa0eed4fa1f316e",
+    "policies/interfaces/__init__.py": "a9e0088191826de65371b3c92d15a01fd4fa1558a05c1c9680204101fc57ce3a",
+    "policies/interfaces/base.py": "91f5ebc8bbee545e4b517a79f4076b11e4d32704bc5fc38c5cb215b29f25f1b7",
+    "pricing/__init__.py": "f2071e6f3a819ebf6bd8d418fdc16d0707d056d5a5713ddc386b03d80d7db357",
+    "pricing/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+    "pricing/_backends/quantlib_engines.py": "3b343267ccc134def01b4b326c4766878e1bacfac0476b5ff2170cd22fc52733",
+    "pricing/_backends/quantlib_models.py": "d00cff72be86390578c9c2e63f0aa137b7633a53d1c1985abcc76bd64b0a5202",
+    "pricing/builtins/__init__.py": "2d9b80a22c8cc3e0973f754ce2b3071ba8d50a0a785a661450809bc0eea33945",
+    "pricing/builtins/engines.py": "ca2f09a7a8e0829e9ea8325445cc380016e6d193e56a7fa3b5a29297585a3f8f",
+    "pricing/builtins/models.py": "2511bac3624e5eaa7a438e1eac3e28318eda9cf123444d29bfdec61973ae550b",
+    "pricing/interfaces/__init__.py": "bf5febe66ceae46201e84ee0fa4fc51a49f7534f9fa2f0de138ea50152bf04d5",
+    "pricing/interfaces/base.py": "d4df2390f93b928678c69c9b26a67e15a60060ba1060142d0e475922923f8d3c",
+    "processes/__init__.py": "d427b11694f1d4b51b84c52392c03edbfaec3de4871f62d8c3992483337ba2ca",
+    "processes/_backends/__init__.py": "93be45202fefc6303c2f8acdb3e504d885b2333cd655872208d2d1472ca8f919",
+    "processes/_backends/laws.py": "29e32fc06ae3ff606ed366675833bce4d17da13f8bf4c1d653fab221687c3b77",
+    "processes/_backends/quantlib.py": "387bcef82d26e7e8ac77c9b0a340172c3c5794d548af8aaa80a869a75d90547e",
+    "processes/_backends/sde.py": "f3b404cef0cd27d7d01c05ea6feba29d614971e7f2a0c68af665284d3039fc25",
+    "processes/_validation.py": "27e9de962f2d6453ef071abb8a8aaf4a16155f29bfbfbd4c07efcf9a687209b7",
+    "processes/builtins/__init__.py": "c8f59ffb70efe08dce16af6df17a0b76f314e01cd6fac844f29a9fdf8ab2c4d8",
+    "processes/builtins/base.py": "fe730e3cef77635ffb7a2748af017429c605f600265b38b7104905b22ffe92bf",
+    "processes/builtins/custom.py": "1f6609872420dc55b8f840532746730875940e0515a6338f7220ba784ee4a410",
+    "processes/builtins/gaussian.py": "d36fa68f006a4ecb014a3abdd174b343631e7f1cce3a0114b7099463f200a25d",
+    "processes/builtins/heston.py": "36e46cdfa833b7d6ff5307803165ac2c514dad6bf8fd640f794f4710dfc72a2b",
+    "processes/builtins/jumps.py": "f7338e7bbf4f37ae587b44298fb3d1448fd2dd5007f82007701f574e604bc1aa",
+    "processes/builtins/positive.py": "bfc000026d6023ec9166a19bf95e81e599638599751da591eaa3ae637a21f703",
+    "processes/interfaces/__init__.py": "6893cdff11e845e99d76cade95a05a3a9c152daccddb23d6f1cc0162cf1a6bc9",
+    "processes/interfaces/base.py": "5cf03cc43b86cc1e7c974047aaf4e726d9cec12cb6e2685d066e67e0e8eb562f",
+    "processes/interfaces/results.py": "6526f93b5431affde39711c5c21367966b5776ad91defef18e103fe675a8b100",
+    "rates/__init__.py": "d2f3895aa4af7d915827bf12c68c4f90dddb9bc9f6f0a7c0482ec5fd20073c8c",
+    "rates/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+    "rates/_backends/contracts.py": "d668f1231f2c550ed1d2314afeadc718e1d3365d7eacd27577a1ea3a40730f1b",
+    "rates/_backends/quantlib.py": "29c05801dc285f45a90227b761e043204746b121b336d00ca1a470f29f258565",
+    "rates/builtins/__init__.py": "cf6f2411c7192b8444dc74a85babf5bd539d5c19ac28db666b931482610a1df2",
+    "rates/builtins/contracts.py": "c8696e2d8da28b4520e3536e3d93c036d9f7cb56cef1c075bddb343d1981a629",
+    "rates/builtins/engines.py": "fb75caaddb7aed3212066a1a4cf0b1e9bd20691451d7358b0b05437d56e9320d",
+    "rates/builtins/inflation.py": "5892f48db0574a2b446ad91ab1a1f38659e2861d25d8966b46eab045c0fb0c45",
+    "rates/builtins/models.py": "6f7ab2667df854d58125ea105ee10d0a762f5287dd7703f127bd380401028cc8",
+    "rates/builtins/processes.py": "231fdc315fc46513bd9e942ee3a78c35babe85e45f89fcbb8ef207bb5b237460",
+    "rates/interfaces/__init__.py": "4e79c5c1494f550443b4abf173b9f1ef5b1d40d74c8d3af8d7c837e00d889a9f",
+    "rates/interfaces/base.py": "577ccf28751c381e3392fa010dbb64b01b75f09be6a4433b17f6bff2b864e160",
+    "rates/interfaces/results.py": "48e07c4487239e85daad9a0e076d7014e8c0fc526c5d46e873dbf161f66e5355",
+    "rates/interfaces/swaps.py": "cbc4ca88a4e327bf035c1e0140aa18d419cde1988ae7607368dd26e568cb2c7c",
+    "regimes/__init__.py": "bf4b0437517b01d9dbf409e2abeb69ab2f69badb6f4ba5a2a2a5ca37f68c2449",
+    "regimes/_backends/__init__.py": "3d5baee595cf33e01a97e7686bae1d6127d80e761295ea933473b6cbedb0c45a",
+    "regimes/_backends/hidden.py": "5dda1f01f5ac57219bbeec8134a4a9335badf16aa9c49a01cdc50881c7d36bbb",
+    "regimes/_backends/switching.py": "b03744e3aae7405984448526e261d9d80feecd1b6eb36c4fc3cabded03112e34",
+    "regimes/_validation.py": "fc12faa74cf59c7696a7901b1e934aa713362252e19b759a72a344313d0d2218",
+    "regimes/builtins/__init__.py": "3060fbee4cbb9bb5f9d496cd51e219f2cd5e438621297e2fb1819a10caaa3378",
+    "regimes/builtins/dynamics.py": "4bf38f8f3bb22809626a8bc450079ccc9c1ea954f625661b473eb00e925554e9",
+    "regimes/builtins/events.py": "50dce556f4dfb8eaabff5b71e8e4ed27df6e35614267b477bc6d33f9c99c772f",
+    "regimes/builtins/hidden.py": "546a2f974605bd28047204ec9fc9bb881bf3cfd0b1ac8b56de1933f38cd7f389",
+    "regimes/builtins/intensities.py": "5a2c90244a420d337245f7d751b0bd5ed0f854f00691c53161e03e1d46c9319d",
+    "regimes/builtins/markov.py": "5335723bdd046a760dcfa91bc6ad7a31a0c0b6396cd241d9acecda36364dfa35",
+    "regimes/builtins/switching.py": "769e609bffd670ba623cb0ad6f3c39a7c686ec25908d3f64011273c70de2531b",
+    "regimes/interfaces/__init__.py": "b23ed43d316c42242a13f95be6aab79d6d6382e05c3d40b80ef69903cc63b1a6",
+    "regimes/interfaces/base.py": "ec41558e19c26bee295604aebd1ebeadf1c35ba9131ab525c43e3b0b58d3a562",
+    "regimes/interfaces/results.py": "7281494233cacdc9dfa343978a2502584672f5bc40d9f6c910b03a63c6fbc6f3",
+    "reinforcement/__init__.py": "61fe8367d16bc8ee0f277d632f774bb76904d6432e1dfd5ef70638f1ebea914f",
+    "reinforcement/_backends/__init__.py": "f7416540369e35aed38f8745be7fe7ac64efd1ed427432caeb80e5135c973495",
+    "reinforcement/_backends/sb3.py": "c5a617b8a4f14cf78f87f641f931c25b7e2691776a7e25060b6ead7af57f93e4",
+    "reinforcement/_backends/tabular.py": "ae424bb9df30223e0ee3de2536fcb27a52888d8d06e724cd9a628f9b4252c266",
+    "reinforcement/_backends/torch.py": "c5b5bab0ad0ed823f229a6c97a2c84a09d42898b1f25cd8f0bbbbe3f0dfff1c9",
+    "reinforcement/builtins/__init__.py": "d4c9182c20550ae51642c5cc76cda1b9b9fde71383675c022848839946d55398",
+    "reinforcement/builtins/agents.py": "5a0b6cf1c28c0a566ccf4b8e998ffece5e50fb1d41dfe205e1067046a4caa320",
+    "reinforcement/interfaces/__init__.py": "19e1da992c595e8e1ae33647cbc51a0c39216a5b7e1ff29db5c7f662293520d6",
+    "reinforcement/interfaces/base.py": "2a855a89e846b8ec9e9501df4dabbf748733086bf096afeb1e07a74ffdc88845",
+    "risk/__init__.py": "a262eff3e8a8722e507d10ccf9a6fa364bfef52c5e522720faff8d083e413f79",
+    "risk/_backends/__init__.py": "f7416540369e35aed38f8745be7fe7ac64efd1ed427432caeb80e5135c973495",
+    "risk/_backends/empirical.py": "7fbd6b5cecc497c21ae7572d0d45ecdd936cc382e9d6475ade81c65ed966f466",
+    "risk/builtins/__init__.py": "301b31c5ff4bb931f9047b5b60208a967e3cb61db080ba5e5e4331246255287b",
+    "risk/builtins/measures.py": "dd056b7d9a2c5829a5cc34730c8a8186131d0acb1c195dea3ae096447855b3f3",
+    "risk/interfaces/__init__.py": "c5ef14beef5cf1588cbade9811202ffef3ca59da1932f47c6fac44dab47bf609",
+    "risk/interfaces/base.py": "7f0366f2c3548b30489c3d5c011fc6f6abe525395520d4931d1befc5284a60a4",
+    "robust/__init__.py": "0b0c0cbe97c21f0ef519197aff042ed183144f60ea766e2f1d9c76cdeac8ac1c",
+    "robust/_backends/__init__.py": "f7416540369e35aed38f8745be7fe7ac64efd1ed427432caeb80e5135c973495",
+    "robust/_backends/cvxpy.py": "fa30386d85a981475b3dc41a2f23fc98241fe51e96afe36835592fcd86a820bd",
+    "robust/_backends/scipy.py": "e8151b7bfe4cc86b035a7cffd43cf35c1a72ab8725b35bdbbde260a433d42a68",
+    "robust/builtins/__init__.py": "2a29389176bf393e59dc1db5225a21b5a74fea74f1f7a4a1f4fc3fd4938735fd",
+    "robust/builtins/formulations.py": "f1a3f5cf3cb9f64b4324667478e0ae7dae2b5f6e8ae8f96f9728a09fa5c516f6",
+    "robust/interfaces/__init__.py": "4bdbdf2a7d933b277872199bf62424c36fab75c6c1e8502ff3a7320a6076fedb",
+    "robust/interfaces/base.py": "56e106142365c137959603eed63d16bc772a4b7edd0671c7cd7316bc7fea0bff",
+    "rough/__init__.py": "f03d5ddc4b3974cc94a16db4e974ed0a7fa559d7b8292b818a213684c6205555",
+    "rough/_backends/__init__.py": "115d0cf1b6123674f9f284488d6bd1aae9a39450514f340de1571492154863ed",
+    "rough/_backends/gaussian.py": "380d487e2163df1558aabae430ccf9d3748bc385bee79e59910f440fe40fa12d",
+    "rough/_validation.py": "56edb3e2e53965ede55b67864be939a168239b51d2c819b01bcbf8d00dd18d56",
+    "rough/builtins/__init__.py": "d1db1d95bb632f8a5bd5223808ef5f759645ca53df58188ab9da61423e635de1",
+    "rough/builtins/approximation.py": "afb1850fe8e8188feb6874abd515d9cd9addea801fb013e0d890d7b0624a7f1f",
+    "rough/builtins/bergomi.py": "0b8695c13eb02f41c0d2b58df62d7b04aaffab42b245c9d59e6cb9dc3ee75894",
+    "rough/builtins/drivers.py": "290dd5881ee22a0b8a33008e02d08e8f51d32566ceb1005a38c13e9b26246c2b",
+    "rough/builtins/kernels.py": "3d2d71f727bef07fc872948183e879e9b16ffb61eab8639c68bd370d91e820ff",
+    "rough/builtins/variance.py": "fb49750159580341cdd27eee212c115bf095b6fa7111be755c9114f1ebd8d56b",
+    "rough/interfaces/__init__.py": "223c1f62b883ce3daa94e9a57e0e5aae71706993c540fe1bc3e2f0d01c69e0ff",
+    "rough/interfaces/base.py": "393476c5c1d8e14bbcf5b6e851713a226665ff80daadb075e7666fa2d7838532",
+    "rough/interfaces/results.py": "df3468292302a91cd1df91fc47d14196e4f72c04b5131f92e4df1233875badf3",
+    "sensitivities/__init__.py": "cfb4ea3a96397f66745f795ecc45eb366827fd4043b7da5915667b48ff364860",
+    "sensitivities/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+    "sensitivities/_backends/scipy.py": "591243cb2ac589a1aabb0293dafb76bcea9bcd228d2b995ea93e419fbbfa6b03",
+    "sensitivities/builtins/__init__.py": "74b1129edcab1e31a2b6327da78ff153fe97684f06f6eb1f5cc8a3779863047e",
+    "sensitivities/builtins/geometry.py": "054a53bdd7c392e7626143ee2b3bbb91d585ccd708fb091899586035b9f38082",
+    "sensitivities/interfaces/__init__.py": "952ea4cdc53c730702d84df70b44f3b6ef62ad5a725cbbaef7405a60b0bd5a38",
+    "sensitivities/interfaces/base.py": "a00251d18b55157f742d2de12b09ef972371e249fff0b0c45ef926143b2e09c3",
+    "simulation/__init__.py": "9018f8a8d25bd3bd987a1385bfda8652269044680acd2568d24c996356646bea",
+    "simulation/_backends/__init__.py": "3c01d1069608c28d57b7497ce37d6715426390b33c1ec03a392c1bb08198221c",
+    "simulation/_backends/random.py": "b0a543cf302b03bcdbb1fe588c6466e3895a12ddc57a56cfb5ac4102905872e6",
+    "simulation/_validation.py": "b1fce8f2a9db5a906f7385803f09bf767f3a09eeb85ab3f3dbbb1e53c1978a43",
+    "simulation/builtins/__init__.py": "af1a0f3e77e48ae5d40f550da4f3edbab14b6a9724703c715cb76e449bc6b92d",
+    "simulation/builtins/drivers.py": "9e6dcfabb410f5562944c133d5097a67307955ca1c7a078ebe1b1ea54883f7ab",
+    "simulation/builtins/estimation.py": "bc3b37a7927b2069518729cda4bc2191897b5f16efb4e0b4b9e031b8619335a9",
+    "simulation/builtins/gaussian.py": "1aa260e14e0232f24feb8fb7b4dc648480e9d3030ef75e93e85ace2ce0cee31c",
+    "simulation/builtins/observations.py": "96f86c32189a426096b4e19433fdbb1746c518c5cc4d4f66d75af9df40182a7a",
+    "simulation/builtins/paths.py": "100bfbec99a46b6d71c8e5c67240838c8fc28cf90385eee08b1e569891609c17",
+    "simulation/interfaces/__init__.py": "37a4988bac520a6c804990368842876e79c872792b18605191a23f274d66859b",
+    "simulation/interfaces/drivers.py": "972b166e878ac58f80b3e2f21da5289fb0940a65016dfc29cb8a993876ceaf16",
+    "simulation/interfaces/estimates.py": "75a71a576eb8046d836bbad5e194a882e324ff667820f205f9ae009a4352161f",
+    "simulation/interfaces/paths.py": "3847045cd5e2994d28bba56e05f5cd0811dca57cebe0cc1cf1137734e3aa93ad",
+    "state_space/__init__.py": "2c6b92171725944f8154589a20c368a163e843aee4a31a86401e1f160c354571",
+    "state_space/_backends/__init__.py": "8780a275215588e4e7f9ff5881bdde03d77dc4ad0a03b9f6999728a7dac1683a",
+    "state_space/_backends/linear.py": "1e7cfa057226aa9d62df197c626f4ae5a85f896cfa54b245b2f4fb1f47ac4bee",
+    "state_space/_backends/nonlinear.py": "b6adfef41fecf0fba5fe379a7fc56e99d0ae11046a7b049d800d3f9e7f2eba68",
+    "state_space/_backends/particle.py": "814c0e48ab1e3fe800906090f80e00bae1dc442f655292de46c05a909ae4ba0e",
+    "state_space/_validation.py": "ebd7564f43a028af2c7a2fe7244a7fea4de294fba4110158dda4f59ebcb3f812",
+    "state_space/builtins/__init__.py": "c64b3f5a6ca6fa560ef8da5c52161e89e58d204b723e767768dc3f040b1b632c",
+    "state_space/builtins/dynamics.py": "5830f9787f28e8929cc80ab161dc7c711d637d05b6813ae949b988f867be1a69",
+    "state_space/builtins/filters.py": "e5f7e1d23e0bf933f1b5b1a71661d3bdd66a3413696f89cb9eebf7c1c53f8cdd",
+    "state_space/builtins/models.py": "57f67108843d6b9d01d4274a8944ef9ec4447ed9c0c3be4f423db2b3e0ba699b",
+    "state_space/builtins/simulation.py": "179e8388209a78a65406c9c4f2570dc77369a9784603fd15340b8690eb7d38d6",
+    "state_space/interfaces/__init__.py": "64822ec0bf8076fe338d365fd22c6d45202eb047cb7e115193d84088dd737b89",
+    "state_space/interfaces/models.py": "910bdb03a194141bb1e148b2c1fd16bb4705ef2fdad6f138acb6538722b12959",
+    "state_space/interfaces/results.py": "71438425b00f42a13ea076f68a37e36a44ff25de367c6120c01ec8442a647931",
+    "stopping/__init__.py": "36a2e1ddcf2959572772250f7372dc13fc38fa039491ad5d99bbcd374bae36e0",
+    "stopping/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+    "stopping/_backends/numpy.py": "6236255978e899d7c23373d1bf6d652f4d54711460a86138b631adb05a72bd3c",
+    "stopping/_backends/sklearn.py": "f212597d6e3024fe957c0e3b4550ca4399692d6c7ef0ce37c2b02dcad38b215c",
+    "stopping/builtins/__init__.py": "26a695de907c086dc40243ea21b84c7f29dc405ed7789c1ce09d71fe0e675064",
+    "stopping/builtins/solvers.py": "29682c1a94f167ccc2ca5157ec7bcefe238ef5d11ee42fe7877b3fbf93c8f196",
+    "stopping/interfaces/__init__.py": "c19ced10a713ea531eb72baa065ef3b882b3a7ece0603ad31a0066fc5b831143",
+    "stopping/interfaces/base.py": "cd2deaf8d92c8f9054cc462ed7b6652ac6f81bcf0ec46882ddcad0a2706ac77a",
+    "stopping/interfaces/results.py": "70da62565050ee602fe7f8a54959202f56d6c53bf2e561724cd195fbe3f611a7",
+    "transforms/__init__.py": "c9aad45246214f6ac22a46882d8f1b27208c7a697421fc613a3cb10f133094f9",
+    "transforms/_backends/__init__.py": "e798a5802ae3c3d95c9c1da900def18e8c5fae2fb4e1924d54baa9c92f80bc7d",
+    "transforms/_backends/scipy.py": "95bfd669ed3b99116edbde937d61c1092c32a1ab9f06208d2ffa7af7b435859d",
+    "transforms/_backends/sequence.py": "85cb51d7ee7fccf17018840975708e79392b3f20cd6466d3086b666e7e4c8701",
+    "transforms/_backends/sklearn.py": "db433f37ababf5f31dc6f07fd959f2e5bdefdc9037fdb356e87f9f5d3f2bc884",
+    "transforms/_validation.py": "a8d1be6f4ea7dd7b091d4309e20521aeddfff9e23fc9342a2b8a27639d6de1fd",
+    "transforms/builtins/__init__.py": "f18b361572f6cb4d45e42a50cbefefdf2be4e2e9dfadab910f3c4ecd5e2d0957",
+    "transforms/builtins/composition.py": "ea4f8322d1a949b0f78580b30bfb8688fa9a5753065323d428cb0a47f8daa6ff",
+    "transforms/builtins/decomposition.py": "813605ee46b0195ab3aa8b5511f1690de9f7a80cb214d2536b7873b9be2c4001",
+    "transforms/builtins/geometry.py": "ddaa4b0c76c71cead4830b7c07bd52f9bd8a903a2549f59d5bdbaa54036947b6",
+    "transforms/builtins/scaling.py": "79c528b0994c70b233307d18e858a89405b4d8cabc0e00f0f8a17be88308031c",
+    "transforms/builtins/sequence.py": "cc57a3b53cf05f1298cdbd3b342519c0991dc255d394cd5c479a100b3554f3ca",
+    "transforms/interfaces/__init__.py": "ff05e517bbc81aeaeea3895f614ae4753c21df6b9983a6020971313e0cf7dd02",
+    "transforms/interfaces/affine.py": "aac449cb49dd1a8818004402278ec84b5d16b25b271c64e71ce8d3025423b542",
+    "transforms/interfaces/base.py": "7c909e98def69081c638e68fe7c9028b730616e187981f48d8a878381b4ece88",
+    "transforms/interfaces/decomposition.py": "5375b9c303dd40d8c63bac931d44fc7960686cc3eb4c421de4df0fef6a817d08",
+    "transforms/interfaces/geometry.py": "8c4571877744864747844cb6b7cf9dc3c5ef4360822a49ae25a0d34f42eeb2ed",
+    "transforms/interfaces/sequence.py": "5b55a6d081827c276bd36fd78c0cedc96b2e564e794f84d5bfda290835107fb7",
+    "types.py": "ab16d903508af4787effb5b64add5750d413d1ecea0e0ebda53eba0e7fabd7b7",
+    "utility/__init__.py": "d005d8fde1e61c3a1d4cae38d4d71ef70c4c5fa2ba805a1b13b29c456f0b313d",
+    "utility/_backends/__init__.py": "f7416540369e35aed38f8745be7fe7ac64efd1ed427432caeb80e5135c973495",
+    "utility/_backends/functions.py": "be0706b036c9360517ee6feae57d2f9f0c4145ce64dcf897f10cf61a5dcb9446",
+    "utility/builtins/__init__.py": "a53f7a59fc717cc9b3214a07adf9320914d98e034e1896971992973f4c528711",
+    "utility/builtins/functions.py": "41c337dec579a0522a50f176937217b39694ac377d18530df82d2939be4ef6dc",
+    "utility/interfaces/__init__.py": "5a52763825074816f54f857478997d0721a78538d9bd0da9d19f53f5ae62b07a",
+    "utility/interfaces/base.py": "bb89d59a6b11637f0da9ec6ee5a9095d8cf9c2cfba4be0ce331c06b96a4bb0cc",
+    "volatility/__init__.py": "68caaa687898fde2535a3c18b1415a9213ce189a6361cbc96f84524811becd4c",
+    "volatility/_backends/__init__.py": "cc9afb8b8b08f8a9798a50ba229cbcdf91ec176300f9f051bb23305b9fd11f56",
+    "volatility/_backends/arch.py": "a03de05b9ad5a25f2b3af410ab537e89c80d4bbe080a502f63ae970ba77387a4",
+    "volatility/_backends/har.py": "99f21c66cc8a605f511ff42360d9f400af2d36790303596a41e6a76e7919a4de",
+    "volatility/_backends/innovations.py": "837d734e0928c331bf3159ac0e2d51a48c9f8818a37363522875bfafd152344f",
+    "volatility/builtins/__init__.py": "99c6fafc522fb24d6cbae734f663ae7efa4ff261b815ca6cb0831c91077cbed6",
+    "volatility/builtins/arch.py": "e58629f2d4ffd60ae520fe43c10f56a7634298e8f7acb9024cbd22e5337d261d",
+    "volatility/builtins/har.py": "81b6e6077521af48522cdde25f5d03ac0e3913ee222f1c9dec2c079573ae953e",
+    "volatility/builtins/innovations.py": "cbfcfde43e8a98fb7d2ffe2d0c536fad71d2db08c0323f05f2d3165ab1ad1b42",
+    "volatility/builtins/realized.py": "0a89b9772dae92746a63f1998c5a4523a703966983562bd074a43fc2f96730c0",
+    "volatility/diagnostics.py": "e0de9482d53fa27deafd03fb9a830340f4fd3ba35b2939f7a58deacbcccc537a",
+    "volatility/evaluation.py": "f0c55e28ac779d674b9d4790203982444a18eef89c306cdb775b893a8f5b7ed4",
+    "volatility/interfaces/__init__.py": "184710ae2df4233734a36ea6460c4c501c6382a17fc9c36b6a85694b234489c3",
+    "volatility/interfaces/base.py": "7281c036ab88838994261f4866ca11eb0679e19149189f73795d3fe2b384d43d",
+    "volatility/interfaces/result.py": "9797a6a46d78ce5ea46baf98737a10fd98e3b52e3ae3ed38e42d45811b6c967d",
+    "wealth/__init__.py": "1757bae292e32f974ddc7e154226457fc8c7d855348afeb87e7c0649c1202c19",
+    "wealth/_backends/__init__.py": "f7416540369e35aed38f8745be7fe7ac64efd1ed427432caeb80e5135c973495",
+    "wealth/_backends/accounting.py": "90cc9514881fd1459304bfa592420129b0377f7be3f972f09774ecbc432e86d4",
+    "wealth/builtins/__init__.py": "0b0a1cb7bcd70e22c7ed66e1969f92708a9537ead68ccd74941874d6dcc8e1ce",
+    "wealth/builtins/transforms.py": "6e19b66d27e84109a2642cef5a7d2ae6f00ae404d0d8da2627ff454a60e5a609",
+    "wealth/interfaces/__init__.py": "ad3836325eccfbcee32120497171bea279c2f7d4524062e0dd91ea10dd91e5ac",
+    "wealth/interfaces/base.py": "0aa3fec3fbced910a4925091f8090ede562a81fb18003246d0f612219b354800"
+  },
+  "remaining_blockers": [],
+  "remaining_limitations": [
+    "NumPy dtype annotations do not statically encode shape, units, finiteness or mathematical assumptions.",
+    "Heterogeneous model metadata and advanced provider options are explicit object-valued mappings; callers narrow model-specific payloads.",
+    "Some class methods rely on inferred types; private dynamic provider code retains localized Any; the configured Pyright mode is basic, not strict.",
+    "Original numerical-audit branch coverage was not remeasured for this contract follow-up.",
+    "User callbacks, ill-conditioned problems, model identification and uncertainty calibration require application-specific validation.",
+    "Scenario measure provenance is an assertion; P to Q transformations are explicit and require valid assumptions.",
+    "Arbitrary callbacks/native handles have no universal portable serialization or cross-provider-version reproducibility guarantee.",
+    "Validation concerns the recorded Python 3.14 quant dependencies; other Python versions and hardware/provider matrices are outside scope."
+  ],
+  "original_numerical_audit": {
+    "date": "2026-09-30",
+    "verdict": "Reproduced defects corrected; unrestricted production readiness blocked by incomplete public contracts and unverified compatibility envelope",
+    "python": "3.14.7",
+    "dependencies": {
+      "numpy": "2.4.6",
+      "scipy": "1.18.1",
+      "scikit-learn": "1.9.1",
+      "statsmodels": "0.15.0",
+      "QuantLib": "1.43",
+      "cvxpy": "1.9.2",
+      "control": "0.10.2",
+      "torch": "2.14.0",
+      "arch": "8.0.0",
+      "pymc": "5.28.5",
+      "particles": "0.4",
+      "filterpy": "1.4.5",
+      "sdeint": "0.3.0",
+      "sktime": "1.2.0",
+      "neuralforecast": "3.2.2",
+      "chronos-forecasting": "2.3.2",
+      "timesfm": "3.0.2",
+      "stable-baselines3": "2.9.0"
+    },
+    "public_export_names": 900,
+    "exports_without_docstrings": 224,
+    "coverage_totals": {
+      "covered_lines": 16408,
+      "num_statements": 17638,
+      "percent_covered": 89.67324290998766,
+      "percent_covered_display": "90",
+      "missing_lines": 1230,
+      "excluded_lines": 238,
+      "percent_statements_covered": 93.02642022905091,
+      "percent_statements_covered_display": "93",
+      "num_branches": 5070,
+      "num_partial_branches": 1031,
+      "covered_branches": 3955,
+      "missing_branches": 1115,
+      "percent_branches_covered": 78.00788954635108,
+      "percent_branches_covered_display": "78"
+    },
+    "families": [
+      {
+        "name": "numerical",
+        "exports": 162,
+        "exports_without_docstrings": 38,
+        "coverage": {
+          "covered_lines": 2033,
+          "num_statements": 2193,
+          "covered_branches": 455,
+          "num_branches": 614
+        }
+      },
+      {
+        "name": "distributions",
+        "exports": 21,
+        "exports_without_docstrings": 5,
+        "coverage": {
+          "covered_lines": 801,
+          "num_statements": 869,
+          "covered_branches": 275,
+          "num_branches": 342
+        }
+      },
+      {
+        "name": "estimation",
+        "exports": 44,
+        "exports_without_docstrings": 9,
+        "coverage": {
+          "covered_lines": 764,
+          "num_statements": 821,
+          "covered_branches": 201,
+          "num_branches": 258
+        }
+      },
+      {
+        "name": "transforms",
+        "exports": 42,
+        "exports_without_docstrings": 10,
+        "coverage": {
+          "covered_lines": 655,
+          "num_statements": 684,
+          "covered_branches": 127,
+          "num_branches": 156
+        }
+      },
+      {
+        "name": "dependence",
+        "exports": 49,
+        "exports_without_docstrings": 9,
+        "coverage": {
+          "covered_lines": 885,
+          "num_statements": 930,
+          "covered_branches": 201,
+          "num_branches": 236
+        }
+      },
+      {
+        "name": "learning",
+        "exports": 32,
+        "exports_without_docstrings": 7,
+        "coverage": {
+          "covered_lines": 666,
+          "num_statements": 697,
+          "covered_branches": 177,
+          "num_branches": 206
+        }
+      },
+      {
+        "name": "gaussian_processes",
+        "exports": 18,
+        "exports_without_docstrings": 1,
+        "coverage": {
+          "covered_lines": 361,
+          "num_statements": 376,
+          "covered_branches": 76,
+          "num_branches": 90
+        }
+      },
+      {
+        "name": "forecasting",
+        "exports": 81,
+        "exports_without_docstrings": 25,
+        "coverage": {
+          "covered_lines": 2438,
+          "num_statements": 2739,
+          "covered_branches": 706,
+          "num_branches": 940
+        }
+      },
+      {
+        "name": "volatility",
+        "exports": 30,
+        "exports_without_docstrings": 8,
+        "coverage": {
+          "covered_lines": 450,
+          "num_statements": 461,
+          "covered_branches": 139,
+          "num_branches": 150
+        }
+      },
+      {
+        "name": "state_space",
+        "exports": 30,
+        "exports_without_docstrings": 2,
+        "coverage": {
+          "covered_lines": 812,
+          "num_statements": 864,
+          "covered_branches": 178,
+          "num_branches": 224
+        }
+      },
+      {
+        "name": "bayesian",
+        "exports": 22,
+        "exports_without_docstrings": 1,
+        "coverage": {
+          "covered_lines": 604,
+          "num_statements": 636,
+          "covered_branches": 126,
+          "num_branches": 152
+        }
+      },
+      {
+        "name": "regimes",
+        "exports": 23,
+        "exports_without_docstrings": 2,
+        "coverage": {
+          "covered_lines": 695,
+          "num_statements": 736,
+          "covered_branches": 182,
+          "num_branches": 218
+        }
+      },
+      {
+        "name": "processes",
+        "exports": 20,
+        "exports_without_docstrings": 3,
+        "coverage": {
+          "covered_lines": 622,
+          "num_statements": 654,
+          "covered_branches": 129,
+          "num_branches": 158
+        }
+      },
+      {
+        "name": "rough",
+        "exports": 20,
+        "exports_without_docstrings": 2,
+        "coverage": {
+          "covered_lines": 483,
+          "num_statements": 511,
+          "covered_branches": 103,
+          "num_branches": 128
+        }
+      },
+      {
+        "name": "simulation",
+        "exports": 20,
+        "exports_without_docstrings": 2,
+        "coverage": {
+          "covered_lines": 377,
+          "num_statements": 401,
+          "covered_branches": 82,
+          "num_branches": 104
+        }
+      },
+      {
+        "name": "measures",
+        "exports": 11,
+        "exports_without_docstrings": 3,
+        "coverage": {
+          "covered_lines": 96,
+          "num_statements": 103,
+          "covered_branches": 21,
+          "num_branches": 28
+        }
+      },
+      {
+        "name": "contracts",
+        "exports": 19,
+        "exports_without_docstrings": 10,
+        "coverage": {
+          "covered_lines": 136,
+          "num_statements": 148,
+          "covered_branches": 20,
+          "num_branches": 28
+        }
+      },
+      {
+        "name": "curves",
+        "exports": 15,
+        "exports_without_docstrings": 6,
+        "coverage": {
+          "covered_lines": 193,
+          "num_statements": 204,
+          "covered_branches": 21,
+          "num_branches": 34
+        }
+      },
+      {
+        "name": "pricing",
+        "exports": 15,
+        "exports_without_docstrings": 4,
+        "coverage": {
+          "covered_lines": 276,
+          "num_statements": 304,
+          "covered_branches": 83,
+          "num_branches": 110
+        }
+      },
+      {
+        "name": "implied_volatility",
+        "exports": 12,
+        "exports_without_docstrings": 5,
+        "coverage": {
+          "covered_lines": 177,
+          "num_statements": 187,
+          "covered_branches": 28,
+          "num_branches": 38
+        }
+      },
+      {
+        "name": "calibration",
+        "exports": 9,
+        "exports_without_docstrings": 3,
+        "coverage": {
+          "covered_lines": 132,
+          "num_statements": 142,
+          "covered_branches": 26,
+          "num_branches": 36
+        }
+      },
+      {
+        "name": "stopping",
+        "exports": 9,
+        "exports_without_docstrings": 2,
+        "coverage": {
+          "covered_lines": 146,
+          "num_statements": 157,
+          "covered_branches": 29,
+          "num_branches": 40
+        }
+      },
+      {
+        "name": "sensitivities",
+        "exports": 7,
+        "exports_without_docstrings": 2,
+        "coverage": {
+          "covered_lines": 81,
+          "num_statements": 90,
+          "covered_branches": 19,
+          "num_branches": 28
+        }
+      },
+      {
+        "name": "fixed_income",
+        "exports": 18,
+        "exports_without_docstrings": 9,
+        "coverage": {
+          "covered_lines": 179,
+          "num_statements": 187,
+          "covered_branches": 37,
+          "num_branches": 46
+        }
+      },
+      {
+        "name": "rates",
+        "exports": 23,
+        "exports_without_docstrings": 5,
+        "coverage": {
+          "covered_lines": 357,
+          "num_statements": 398,
+          "covered_branches": 89,
+          "num_branches": 122
+        }
+      },
+      {
+        "name": "credit",
+        "exports": 16,
+        "exports_without_docstrings": 6,
+        "coverage": {
+          "covered_lines": 235,
+          "num_statements": 252,
+          "covered_branches": 31,
+          "num_branches": 46
+        }
+      },
+      {
+        "name": "risk",
+        "exports": 16,
+        "exports_without_docstrings": 6,
+        "coverage": {
+          "covered_lines": 116,
+          "num_statements": 124,
+          "covered_branches": 17,
+          "num_branches": 26
+        }
+      },
+      {
+        "name": "utility",
+        "exports": 13,
+        "exports_without_docstrings": 7,
+        "coverage": {
+          "covered_lines": 103,
+          "num_statements": 109,
+          "covered_branches": 10,
+          "num_branches": 16
+        }
+      },
+      {
+        "name": "optimization",
+        "exports": 12,
+        "exports_without_docstrings": 3,
+        "coverage": {
+          "covered_lines": 215,
+          "num_statements": 230,
+          "covered_branches": 73,
+          "num_branches": 90
+        }
+      },
+      {
+        "name": "robust",
+        "exports": 11,
+        "exports_without_docstrings": 3,
+        "coverage": {
+          "covered_lines": 132,
+          "num_statements": 139,
+          "covered_branches": 12,
+          "num_branches": 22
+        }
+      },
+      {
+        "name": "control",
+        "exports": 17,
+        "exports_without_docstrings": 6,
+        "coverage": {
+          "covered_lines": 238,
+          "num_statements": 256,
+          "covered_branches": 69,
+          "num_branches": 86
+        }
+      },
+      {
+        "name": "policies",
+        "exports": 7,
+        "exports_without_docstrings": 2,
+        "coverage": {
+          "covered_lines": 74,
+          "num_statements": 77,
+          "covered_branches": 19,
+          "num_branches": 22
+        }
+      },
+      {
+        "name": "execution",
+        "exports": 11,
+        "exports_without_docstrings": 2,
+        "coverage": {
+          "covered_lines": 133,
+          "num_statements": 144,
+          "covered_branches": 29,
+          "num_branches": 44
+        }
+      },
+      {
+        "name": "wealth",
+        "exports": 15,
+        "exports_without_docstrings": 3,
+        "coverage": {
+          "covered_lines": 97,
+          "num_statements": 108,
+          "covered_branches": 16,
+          "num_branches": 26
+        }
+      },
+      {
+        "name": "diagnostics",
+        "exports": 19,
+        "exports_without_docstrings": 10,
+        "coverage": {
+          "covered_lines": 189,
+          "num_statements": 210,
+          "covered_branches": 40,
+          "num_branches": 62
+        }
+      },
+      {
+        "name": "reinforcement",
+        "exports": 11,
+        "exports_without_docstrings": 3,
+        "coverage": {
+          "covered_lines": 167,
+          "num_statements": 183,
+          "covered_branches": 26,
+          "num_branches": 38
+        }
+      }
+    ],
+    "verification": {
+      "pytest": {
+        "tests": 1974,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "expected_failures": 0,
+        "warnings": 70,
+        "pytest_seconds": 314.98,
+        "command": "python -m pytest tests -q"
+      },
+      "pyright": {
+        "errors": 0,
+        "warnings": 0,
+        "pythonpath": "/home/ethan/miniconda3/envs/quant/bin/python"
+      },
+      "python312": {
+        "passed": 182,
+        "skipped": 2,
+        "skip_reason": "FilterPy absent; EKF/UKF rescaling tests",
+        "scope": "audit numerical regressions, mixed-unit tests, covariance units, public composition"
+      },
+      "pip_check": "passed",
+      "wheel": {
+        "built": true,
+        "isolated_import": true,
+        "optional_providers_blocked": true,
+        "typed_marker": true,
+        "installed_density_and_curve_identities": "passed"
+      },
+      "examples": [
+        {
+          "file": "bayesian.py",
+          "status": "passed",
+          "seconds": 6.3
+        },
+        {
+          "file": "bayesian_pymc.py",
+          "status": "passed",
+          "seconds": 12.7
+        },
+        {
+          "file": "bayesian_sequential.py",
+          "status": "passed",
+          "seconds": 43.37
+        },
+        {
+          "file": "calibration.py",
+          "status": "passed",
+          "seconds": 1.03
+        },
+        {
+          "file": "contracts.py",
+          "status": "passed",
+          "seconds": 0.4
+        },
+        {
+          "file": "credit.py",
+          "status": "passed",
+          "seconds": 1.64
+        },
+        {
+          "file": "curves.py",
+          "status": "passed",
+          "seconds": 1.08
+        },
+        {
+          "file": "decision_workflows.py",
+          "status": "passed",
+          "seconds": 1.84
+        },
+        {
+          "file": "dependence.py",
+          "status": "passed",
+          "seconds": 3.28
+        },
+        {
+          "file": "diagnostics.py",
+          "status": "passed",
+          "seconds": 2.56
+        },
+        {
+          "file": "distributions.py",
+          "status": "passed",
+          "seconds": 1.59
+        },
+        {
+          "file": "events.py",
+          "status": "passed",
+          "seconds": 4.41
+        },
+        {
+          "file": "execution.py",
+          "status": "passed",
+          "seconds": 2.4
+        },
+        {
+          "file": "financial_workflows.py",
+          "status": "passed",
+          "seconds": 2.38
+        },
+        {
+          "file": "fixed_income.py",
+          "status": "passed",
+          "seconds": 0.95
+        },
+        {
+          "file": "forecasting.py",
+          "status": "passed",
+          "seconds": 3.99
+        },
+        {
+          "file": "forecasting_advanced.py",
+          "status": "passed",
+          "seconds": 18.16
+        },
+        {
+          "file": "forecasting_pretrained.py",
+          "status": "passed",
+          "seconds": 37.06
+        },
+        {
+          "file": "gaussian_processes.py",
+          "status": "passed",
+          "seconds": 3.01
+        },
+        {
+          "file": "implied_volatility.py",
+          "status": "passed",
+          "seconds": 1.22
+        },
+        {
+          "file": "measures.py",
+          "status": "passed",
+          "seconds": 1.12
+        },
+        {
+          "file": "numerical_mathematics.py",
+          "status": "passed",
+          "seconds": 1.86
+        },
+        {
+          "file": "optimal_control.py",
+          "status": "passed",
+          "seconds": 3.77
+        },
+        {
+          "file": "optimization.py",
+          "status": "passed",
+          "seconds": 2.47
+        },
+        {
+          "file": "policies.py",
+          "status": "passed",
+          "seconds": 0.23
+        },
+        {
+          "file": "predictive_learning.py",
+          "status": "passed",
+          "seconds": 4.02
+        },
+        {
+          "file": "pricing.py",
+          "status": "passed",
+          "seconds": 1.2
+        },
+        {
+          "file": "processes.py",
+          "status": "passed",
+          "seconds": 1.67
+        },
+        {
+          "file": "processes_backends.py",
+          "status": "passed",
+          "seconds": 1.98
+        },
+        {
+          "file": "rates.py",
+          "status": "passed",
+          "seconds": 1.86
+        },
+        {
+          "file": "regimes.py",
+          "status": "passed",
+          "seconds": 3.81
+        },
+        {
+          "file": "reinforcement.py",
+          "status": "passed",
+          "seconds": 1.66
+        },
+        {
+          "file": "risk.py",
+          "status": "passed",
+          "seconds": 1.58
+        },
+        {
+          "file": "robust.py",
+          "status": "passed",
+          "seconds": 2.54
+        },
+        {
+          "file": "rough.py",
+          "status": "passed",
+          "seconds": 1.21
+        },
+        {
+          "file": "sensitivities.py",
+          "status": "passed",
+          "seconds": 1.29
+        },
+        {
+          "file": "simulation.py",
+          "status": "passed",
+          "seconds": 2.77
+        },
+        {
+          "file": "state_space.py",
+          "status": "passed",
+          "seconds": 2.86
+        },
+        {
+          "file": "state_space_estimation.py",
+          "status": "passed",
+          "seconds": 50.03
+        },
+        {
+          "file": "state_space_nonlinear.py",
+          "status": "passed",
+          "seconds": 17.28
+        },
+        {
+          "file": "statistical_estimation.py",
+          "status": "passed",
+          "seconds": 4.56
+        },
+        {
+          "file": "stopping.py",
+          "status": "passed",
+          "seconds": 2.81
+        },
+        {
+          "file": "transforms.py",
+          "status": "passed",
+          "seconds": 2.77
+        },
+        {
+          "file": "utility.py",
+          "status": "passed",
+          "seconds": 0.63
+        },
+        {
+          "file": "volatility.py",
+          "status": "passed",
+          "seconds": 4.45
+        },
+        {
+          "file": "volatility_har.py",
+          "status": "passed",
+          "seconds": 2.78
+        },
+        {
+          "file": "wealth.py",
+          "status": "passed",
+          "seconds": 0.23
+        }
+      ],
+      "notebooks": [
+        {
+          "file": "bayesian.ipynb",
+          "status": "passed",
+          "seconds": 10.36
+        },
+        {
+          "file": "calibration.ipynb",
+          "status": "passed",
+          "seconds": 3.22
+        },
+        {
+          "file": "contracts.ipynb",
+          "status": "passed",
+          "seconds": 3.26
+        },
+        {
+          "file": "control.ipynb",
+          "status": "passed",
+          "seconds": 4.46
+        },
+        {
+          "file": "credit.ipynb",
+          "status": "passed",
+          "seconds": 4.22
+        },
+        {
+          "file": "curves.ipynb",
+          "status": "passed",
+          "seconds": 3.14
+        },
+        {
+          "file": "dependence.ipynb",
+          "status": "passed",
+          "seconds": 5.29
+        },
+        {
+          "file": "diagnostics.ipynb",
+          "status": "passed",
+          "seconds": 4.25
+        },
+        {
+          "file": "distributions.ipynb",
+          "status": "passed",
+          "seconds": 9.44
+        },
+        {
+          "file": "execution.ipynb",
+          "status": "passed",
+          "seconds": 4.51
+        },
+        {
+          "file": "fixed_income.ipynb",
+          "status": "passed",
+          "seconds": 4.23
+        },
+        {
+          "file": "forecasting.ipynb",
+          "status": "passed",
+          "seconds": 7.86
+        },
+        {
+          "file": "gaussian_processes.ipynb",
+          "status": "passed",
+          "seconds": 4.22
+        },
+        {
+          "file": "implied_volatility.ipynb",
+          "status": "passed",
+          "seconds": 3.89
+        },
+        {
+          "file": "measures.ipynb",
+          "status": "passed",
+          "seconds": 4.66
+        },
+        {
+          "file": "numerical_mathematics.ipynb",
+          "status": "passed",
+          "seconds": 10.23
+        },
+        {
+          "file": "optimization.ipynb",
+          "status": "passed",
+          "seconds": 4.95
+        },
+        {
+          "file": "policies.ipynb",
+          "status": "passed",
+          "seconds": 2.66
+        },
+        {
+          "file": "predictive_learning.ipynb",
+          "status": "passed",
+          "seconds": 12.13
+        },
+        {
+          "file": "pricing.ipynb",
+          "status": "passed",
+          "seconds": 3.58
+        },
+        {
+          "file": "processes.ipynb",
+          "status": "passed",
+          "seconds": 7.68
+        },
+        {
+          "file": "rates.ipynb",
+          "status": "passed",
+          "seconds": 5.16
+        },
+        {
+          "file": "regimes.ipynb",
+          "status": "passed",
+          "seconds": 11.8
+        },
+        {
+          "file": "reinforcement.ipynb",
+          "status": "passed",
+          "seconds": 13.3
+        },
+        {
+          "file": "risk.ipynb",
+          "status": "passed",
+          "seconds": 3.94
+        },
+        {
+          "file": "robust.ipynb",
+          "status": "passed",
+          "seconds": 5.69
+        },
+        {
+          "file": "rough.ipynb",
+          "status": "passed",
+          "seconds": 5.02
+        },
+        {
+          "file": "sensitivities.ipynb",
+          "status": "passed",
+          "seconds": 3.64
+        },
+        {
+          "file": "state_space.ipynb",
+          "status": "passed",
+          "seconds": 107.59
+        },
+        {
+          "file": "statistical_estimation.ipynb",
+          "status": "passed",
+          "seconds": 6.4
+        },
+        {
+          "file": "stopping.ipynb",
+          "status": "passed",
+          "seconds": 4.48
+        },
+        {
+          "file": "transforms.ipynb",
+          "status": "passed",
+          "seconds": 4.6
+        },
+        {
+          "file": "utility.ipynb",
+          "status": "passed",
+          "seconds": 2.77
+        },
+        {
+          "file": "volatility.ipynb",
+          "status": "passed",
+          "seconds": 5.5
+        },
+        {
+          "file": "wealth.ipynb",
+          "status": "passed",
+          "seconds": 2.49
+        }
+      ]
+    },
+    "source_tree_sha256": "0766d7d50793fb78aa1c96306bf9897d8edd7b25bd5fd10130bdf1de54ecfb7c",
+    "source_sha256": {
+      "__init__.py": "be95926e9affb22429fa06c400923789e7c64df049ff71a55e82707e0b29f4e3",
+      "_backends/__init__.py": "235f2ab956f7bd5d1bf4bc2dac5d903d45e3c2eff0345195af6dad7c50247e85",
+      "_backends/gaussian.py": "af0ecaae052609cfe38918443e30c321f17bdd1c063ec4a5855036a0dbead9c4",
+      "_backends/quantlib.py": "2e6ccb7061d806886d5e0929fbe381e47f827d2375955f22e513c92850a039a2",
+      "_covariance.py": "ea443657921e02d2490a71f7b32f8ea214f4e2ad6a57566fba2c2048ae762f66",
+      "_decision.py": "ab1e83bae6910d065b8ec79a096cdeb68ae98fea5ed35f3aa1b4aefdaf9f525d",
+      "_finance.py": "a0347e27c15fe7385185efaefd966e6b862e147a6659ff798705be16fa8d8a52",
+      "_validation.py": "79985a5338875bd2999df6bd35e65741704ddecae4c9487dfa1ede742c18e7a9",
+      "bayesian/__init__.py": "c5f8c6b49aeb9a56f47f7b52aeda26e8a2d6e0dc9351378d6e8084fea8ea3a42",
+      "bayesian/_backends/__init__.py": "4dc7a4d7f4f3d9f1068e8bf1ca3e1db65a6b15a3a755a0d1155d2d1c29ee73ad",
+      "bayesian/_backends/conjugate.py": "2cb7c55655294a1c56b703c5d93e80911208385a317bccc653550784af82234b",
+      "bayesian/_backends/pymc.py": "0ba43fe1e5048a6dc3878cce863ec25a842d7a3b40424ffe78a3ef0bfdb7ba56",
+      "bayesian/_backends/sequential.py": "2a98c75bafe5d5d2533e0e30c6fdcd7506dc330bb3c452ce6d2c7aafb1131e30",
+      "bayesian/_validation.py": "261b15b3f59de6fd065f901cd3c6cc25cd9564081086f9166529020f0cb8d76f",
+      "bayesian/builtins/__init__.py": "71b0f59ddc6f1088ae912d94e93cf022543b426460dfa030476d75a9136d71b7",
+      "bayesian/builtins/conjugate.py": "5c85a127c08df1da275dd6438659e5e800ff3479aab630d2c688f177e8019efc",
+      "bayesian/builtins/inference.py": "3261cb28fd99633fd864c80d029c85922418a0c4a720b07962f8a93579fab69e",
+      "bayesian/builtins/prediction.py": "86bd4c1ad8a069fc8c44111c08e2c5e11353b6bb93ad0cfc92a803ebb561ece7",
+      "bayesian/builtins/sequential.py": "565b82b2cedd6ea762bfe0c8ed111c551aee53dd5a678bf3b546c048ae06ce01",
+      "bayesian/interfaces/__init__.py": "014e962e03b9a6c98991aa0eac446599fa04c029d9b4cecc3502142dd6fa7811",
+      "bayesian/interfaces/models.py": "d856c934a9ac17a5337d963764033224dd70e5ffeb78bffaa19b66ecf4f6a200",
+      "bayesian/interfaces/results.py": "fe1ba893e0e5bd3e34f7ba9fed44027567a023b47ec8e380997de22dc13f2532",
+      "bayesian/interfaces/sequential.py": "f310e36d05772cf5aefed343872743f30ec56f2dfce79b3b6f278e0a4133921a",
+      "calibration/__init__.py": "a348066de51c7914830d57f05d0ae251b86211c737929826dc43769292932b7d",
+      "calibration/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+      "calibration/_backends/quantlib.py": "486a3c371cb46b837864e8a82ef8901d30ad8fc2f417dc5988808c2b2426b422",
+      "calibration/_backends/scipy.py": "f181a51a16597ff8cdce17876e83bf96c30deff350efeeac3856ed50ded9a7bd",
+      "calibration/builtins/__init__.py": "c7573fc1a8de8625c6280fa0873d6f18835c1a43d00ca1816f7bcf452c5ff16b",
+      "calibration/builtins/solvers.py": "07a1b727334d84fe1956b126da45637f76ccb3b2843b120a2aa1bb457aede8c9",
+      "calibration/interfaces/__init__.py": "38576e77e24f223b4dd44627a0436fb590139e92b01f7ec2c4566011922fbc8a",
+      "calibration/interfaces/base.py": "dda17c8894a83729b7c1b90936f6a4ba048ec3af30308f37ca3974b3111a227a",
+      "calibration/interfaces/results.py": "b3d550d12c03766c263707735f515b0631d4847de518a11d193c8a8a7b90d496",
+      "contracts/__init__.py": "6fc4ac992fadaf189607063152b85d7cc9c78a00a57239d11b3ddbb4b9a77376",
+      "contracts/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+      "contracts/_backends/quantlib.py": "920659a1aeaf7b78ced117f25d7a457fbdacb277bd3cb35e89ea798586a49a3e",
+      "contracts/builtins/__init__.py": "97e151a1e9d82202fdb57947df3875461145dc1b9ee9329e1c0f1b7da6a7633b",
+      "contracts/builtins/cashflows.py": "971ac66b5ea51285135eaea717fd0389a9843e0ffdc175719f15daaa90dd3902",
+      "contracts/builtins/conventions.py": "60d9c7f714b2804e036466acd794a485e435820aea53b6e05edeb258b6f72ed0",
+      "contracts/interfaces/__init__.py": "230fb1702e7d793234e60f1d3e3f0bea6fe06dca31bf88f289c648d6efc83cf3",
+      "contracts/interfaces/base.py": "b57d0a667cd004dd6e4428cb6df89ed17c279dd329cc6f95d8aed1ccff7d3e61",
+      "control/__init__.py": "94ce7ca536851e62759126da33ea0edc9b41a5ede9e820aea866ba8c041f1f96",
+      "control/_backends/__init__.py": "f7416540369e35aed38f8745be7fe7ac64efd1ed427432caeb80e5135c973495",
+      "control/_backends/dynamic.py": "d30972d63b17331cbf2161d6e73e4e108e255af19b892105df09e9f17e3a57ae",
+      "control/_backends/lqr.py": "433d2e7a136c3a77d97261750235be570a53db17123965f0fc3edc5a76e46c0c",
+      "control/_backends/tree.py": "649839a2e5ea88b75baacbd07923752fdcfd4486324470edd578886a8b9b8b76",
+      "control/builtins/__init__.py": "18e950a07bf3ed614ba3e3d60689e1712b90be3b30a10bc140d9bffa54470b9f",
+      "control/builtins/solvers.py": "25571551137b5760ef06d7cb0d63a3200597d8263bce46f1349ad64e47f3c4a2",
+      "control/interfaces/__init__.py": "b8f8a40d1b64ec45bd760894a1c5f1638250a0e0af7721e76b0b4e182d9e042e",
+      "control/interfaces/problems.py": "67016aeea72aa763c0dd65264db97b29ad2a1ef8af7964f70c9b47d1fd75f9f7",
+      "credit/__init__.py": "a41f1a23f2f7766cba60863d8ecdbc7f06dce77a2a432f341eee5b43c422e29b",
+      "credit/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+      "credit/_backends/quantlib.py": "615f4e5774838f110a2158d3b56a67e9bcd1c9b6a1c3237e3308dbcee0b8583d",
+      "credit/_backends/scipy.py": "ff1faabcd05c180e4bfeb8a2881d1eb8ff2a87c1a7ac5f3f21a6e22457745c73",
+      "credit/builtins/__init__.py": "c718bfdc082d9f5f029b83276f0d5b2def88f39af88b36cfd18227f9c3bc2657",
+      "credit/builtins/default.py": "e6866b173018a34e9e92506cf237defc191dfdd17612120409f4c8b6ad58b453",
+      "credit/interfaces/__init__.py": "ade5b0df869fd0f5e3c685c2c8dba4b0637678b7454522d6f3dba884bfd712ef",
+      "credit/interfaces/base.py": "cf10f41018e4d39ba9c7280f939841d769c4e2f4224a9e9b1f02fbb4b63e9a62",
+      "credit/interfaces/results.py": "f36594c5b2a1b3b42776bf2b93d1daa8c46dc75ddf44ba7598f0f68a99231f1b",
+      "curves/__init__.py": "6c5c43fda8f7cc1e6d13a6d993cc9e02eb23312336d37e24bb7362f8151e81c9",
+      "curves/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+      "curves/_backends/quantlib.py": "72c88d22b6321987c5b348b1f3b6038152fdb8d0da7296a5d4f41786a1f6b9ef",
+      "curves/_backends/scipy.py": "67400b313e63c3d0e0e7446a2f0dfd12a01e97809a71d2107a5154de8bd59edb",
+      "curves/builtins/__init__.py": "e008ef430c7e5bf308903bd57fded7075ea8ca3e604fcc464c96762e86c39dfa",
+      "curves/builtins/curves.py": "f70248e702a5f060848e7238669db56d2745cbec0fd9188ebc3eaa0d38aeed48",
+      "curves/interfaces/__init__.py": "279d7dcddc1e607b5a0b1f4f247c8b14789e54d9ad24a269502ee6008135f85d",
+      "curves/interfaces/base.py": "f0a75d71e8488f11a817fb1d88e2eee35132f66b702ceec08a6e79af3ad47efa",
+      "dependence/__init__.py": "5cd75bc0aa477547250bec91792ad21db14dd5f3da8062224fca7ef4d281d357",
+      "dependence/_backends/__init__.py": "b6a31b938b030e407aeac40c770320d033b31b3c877c1350802857a3c503cccd",
+      "dependence/_backends/copulas.py": "be07424beda0b55c48a9e9f4d2600777bfc0c198453b0b415ae9c5ee2913a46e",
+      "dependence/_backends/covariance.py": "a6bfa04396896cf3ceb37069120806cb93c6cab32138e7bf45a20e06cd91298b",
+      "dependence/_backends/tails.py": "22f51608b2414e948307b59241b94f781a593d2cf9425ee8ac15ecce3cadfad6",
+      "dependence/_validation.py": "403e97542c81a178971b8f8563f4a3368ef156dddee5bad8a8114d87a9c9062a",
+      "dependence/builtins/__init__.py": "e655fad4597254e23755038f6d96e48bca5046cbb462519c78b6c0a6adccb103",
+      "dependence/builtins/copulas.py": "8dac6e57c2f9d7293fe26c50b4cc58ffe31729b59571bcc8903876eac57746e3",
+      "dependence/builtins/covariance.py": "66129d9c4d7954f4bbf0daeb16f3895aa2b9fff5cb2e09bed3158d72509165a1",
+      "dependence/builtins/matrices.py": "c963827ecea6606413da32755ede4fe669a897fcb5f8946e213df299f3760446",
+      "dependence/builtins/tails.py": "5f0e54bebea481befada89fe45d557fac74bfcb005631c1e273e0b2cb96a4d33",
+      "dependence/interfaces/__init__.py": "72f268bb33ecde78f2a31780c6fcc2945f723fabc4eebc19f4ab419da0e19403",
+      "dependence/interfaces/base.py": "7f64318d3ef9fc1585664654fe84bd6c40dfdc5d6a8d171e5d36483717d783fc",
+      "dependence/interfaces/copulas.py": "2dfc60412aaf6611b17e10f83f6f126c468ef4fe1dbea4ea6e25493dc7f122d1",
+      "dependence/interfaces/covariance.py": "844b16c59b784e4fbbee1cd4e9ff255e49b2feb9f7c1d26ecf86b0b9bb8f3e3c",
+      "dependence/interfaces/tails.py": "e296417d7e10b59f8b38f692d7b5c0b3a7181a95a728511c896c4f8dae809bf7",
+      "diagnostics/__init__.py": "32ebda04a09a7b2ad416d02d286be7861d5da7a34ddedeccb7c22b9f5ed68bc0",
+      "diagnostics/_backends/__init__.py": "f7416540369e35aed38f8745be7fe7ac64efd1ed427432caeb80e5135c973495",
+      "diagnostics/_backends/scoring.py": "4964581f58219af9e428ab873822192efc0ef09884800832946d55ce7a3b53c3",
+      "diagnostics/_backends/statistical.py": "a442a03f822b98cc888c6ebe4a187c649d1572b76d1ffbde3a6925138b22d252",
+      "diagnostics/builtins/__init__.py": "fb3c37edcdb15374b58b4b1f5f273bb02049979f4cd1c369ffe0e03716fd4d6a",
+      "diagnostics/builtins/scores.py": "72b79c9d562ad1f3ab672c5be69500c3467fc2a2bcf881553ab5fd7294a47ae9",
+      "diagnostics/builtins/tests.py": "9f1f49e75c0673be62f17430bd0a11a0119af82ce67fd54db78680b3d49b5db8",
+      "diagnostics/interfaces/__init__.py": "fe705b243c201cb4af201cd8788150569ee3e6eafb6dcb9f9c6673aca3d1b06d",
+      "diagnostics/interfaces/base.py": "1e949efac57c6c3d0cd0d4c0ebed5e7b945d6da0b277aed8231589a40f5b4a27",
+      "distributions/__init__.py": "d020d7cd710b50e21c27672539d79cceb1e7901abf6d8f96a783d6930b318a32",
+      "distributions/_backends/__init__.py": "1ebd751b4f63aff1eb8997dcd9833b6b18652008a4c9c0bc2c23764df87953ad",
+      "distributions/_backends/composition.py": "b9b87f854feab85c846ac2e8b728637681c69b0c58e41e0f7d5c2b1bce65b633",
+      "distributions/_backends/empirical.py": "f4514fdc001e1859c70160383628e15d12a63622d1fe35ce6f49c706e5898afb",
+      "distributions/_backends/scipy.py": "3657ea29160d8275570403bb7ccef77b35192f74a0157af93accac1debe792a5",
+      "distributions/_backends/torch.py": "30bfe05aaa9f9d4af4c78b13a1457992ba4d4fe698f8ec690b9fb083618f93a3",
+      "distributions/_backends/transforms.py": "00dda08d02efa9a674bec46e98fef016eaf23fd00f9bb04e92e8a8b7760f4bdb",
+      "distributions/_validation.py": "b8336813a0853bd7b63754cec776d0ce0f94f8c26e78f4dee41b32cf55fa82db",
+      "distributions/builtins/__init__.py": "e00c08a1a42cf40f96636861249b7f02321f71462af77ca15d516a833b14c774",
+      "distributions/builtins/composition.py": "e59e87fe747666b1faf158efa30da11c14a0e403bb18ae4d6c4c491e1681dfa2",
+      "distributions/builtins/empirical.py": "3b14bb6d0bfb3b0740b3cecae10f74fd419cd4eb5b00e3484062d9cb7883db63",
+      "distributions/builtins/parametric.py": "f06b22181c7ecdad177ed74e64c3f57e04e34ac80fece23f0201504febc3fd27",
+      "distributions/builtins/tensor.py": "89a86e26b0892c59dd430b2db0811d3e1b2f704f00dad64513bb5717b77cac39",
+      "distributions/builtins/transforms.py": "e84ecf32f6a76fb530dc6085169d3fb11642b7cba53f5a6dc79bb4a9ec5369e5",
+      "distributions/interfaces/__init__.py": "d898e36b608e987c2ea2a3d4f97ac46f56d604316f4f82eb98504f15d88fe7ea",
+      "distributions/interfaces/base.py": "0198872d417484aa34b6a647386a828687847a1189bea565c8af0c27d668b4e7",
+      "distributions/interfaces/transforms.py": "d0454af194eeafb0bdd888e4f29fd7e43677bd77c4f8acc434e0774c97456a7a",
+      "distributions/tensor.py": "1e9b008c9e9c2ae4128f1f12f49b10201a72d219d10108123605ec031bb62e26",
+      "estimation/__init__.py": "bbe34061b777516451e7f9bba6f7a2451cbf2f061ee8b50fedbd53e7b0fb641a",
+      "estimation/_backends/__init__.py": "c394da87f3962d563f7dce57556f780d12b6b1e536641bd8e1339d2b4774917d",
+      "estimation/_backends/priors.py": "91b0348e805799683cb57d5139a0575136adb69f648dc6f691fe0e051e68411c",
+      "estimation/_backends/scipy.py": "4314356aaa15ce0baf4cf6c62ab8424d3b7e16c3b8760f0a1e70d8c85e5aeed6",
+      "estimation/_backends/sklearn.py": "0692816e3655c8022254e8f4017e6bffd0de9529b8ed42631685ddda7bbb9408",
+      "estimation/_backends/statsmodels.py": "0256fe4e01ac22ae7c3f5e56ac275e674d3c068c041f7c36cc62273f9e88434c",
+      "estimation/_backends/uncertainty.py": "c4b64a08a50d22a2ea83cf2486c8c8133ff1da2f629738cf1e82c5af79ba6b4d",
+      "estimation/_validation.py": "a7a5294893628c72b8960608be6072041d38f007d4982de06d9dd0a9a3ce9d92",
+      "estimation/builtins/__init__.py": "b391097438b7460d07c0a41d24a864941ec5c018787b5dc77fb9e94274fbf2a2",
+      "estimation/builtins/least_squares.py": "fc6f989b7f28b582b089c78e90465efc65232380adc247bc6df5f5425a346a8a",
+      "estimation/builtins/linear.py": "f1d6198ae301659b0043cf47e100ef09089ddeff0d21e1cb77d6681fb7aa0846",
+      "estimation/builtins/objectives.py": "cc31373d5a6fdef3f15b67754c556f3ae51aaac2b8af4818f676f722d38f09cc",
+      "estimation/builtins/penalties.py": "6b7be1d6ebe16855709d8f3ef8cc355e38d6105fe9c18a0ecd9fe4b5b9aaf340",
+      "estimation/builtins/uncertainty.py": "5011e9564801f9e5328c8b42614d48781c6cfdda016a5d86811c0e1b4e82b618",
+      "estimation/interfaces/__init__.py": "1102a5276db6ecb04382d512e570de87fe58b966ac287a3f1546f02b9ba657ee",
+      "estimation/interfaces/base.py": "c19a127a5b7973c56e3db0ecc995608daeb1f442d7ea4c1ec99a8aec5625b0bb",
+      "estimation/interfaces/parameters.py": "23116d99812e59289685da96842ac0260c361f474ee6f290bd50d537eef4a8fd",
+      "estimation/interfaces/problems.py": "cf1510fd0cbfb136a2c02f6e28e15da375c5f67f5999213c367fea59951dd1a0",
+      "estimation/interfaces/uncertainty.py": "b83937ae3a0ea40435a182c13d838d2af9fded30a74b37e45bbd37a90431ddc3",
+      "execution/__init__.py": "f3b8d1ffded6c4b73c48fd0b4de7fa756098e053267e6d850a1a02e9e57ed0a0",
+      "execution/_backends/__init__.py": "f7416540369e35aed38f8745be7fe7ac64efd1ed427432caeb80e5135c973495",
+      "execution/_backends/liquidation.py": "0b8ecd3d23b5262a8b466f2d41717b62613f5bd738a41dda2c52b60d66beb6d6",
+      "execution/_backends/statistical.py": "bbb435f304d7a51e2fa254b6e22b6b2f19128ef578e16e079ebdb6d270e88cba",
+      "execution/builtins/__init__.py": "2bcc73c0feae2acf6560e9cba76750ed92dcf79ac6a113de0939525be5243554",
+      "execution/builtins/models.py": "2029dbbed8cf5e961dfcc43a008d543e4a47960434ceb8b67f220c7aba5a2135",
+      "execution/interfaces/__init__.py": "620cf2075953ab4f7ad956734f060c03b77a86a57fd29786b5c210f9a1c0220a",
+      "execution/interfaces/base.py": "bd46df3a33290c64bd5a44e21e435f72a6835689d71345fa583fc96dfa5616b4",
+      "fixed_income/__init__.py": "eb300d21f10be55bf4e06e883c7a340b23218aa2c53b59d74aef5b3a9319ceb3",
+      "fixed_income/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+      "fixed_income/_backends/quantlib.py": "1572678c0c29fc8a8e687292b6084221983b70225da1d91a7ac90d573ce26ffc",
+      "fixed_income/builtins/__init__.py": "12c49590a0459c68952b47a11f240c07534bbc3d7cab8bae59462053208baa6a",
+      "fixed_income/builtins/bonds.py": "921a4ad3165de8366f1d91b326eb17122fa317ab5fba732d36e2cac209413841",
+      "fixed_income/interfaces/__init__.py": "20264be5c799f880c36c4219f956851c173d2ca575836b83585ec4797456d30b",
+      "fixed_income/interfaces/base.py": "7beceb15808def031660bad2a138cdd5558ea8e9995c415ed860935d0ff7f764",
+      "forecasting/__init__.py": "cc17a485354b979e91166adf40382dca9854eff2b83bdfb364a62c59b1de366f",
+      "forecasting/_backends/__init__.py": "e3e4b1ab1af158bfe120cd5b3c52160a39eceb1764b90df36aad28d69b3226dd",
+      "forecasting/_backends/diffusion.py": "89d13ff0333e3aaa06a8386301aedd64153a56a03eb0a2ee179bdd406646b7a2",
+      "forecasting/_backends/generative.py": "79bfea519c747b02b498e4da0708a5a85e5dcd3e236e8f84ef13425169d1909e",
+      "forecasting/_backends/heads.py": "aba3ec91f46c02f51ce204d1ae43797b558c24105c88cdc0cfd4728b7153d6a6",
+      "forecasting/_backends/specialist.py": "873e0fc7d4e47c6ca4e17a837b6b2e7a20522beca81a6e5439ff41b81d5f7e27",
+      "forecasting/_backends/statsmodels.py": "c0fe41df689c479e8fccb18479911ce2e8ff2318ec77f6728e9c32291e6976ba",
+      "forecasting/_backends/torch.py": "d27384a081dc341135aa10b660c7a5d18885580dff38c2e7d1e2883727f5e943",
+      "forecasting/_validation.py": "0716ea060ba73953b6d8d6318c8d8461ed46c493ba277a7e6e0167ff2ae112d4",
+      "forecasting/artifacts.py": "89ab001f03ccbfc8d321c369c0894c6eed992ded0bb31595bff64fdd00b4daf5",
+      "forecasting/builtins/__init__.py": "840b21a30febd7e7f8a21d9a2dd66fbf72c59655361adae5f66b9c06512c50d6",
+      "forecasting/builtins/adapters.py": "33f4abff5230b365f2b4cc3af1949894f87b1180f1ccfc6a8236fa02e412099e",
+      "forecasting/builtins/baselines.py": "68303308a7d1e107e5eb92f4bccd55bd6e7ee77ce04a99782afd99323ad70a1c",
+      "forecasting/builtins/classical.py": "a3bdfb606942731acc99e90e774dc41ff96e1cbef3210226fe7214c55ae4d52a",
+      "forecasting/builtins/composition.py": "fed342212927e36fd0c74a2a248f53e7cbb9869f5ad69b47b130ea4e2030c5a0",
+      "forecasting/builtins/elapsed.py": "94ccba0fdcb802d75d9b80abfa0dcba3447a75d4ffaa4e8ee91826ce054e4345",
+      "forecasting/builtins/generative.py": "ed66395a06c71fc3dea85e0b161a71ca5f5d6e85a575dcd7d540dbbcb64d2f53",
+      "forecasting/builtins/neural.py": "f726d0e38af6e9abd27c1bbc844ab78f402980f2a62d259f0c54463b4f88976a",
+      "forecasting/builtins/pretrained.py": "2c8d6d91d1f98cfe3c486f2ad8e1a96d1a710106089b8b2cf3dbdf7ee14ee2e0",
+      "forecasting/builtins/regression.py": "2b5b62de7d8c9444f9b1ad5a774ea08ecc8cdedf35bd1c0f4af9263980307146",
+      "forecasting/builtins/specialist.py": "6a1aa90a2c47160ad76a40f00d49ccacd8088a088f5a58ddc6c20c8fdceff596",
+      "forecasting/builtins/uncertainty.py": "316f8934b13d531eddbf9a183be1992833c84065520d25c9b05120a377dfdb73",
+      "forecasting/diagnostics.py": "e587ad309be72efb3a0d396a49aeaed51bf111453a69b513eb5fa77708e3c21d",
+      "forecasting/evaluation.py": "e57bc9ec6a913cf30389fc9277001575a5360ee120fda56582ecac9382d9622c",
+      "forecasting/interfaces/__init__.py": "140f80d2d013294f993bb69a9fe056e567ac84ffb587283284752f70ed224953",
+      "forecasting/interfaces/base.py": "532c79c99c8a835c1be4cf492f004e75b5e02444ba368d559e87367aaf018bda",
+      "forecasting/interfaces/data.py": "c26eba289d897b46e106750bc373120ea336a47cc7ad9442ca34b3a9c849d1d6",
+      "forecasting/interfaces/result.py": "df048146ff83f714b96095f391077c4fc9abc5dc8426c082299ad196d0dab59d",
+      "forecasting/metrics.py": "5c9c1abb1f84de30dca8adf3c1454c333c7d701f1a38da1d9de0913d133ad5b2",
+      "gaussian_processes/__init__.py": "fdd5afb46b47f8a050ba57d1abcab9fd458156a3e6237cd9d4803db769be4a73",
+      "gaussian_processes/_backends/__init__.py": "b148206b4a4173c1c38c917035e89a92436e822b064a2fca39551dcc0978c267",
+      "gaussian_processes/_backends/sklearn.py": "2df86abf5fb09e977d3c541e0bc8c33238e66c5f0a72970a2f83e3e3a0d3a6f8",
+      "gaussian_processes/_validation.py": "c7e8dc7797c831cd19f87e5f9b3f6c47ea30a132e1c2f30e35fd96bb9263683e",
+      "gaussian_processes/builtins/__init__.py": "51255f2c806302001d3bee82b5c6abcea6eaa23d77c86bd6943acdb9fb9504b3",
+      "gaussian_processes/builtins/kernels.py": "7aa012466c2be37f148adbba070f31879345ae16c1d7d209e9bbdc87876d8dc6",
+      "gaussian_processes/builtins/regression.py": "4e9f0dc99449f2b7f853d3621d0d957dc4ac5fc746987393debd607085be9a9b",
+      "gaussian_processes/interfaces/__init__.py": "19bdb0c5bee3e32eb79fef0ca1487bab8a6dd4f847f6b37a2ca928cedc6d8f4c",
+      "gaussian_processes/interfaces/kernels.py": "6518cea167ec36aba708c3c795f1ff399528e97373c711c55f7561faca2a265d",
+      "gaussian_processes/interfaces/prediction.py": "9c7a0ede551521a9242f5b242092e97b88151b3abfe34258a14ecf697571eb47",
+      "gaussian_processes/interfaces/regression.py": "71eee864b754d4d9706283a670bf19570519c0df02b2502fb5e1993593aecf19",
+      "implied_volatility/__init__.py": "f89b1a2cc1cd09e6b0f772dcc2b8c8a9118986071f0f4a4109ece2b9db118655",
+      "implied_volatility/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+      "implied_volatility/_backends/quantlib.py": "a719a20075b4ed04923315e7793bc43a1c1382b8b6265ffe866857a8bc2d495c",
+      "implied_volatility/_backends/scipy.py": "92cd92e443b1db6e6a16ed495d08fa10ce33c29c4aca23c4e8b1a0b337547960",
+      "implied_volatility/builtins/__init__.py": "1703d3e07cb5af0d2d3d324b6223b1ddf0921332b084774a84ca3b6cad85a4a9",
+      "implied_volatility/builtins/surfaces.py": "a578137111398de519f5851b0ed82b11dea4c746916a4f18a111ebe60dd5b42c",
+      "implied_volatility/interfaces/__init__.py": "73497b3e0d19eeb6731bd81395b82c7c1cefe61bae712d3ba3b96bb3bde7d595",
+      "implied_volatility/interfaces/base.py": "57573cbc7704010baa5fae19da47a96d97386d76dd5857d4f4faa2355849b50f",
+      "learning/__init__.py": "745409491994c737060083799b9bb3ccebf10548a312f9a1b5d203657661b169",
+      "learning/_backends/__init__.py": "eb3c6a5d7eade08021a2ffb0dcd2b791828503781a57a795599a3c9a8c769a81",
+      "learning/_backends/sklearn.py": "16b028c341d949fda8cfcbfe4237ba0f9eeb1554d38d56bbcf28e7729f9b85ea",
+      "learning/_backends/statsmodels.py": "1e9edfa68b7c5cc33718b7d9e2c38d69d7efd54995c8d2750e405dd0a4ccc957",
+      "learning/_backends/torch.py": "4304bb90c253326b16f2a3e3ce9840da2e5bb98142ad2baaa4009f15ddea36c0",
+      "learning/_validation.py": "23ed3422c90ff4c5e531011a54babcda01f7a591878ef8451a19581f270fbd93",
+      "learning/builtins/__init__.py": "b4d8bbe5f79fbb3055e419c9473d599c4f65301de036decbbdba57d6560885b7",
+      "learning/builtins/composition.py": "899da5e1816ee1797c449e59b1b3eb70d3876bbe4ea60f1e40e8702480f7f5e4",
+      "learning/builtins/glm.py": "61e1763a57651f92b004824df17725d40423d39131e94b128bfe9fb8e7b8b8ef",
+      "learning/builtins/linear.py": "b7eb0e9032ad3bad72aff1e36d896815eeae652a14c45fe45db4bfdce0dd9f9f",
+      "learning/builtins/neural.py": "bfe60c73ebf429a01cc32d2fe9bda359bddb8042dd94bed90b06adc2abc8d514",
+      "learning/builtins/trees.py": "af270f637ba38f8ebcbc66726e242da56c4584d9b2854adbc08671349f5ed9e4",
+      "learning/interfaces/__init__.py": "5eaa08f85a870ee0cd65dfca81415e5b4a981e927b9ac5dc172713acbdf92c5c",
+      "learning/interfaces/base.py": "274c9b414737ddc0d2d5ff5e3609e630e65d6e206ec81fd3084bf442dec5f1c6",
+      "measures/__init__.py": "998c48d80e983eda5e9661f9e60f295d4d03001e4d467bbb029f83236497653b",
+      "measures/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+      "measures/_backends/scipy.py": "c9af26d22c66a6107b6bf4d625f353f27f635054d946742aad04a52445ef9072",
+      "measures/builtins/__init__.py": "26803575f6c1450ba63e586e4892d980aa078fdcca522fafcc6db40840f8d6af",
+      "measures/builtins/models.py": "7523cf4bdb88f6a618e1f9625e0713a98d6459152d84dc191e49c50deadadcc3",
+      "measures/interfaces/__init__.py": "32a529a1393d530f2481217e9f3a3e6836f15604a78804e71930338d55919747",
+      "measures/interfaces/base.py": "0fea5ad66f9f1e4f7f9c5f220a07db557b9f7b9531c6f1ee475145fc6443a8a2",
+      "numerical/__init__.py": "30c0d34c65e5cf17f6a2939ede9a8743e2c3ef63bc0665621b0b75f2095b010f",
+      "numerical/_backends/__init__.py": "56aa506ebfb4ab7d2add9c20a74216cabc1da6ab1ed3c94ebc1a1099df6dfd77",
+      "numerical/_backends/accuracy.py": "93d20ed084feede90bac88eeb98410931dc4aa40044fd0b9807fc1b6fcc3a2a4",
+      "numerical/_backends/approximation.py": "a8c1cd8ed98f2426e455c3827545d6e67f0bf06c452b3d0af007b19c9c8cc7db",
+      "numerical/_backends/autodiff.py": "e9577e74d6684c6d2c32980cfb8e31eae181a59008727614488bafbee72b40eb",
+      "numerical/_backends/calculus.py": "1eecea6e4d44b7001a1f35d858511e33faec14b5bc8383d7335bca3fbbea7ec5",
+      "numerical/_backends/construction.py": "536641ffcc8188945a636ec26fd5a2f2c3237174e9e08e2c69e8ff12f196256f",
+      "numerical/_backends/fixed_point.py": "d9e464aaae465da37afb25efeb351b4cc264aa66c67cd4ed60ef3480a7e3b607",
+      "numerical/_backends/integration.py": "c80812871f6ec1c59b54543ac016179f9efefe882b25cffc2cb4e8268e0c807b",
+      "numerical/_backends/interpolation.py": "f81902634cf208229f601363fd70387a00c39e383e071f3d7cee65f6d681d636",
+      "numerical/_backends/linalg.py": "e7d3cce716f7446acd6f86d4775f6be4c070836a198852be17bd7ad23132e636",
+      "numerical/_backends/linear_algebra.py": "0eb9ab52a29e0b33c21ed4085fe209f1a957bd2a6113153bd4efc334635d3673",
+      "numerical/_backends/matrix_equations.py": "35a033e66aca9adc74a18ebe7a8ce8b4b8138b56c892d124647248d0f40eec33",
+      "numerical/_backends/ode.py": "cb15d5f5b3f7312148b971f7c1a0c00ecfe8f12a4fb68595775b8bb3c78d9ba4",
+      "numerical/_backends/products.py": "4e613d804980cfb4cf249fa457dfd8467b60a7515354ba395cc8a8ba35b5db3b",
+      "numerical/_backends/roots.py": "74446bb5c7d9fa89348ddf47916298ce4bd40da3848fc36f6fda677f3b35d19f",
+      "numerical/_backends/sparse.py": "8c2a60b59c806e391597ef8f013d8ed7c16085824814fcb073dcd5df971c368a",
+      "numerical/_validation.py": "6d1194f6373f2d62b79199e2116ce82d3f977079c610c31f1c6f36051d2229ad",
+      "numerical/builtins/__init__.py": "b4f987a7fb5812c88bccffceebd641096ebf3d58c52bb7a1825189e1988351b5",
+      "numerical/builtins/accuracy.py": "8e35057961b6fcf0f838d2f1c145859c1672a90e730afcc8a601fffdfb2122c5",
+      "numerical/builtins/approximation.py": "8a662904369836761a718ae92a0b868547f6c3ffdf1b306af3bcac502cec3ddf",
+      "numerical/builtins/backends.py": "12fc15d85c4bd5223fb27458d3f50ff517426e85f257670ee8aa909ab5eb78a8",
+      "numerical/builtins/calculus.py": "b994f49e763144da86b4ffa1c29f26d939e0da94db78de4367b5ecd05d7a07dd",
+      "numerical/builtins/fixed_point.py": "2df76c8882ee193406ae9fcf210db03c91479a4ccea64eaf1b2f0c7b9ce86abc",
+      "numerical/builtins/grids.py": "479c66096a1e2f948108106e049302f64a93de6386c12088b744aa98e993c9ee",
+      "numerical/builtins/integrate.py": "73750e546298ba821ea9537175809eef2d8e5ac34cf4a0dbae9cef4ec3d9f02b",
+      "numerical/builtins/interpolation.py": "7d96902ab1b5b9ceb090ba0230d5788b68aad0be6e4ad356e11066d811b81f8a",
+      "numerical/builtins/linalg.py": "23d1aebc843227fb1a8fd133412448c048bc8b07d112e40d03fc1ae18444786c",
+      "numerical/builtins/linear_algebra.py": "31f3660154c8615093571d4fc83433da7bb73306fd4bc7695ff87bb4a762dca3",
+      "numerical/builtins/matrix_equations.py": "9a7223a0a7121d03fe7979164e442b5b1292a71726d33ca5f094506893024798",
+      "numerical/builtins/ode.py": "79a679b60a4baac6e0a555633e51728fcca3b215ede10fdcf5d7a71690c547d2",
+      "numerical/builtins/operators.py": "d9f74c441f4443e150f8c85bedb4469fbffd4a94a5b35ebf2e174454432c12de",
+      "numerical/builtins/products.py": "806882aacc5d948d3b7b60e890e02c4dfdf87044cdc1dee0d6cc5afb2dc6a239",
+      "numerical/builtins/roots.py": "69abf248b354bcd4e662059f9177051179987ef1f623d72d1c996c35203f67c0",
+      "numerical/builtins/sparse.py": "099b52fc42f15a5d3eb2a748917ceed0567677591c2cbc253f138218da42fe3e",
+      "numerical/interfaces/__init__.py": "303318e897661e61a4f75f8acc94ff58aff5bd9e4922e15c07ffe979ede1f195",
+      "numerical/interfaces/accuracy.py": "093c9dab8735b27913807449a3a2d6b520c9fbfb87d096cfc302930cd6355362",
+      "numerical/interfaces/approximation.py": "fc8434e682c6fc8357ef45844662c126176aaf2ba736b0fb05078f31d559b43d",
+      "numerical/interfaces/backend.py": "68a915c651ccd861c53b3bf8aecc94b27d8a5394f78d114f1d1bce4fad37fe07",
+      "numerical/interfaces/base.py": "6fd2023c00e655acb287e9d5898a9be545a4a5612df9819218aa8f97c2512d28",
+      "numerical/interfaces/calculus.py": "d52b55558c7ca1ec04bd0e99e90036c2be836483214e9270adf146d8aef2147e",
+      "numerical/interfaces/construction.py": "1ac31388a656a9d602f4b3ee8846620c2755454939ee668111e58dc1b84828d2",
+      "numerical/interfaces/fixed_point.py": "87aa9d6d1c933f6b1253f58dca920ed2001172105e8c0adbb50438b0b4d6c981",
+      "numerical/interfaces/integration.py": "9549d627381e32c0e0764f91c1dd9df56290f3bbbf0f7dfc1353b9a0ae376114",
+      "numerical/interfaces/interpolation.py": "c9b83ca21abbe2a783c24d53fa4d2d4553448bf79c398ce4c660a19f4139b73f",
+      "numerical/interfaces/linalg.py": "1da1a8564ab63c2eb571f20f55e0fffeb7b982eb6812cc368702babf2c97fe1e",
+      "numerical/interfaces/linear_algebra.py": "7f50f11a662c0a61f496dc3d936bb97a2cf44671a56a21cdb71659e66c9e5417",
+      "numerical/interfaces/matrix_equations.py": "8d9dd5d0f98665fe64f85c8f6e903a7160b71aca97c45754c307c259a16b4abc",
+      "numerical/interfaces/ode.py": "065fd1c344da19d73bfedaf83f4fe62e7c9487cc38733ecf7d3d4da6c577e7e0",
+      "numerical/interfaces/products.py": "677fe1dccf17f1afe6c8b91dab75dd10ce0e0d658760daefa4e4e216a04e27ab",
+      "numerical/interfaces/roots.py": "1edd1dc62e9d0aa8f1b053db09e18c6048cea97285fbb25f060b1bfc225e3fa8",
+      "numerical/interfaces/sparse.py": "2569113ade430a6c48b4a83354291927f4eacc138ee9c0bfef62c46400f75c85",
+      "optimization/__init__.py": "d6230598d64033a3a71fa48984cf0371c47fb333c996707e2d36fb4c58068dc1",
+      "optimization/_backends/__init__.py": "f7416540369e35aed38f8745be7fe7ac64efd1ed427432caeb80e5135c973495",
+      "optimization/_backends/cvxpy.py": "fe4b1b9a553166bcee159a8452cfa7caea1852ae377874000a94df7134d6455f",
+      "optimization/_backends/scipy.py": "33f225c8a436e44baca42eb7f4707d80ca4165c9f4468b0fe9eb1b111607f102",
+      "optimization/builtins/__init__.py": "9f11651945ba5e016c1ffbfc12e74d0135b2a82a1145029853bdaa4899a37e21",
+      "optimization/builtins/solvers.py": "c9b01d2ade67160af79620ab806471cfb97ca3a0581b29061a76a28baf3a9dd6",
+      "optimization/interfaces/__init__.py": "d843d5975d06f8bc0b11a25846d3a1fd37760970b6ccabe52ec10fcf2dcada12",
+      "optimization/interfaces/problems.py": "f2620601b3875719e922e920e175eb422b8ba68395451eda519828c25bffaea3",
+      "policies/__init__.py": "4c5b9dbc0cee444bda8877ab86dd88da7baed3ca1c77646e38be4ee6986a1824",
+      "policies/_backends/__init__.py": "f7416540369e35aed38f8745be7fe7ac64efd1ed427432caeb80e5135c973495",
+      "policies/_backends/transitions.py": "dd297d4c0ee3cc2e3a3383a11ed6363c75b42c4688199d6d16f0bb33bb071414",
+      "policies/builtins/__init__.py": "1e06c3f08bc00e7f172bbed82e37ce514280c8ab02aa140a2103a3f9cb34d357",
+      "policies/builtins/thresholds.py": "3fc4246cd650f876036d3c48c88031377e206cd6cb41f46776585f9d597beed5",
+      "policies/interfaces/__init__.py": "d6d604f24fb492ac3ffefa1d7476cfdad8469b9d54f0496cf5fe8b3445f5a9e3",
+      "policies/interfaces/base.py": "85972ce7af63112b604d8fdc2677eb33a33fe85935b80868e67ddfd7c7088e31",
+      "pricing/__init__.py": "e9d3a34400d82d560bec8382b2468899c3d15fb501652e909decc44a1ba782ae",
+      "pricing/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+      "pricing/_backends/quantlib_engines.py": "3b343267ccc134def01b4b326c4766878e1bacfac0476b5ff2170cd22fc52733",
+      "pricing/_backends/quantlib_models.py": "d00cff72be86390578c9c2e63f0aa137b7633a53d1c1985abcc76bd64b0a5202",
+      "pricing/builtins/__init__.py": "4e61694423799dfb5e60906aa83f7ff5ce7a437488f3ce08e2f04106423fa05c",
+      "pricing/builtins/engines.py": "488dcba173bd46de073f62a4ea2d49fddda931129c62ff7befd28f5422c820a5",
+      "pricing/builtins/models.py": "697a66bfe7d96d8f858ff2d61bdafdd7127b9df9a27313df73bd5fb860f48d70",
+      "pricing/interfaces/__init__.py": "fcf8d5791f7dad203239818788409cf6ec818d11cd98e59e7edcdf43852d4b5c",
+      "pricing/interfaces/base.py": "913e8d4af494ca2458852f593d9900ac68ee953875312c274d387bc75cdef639",
+      "processes/__init__.py": "d427b11694f1d4b51b84c52392c03edbfaec3de4871f62d8c3992483337ba2ca",
+      "processes/_backends/__init__.py": "93be45202fefc6303c2f8acdb3e504d885b2333cd655872208d2d1472ca8f919",
+      "processes/_backends/laws.py": "29e32fc06ae3ff606ed366675833bce4d17da13f8bf4c1d653fab221687c3b77",
+      "processes/_backends/quantlib.py": "387bcef82d26e7e8ac77c9b0a340172c3c5794d548af8aaa80a869a75d90547e",
+      "processes/_backends/sde.py": "f3b404cef0cd27d7d01c05ea6feba29d614971e7f2a0c68af665284d3039fc25",
+      "processes/_validation.py": "27e9de962f2d6453ef071abb8a8aaf4a16155f29bfbfbd4c07efcf9a687209b7",
+      "processes/builtins/__init__.py": "c72aee0b34c0fa0e894fe590d64c749a536f7dce7f69c171807b4e7dfeab3c35",
+      "processes/builtins/base.py": "0ab945924ec7fbde4eedff1b012ac261ba887ca66beb744d54c8f0a922e94aea",
+      "processes/builtins/custom.py": "cc4dd2e2e2a139c243a0bd38ab7fa8d87a385880310ed4e515073878ec5e7a89",
+      "processes/builtins/gaussian.py": "d53c86820eafae1faf01176ac73aa556fd38937e354181083c17e22a1823f936",
+      "processes/builtins/heston.py": "d72acaa11cb972d838863824cbf556813d82e340a18f46378476e84cde2ef6a8",
+      "processes/builtins/jumps.py": "8e5e69ae967502cf250ca65055aee298da954a06c3d65e05b0f778e0334e358d",
+      "processes/builtins/positive.py": "bc5996f2d8956df839b6c99a7148c67ed6ce1525ecfc53eee1d84d41653cac09",
+      "processes/interfaces/__init__.py": "959a024169266bc282321bdf236caf23412f669f5e6ded910d94d7c3b6104381",
+      "processes/interfaces/base.py": "f2c43249d50cce1a493afd992a0dab6c89bfd0fc50865217579e716f875d8243",
+      "processes/interfaces/results.py": "db4ac6d989bc72c2a7300bb288d3bc347fe23aaf90ef8e1452551f04f1178cfe",
+      "rates/__init__.py": "d2f3895aa4af7d915827bf12c68c4f90dddb9bc9f6f0a7c0482ec5fd20073c8c",
+      "rates/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+      "rates/_backends/contracts.py": "d668f1231f2c550ed1d2314afeadc718e1d3365d7eacd27577a1ea3a40730f1b",
+      "rates/_backends/quantlib.py": "29c05801dc285f45a90227b761e043204746b121b336d00ca1a470f29f258565",
+      "rates/builtins/__init__.py": "46a0b0ed5e5489ce4b1327755d77d00fd5e30be298a749edf4d6cc539e66fc6e",
+      "rates/builtins/contracts.py": "50398ad4f9065f90777fd269d6cb7f3bb3966f17c3c291d0d1ce0e9bb53dc80e",
+      "rates/builtins/engines.py": "721d9570191c03924b3cd9feaa497d48d249fabc1b323dcaaf7c30b67f42e899",
+      "rates/builtins/inflation.py": "ff20d5b5654df7898d97efcdf27c339e3ebfb4b71937bf76ccbde209f4280cbf",
+      "rates/builtins/models.py": "b4dbe26c7002d7f663d10169dd5cd7512ea43e7173fa64c59660b5fe9280f251",
+      "rates/builtins/processes.py": "1964baa6732a7abbfe47334d953b38dc03882bb4794c1c56cf4d469de544f2e9",
+      "rates/interfaces/__init__.py": "1089bb96832214d1f7051ec85d9a1662ec6e79a07e7d1c92b5557d02f5973d98",
+      "rates/interfaces/base.py": "6d437cf763c53b634a3fbd37d3dae10c0757d4922c993b46aa65a0bbf5539403",
+      "rates/interfaces/results.py": "7a985f4cffcc9bda6a53107ab749913ad3d2d7095a486f888a1b31d0f449e919",
+      "rates/interfaces/swaps.py": "b6570664fadc64ce8ebeab35d57ecd0af5b1148aa40304309b46bfcee7c5717f",
+      "regimes/__init__.py": "bf4b0437517b01d9dbf409e2abeb69ab2f69badb6f4ba5a2a2a5ca37f68c2449",
+      "regimes/_backends/__init__.py": "3d5baee595cf33e01a97e7686bae1d6127d80e761295ea933473b6cbedb0c45a",
+      "regimes/_backends/hidden.py": "5dda1f01f5ac57219bbeec8134a4a9335badf16aa9c49a01cdc50881c7d36bbb",
+      "regimes/_backends/switching.py": "b03744e3aae7405984448526e261d9d80feecd1b6eb36c4fc3cabded03112e34",
+      "regimes/_validation.py": "fc12faa74cf59c7696a7901b1e934aa713362252e19b759a72a344313d0d2218",
+      "regimes/builtins/__init__.py": "3060fbee4cbb9bb5f9d496cd51e219f2cd5e438621297e2fb1819a10caaa3378",
+      "regimes/builtins/dynamics.py": "665a82c7c4b14d4d7fb846e519c0e12514fc202f1486cd649c49050ab96baa72",
+      "regimes/builtins/events.py": "a9f174db07552a063f4e4ec5f5883c10d9753162f53a72a2d02888740b53fbb3",
+      "regimes/builtins/hidden.py": "4279c8725c53d57679677891a1cddc76588430c3de2fc4a9ff8017044ec3272d",
+      "regimes/builtins/intensities.py": "6262bce412cf5fe87844f995a0789a40a26322f3e6604483ccaf67d52e12f1fc",
+      "regimes/builtins/markov.py": "94c0e8369a619c44dd7decdd8796f8491928511c6682c10cf533f7b0431d4829",
+      "regimes/builtins/switching.py": "f885713abf8543e4c8813ffcd866c7b4f682e44c0d386948c082e150ac7de28e",
+      "regimes/interfaces/__init__.py": "b23ed43d316c42242a13f95be6aab79d6d6382e05c3d40b80ef69903cc63b1a6",
+      "regimes/interfaces/base.py": "579bcc96ea511e5304c4cc4317121f1c1c75413f5a59bfa31c3f6cdc53842f0d",
+      "regimes/interfaces/results.py": "880691fffa29b3e3cbca3d9b95c3f73bbad66301b6e5203cfd9f39d852f7071f",
+      "reinforcement/__init__.py": "61fe8367d16bc8ee0f277d632f774bb76904d6432e1dfd5ef70638f1ebea914f",
+      "reinforcement/_backends/__init__.py": "f7416540369e35aed38f8745be7fe7ac64efd1ed427432caeb80e5135c973495",
+      "reinforcement/_backends/sb3.py": "c5a617b8a4f14cf78f87f641f931c25b7e2691776a7e25060b6ead7af57f93e4",
+      "reinforcement/_backends/tabular.py": "ae424bb9df30223e0ee3de2536fcb27a52888d8d06e724cd9a628f9b4252c266",
+      "reinforcement/_backends/torch.py": "c5b5bab0ad0ed823f229a6c97a2c84a09d42898b1f25cd8f0bbbbe3f0dfff1c9",
+      "reinforcement/builtins/__init__.py": "cf82ddbb5ca4eb6597bb4f48ced7c2c778879fb289a3e1bdde56e3c8a9362931",
+      "reinforcement/builtins/agents.py": "edabd919461a61f1e737b760b1b67f52c62f9611efe98df8664697dd48b73345",
+      "reinforcement/interfaces/__init__.py": "9e8407575932052a20d9b8fd983fc6b367891d1a061e6d3d9a7841f690b6e47b",
+      "reinforcement/interfaces/base.py": "3cd9f26211f6dd8d4da05bc5fea966d471c9299ec739687ace7a517f44d5cbd8",
+      "risk/__init__.py": "a262eff3e8a8722e507d10ccf9a6fa364bfef52c5e522720faff8d083e413f79",
+      "risk/_backends/__init__.py": "f7416540369e35aed38f8745be7fe7ac64efd1ed427432caeb80e5135c973495",
+      "risk/_backends/empirical.py": "7fbd6b5cecc497c21ae7572d0d45ecdd936cc382e9d6475ade81c65ed966f466",
+      "risk/builtins/__init__.py": "5cb2ad69e11e896b46af355ea310250973b5e6c2c7e0fd0bddf055364c981cc1",
+      "risk/builtins/measures.py": "1bcc51259e9a4651545e6e877923d608efd3a0d4d963ef890bed6d751a56c42a",
+      "risk/interfaces/__init__.py": "c1ec528a9f88bcba5dd4a1436713e78c8afc71130b73dd693799744874744851",
+      "risk/interfaces/base.py": "97b3bd1265df1a84e09573caa11b966e1cd8936054f819e83d8fedc77e644f16",
+      "robust/__init__.py": "0b0c0cbe97c21f0ef519197aff042ed183144f60ea766e2f1d9c76cdeac8ac1c",
+      "robust/_backends/__init__.py": "f7416540369e35aed38f8745be7fe7ac64efd1ed427432caeb80e5135c973495",
+      "robust/_backends/cvxpy.py": "fa30386d85a981475b3dc41a2f23fc98241fe51e96afe36835592fcd86a820bd",
+      "robust/_backends/scipy.py": "e8151b7bfe4cc86b035a7cffd43cf35c1a72ab8725b35bdbbde260a433d42a68",
+      "robust/builtins/__init__.py": "3b008460e31c53125f078a7c61f58940c55f851bf6b79d96bcc3fe60192179ff",
+      "robust/builtins/formulations.py": "cd9559e82932800150c6165ae32c106d93178659ab7d5126730053cc8904daf3",
+      "robust/interfaces/__init__.py": "f1bb2b37260cab01cb0ce426e6cbbd1436e28b7fc812045913e03612c59c7a94",
+      "robust/interfaces/base.py": "c7ebc6ee303c829a7ad990fc63f74dee6df903b7a4a5940936b9e416791b93f9",
+      "rough/__init__.py": "f03d5ddc4b3974cc94a16db4e974ed0a7fa559d7b8292b818a213684c6205555",
+      "rough/_backends/__init__.py": "115d0cf1b6123674f9f284488d6bd1aae9a39450514f340de1571492154863ed",
+      "rough/_backends/gaussian.py": "380d487e2163df1558aabae430ccf9d3748bc385bee79e59910f440fe40fa12d",
+      "rough/_validation.py": "56edb3e2e53965ede55b67864be939a168239b51d2c819b01bcbf8d00dd18d56",
+      "rough/builtins/__init__.py": "298013f78210b585943247ba07e129536a0cff1b403cd09a45e069b6d996e443",
+      "rough/builtins/approximation.py": "c87d15d82ea080c2dca51fa45c932de12174dbcdbc1cd7dddf169ecb6ef1aeec",
+      "rough/builtins/bergomi.py": "1dd87be919e9113028d2768108413addbbf3651e6f8abf09a7ef1da119c6ad45",
+      "rough/builtins/drivers.py": "4c0f2d7c552cf424cb856c999d895d358bf323a57cc331f6d11580fcd6036e22",
+      "rough/builtins/kernels.py": "1fb7cc27e75bf14b03007224128988e7981be1335cbb427edeaa2b25a32a6b0f",
+      "rough/builtins/variance.py": "c4ef8ff29e4ccc06a140260e2c1b56b9f30089cef7bb40ef0c9ad289cc0a3a53",
+      "rough/interfaces/__init__.py": "1fd23065efeef8a187b0e3ad537c819ddb2db1ee60f851e9247f0dd86f51b851",
+      "rough/interfaces/base.py": "a6a34f1bf9b7a797f7f7ce6a7d0b792a696580f6c8b9c10134774918bad1569a",
+      "rough/interfaces/results.py": "578eee6828a8b317981efa7c882e779661a5f9799fa6ac6f5221a343abb7086c",
+      "sensitivities/__init__.py": "cfb4ea3a96397f66745f795ecc45eb366827fd4043b7da5915667b48ff364860",
+      "sensitivities/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+      "sensitivities/_backends/scipy.py": "f32eaaf5cc160a123074cb155093ae47c14c7a992a07588f7fb08e2f4dd5fe09",
+      "sensitivities/builtins/__init__.py": "3b20bfdac65e500b175533275388b83f4c3cf180568e2b9f63b81544002f1bb0",
+      "sensitivities/builtins/geometry.py": "a9cc230922e58546a666e2e9de387fea52edad6610dcf53f3da953b53881e0f3",
+      "sensitivities/interfaces/__init__.py": "b654e326d0172becf8b80dca9423044ee38f538e8c78e79e0a56e302f98ea4c5",
+      "sensitivities/interfaces/base.py": "e4c819c1a97e3b4f2041cea71e23a74576bac7c1b710e76d1c4129544868d8b1",
+      "simulation/__init__.py": "9018f8a8d25bd3bd987a1385bfda8652269044680acd2568d24c996356646bea",
+      "simulation/_backends/__init__.py": "3c01d1069608c28d57b7497ce37d6715426390b33c1ec03a392c1bb08198221c",
+      "simulation/_backends/random.py": "b0a543cf302b03bcdbb1fe588c6466e3895a12ddc57a56cfb5ac4102905872e6",
+      "simulation/_validation.py": "b1fce8f2a9db5a906f7385803f09bf767f3a09eeb85ab3f3dbbb1e53c1978a43",
+      "simulation/builtins/__init__.py": "a45b1aeb701138df24dcb3ef59beb095c3cfbe314322813df5ce5befa4088ba3",
+      "simulation/builtins/drivers.py": "8cad01645782142e871463afc4f1d9d511affc42676194f8f419932d5811fd1a",
+      "simulation/builtins/estimation.py": "7c6f7e2d5a570a9d655c6913582e21c4b6f26ecff014190d647a497c46234d20",
+      "simulation/builtins/gaussian.py": "53a305bff0d1552b8fe7766cb40fd95936a5ddab2b60d2a1584e91a84eb7aec0",
+      "simulation/builtins/observations.py": "13f737695fbeb222fce321a076a813472635bb8860deaff63e1628447c51942e",
+      "simulation/builtins/paths.py": "f35a93f64c13f39d8a57713df882fd03e899403ed34e28175901ed0da8f5a9c7",
+      "simulation/interfaces/__init__.py": "349704ba31dac0b656fb2652b21e73b6589c142191483f7a8904ae4a766f974b",
+      "simulation/interfaces/drivers.py": "2384e06c2c572b819455fcf1b90d4026df662ba745011d59bbcbb05e474db1c8",
+      "simulation/interfaces/estimates.py": "71a5270977f2baee5a84f1e9d7e6098dc5c7cb13ba1932956079db170bd03f04",
+      "simulation/interfaces/paths.py": "7c28059c2f0a00a3bf13dfe6f5b9cc727595dc2e22bab7f4de70d07e4d702e5f",
+      "state_space/__init__.py": "2c6b92171725944f8154589a20c368a163e843aee4a31a86401e1f160c354571",
+      "state_space/_backends/__init__.py": "8780a275215588e4e7f9ff5881bdde03d77dc4ad0a03b9f6999728a7dac1683a",
+      "state_space/_backends/linear.py": "1e7cfa057226aa9d62df197c626f4ae5a85f896cfa54b245b2f4fb1f47ac4bee",
+      "state_space/_backends/nonlinear.py": "b6adfef41fecf0fba5fe379a7fc56e99d0ae11046a7b049d800d3f9e7f2eba68",
+      "state_space/_backends/particle.py": "814c0e48ab1e3fe800906090f80e00bae1dc442f655292de46c05a909ae4ba0e",
+      "state_space/_validation.py": "ebd7564f43a028af2c7a2fe7244a7fea4de294fba4110158dda4f59ebcb3f812",
+      "state_space/builtins/__init__.py": "61b13ebc93562bc5ba09f05a88cafdd98f9a7c25ffa515087c0d89838a754b79",
+      "state_space/builtins/dynamics.py": "2044f02d9971fd99b467ba029436859596916606aa0bd2f34dd7a553684f2d2e",
+      "state_space/builtins/filters.py": "aeab55d4b2f6b40dbe187deb2cf3c33f96785f720cfcd87b59d7a13c6fb4f43e",
+      "state_space/builtins/models.py": "87bfd021fe49d7e980f583ff1119de1be152a4662fbdad99ed212641df66051e",
+      "state_space/builtins/simulation.py": "c88f7270276263c8a972358a37565bd5e08a901257f30524a8fd74728e9f795c",
+      "state_space/interfaces/__init__.py": "fafc30bb6c3954b58ab10f3d3d48abc93c5351617480bf29deeb17129d226951",
+      "state_space/interfaces/models.py": "f3088e78acc8b317ea17e01babebcf601d920548a7a417377ee81a2dc5088b0e",
+      "state_space/interfaces/results.py": "090a7a7990d84af3e9ece253e349fb120b585bb99f21bc26d50dddfa0b9fc78b",
+      "stopping/__init__.py": "2c9573679bb6493c8d3271db9039b52f7918ee440a2623045af120ace5347616",
+      "stopping/_backends/__init__.py": "06d18b08e1850ccce45701a707dcdecc81a6e013cb9d0d01f56ec1548682f275",
+      "stopping/_backends/numpy.py": "6236255978e899d7c23373d1bf6d652f4d54711460a86138b631adb05a72bd3c",
+      "stopping/_backends/sklearn.py": "f212597d6e3024fe957c0e3b4550ca4399692d6c7ef0ce37c2b02dcad38b215c",
+      "stopping/builtins/__init__.py": "80d4f153d7c05de1fa8adf313736016deaf7b7b2dfc87b85f621861a86bc808e",
+      "stopping/builtins/solvers.py": "bf53f58fc24b1de6974c7e1fb202abcc19a3f6aa71571817ed34cce9445bbdde",
+      "stopping/interfaces/__init__.py": "a73cf29e48ea931a2d79ed8a5897df5b7ba05c81947e84bfe8848b48ab9e3b1f",
+      "stopping/interfaces/base.py": "a4824c3cf642e8c5e5509528b93985a5c9d3428476a2633c1ec994f56b47a622",
+      "stopping/interfaces/results.py": "4fb85c4d21e6abe4d60d8e0953ddbb4c6b981eed02a6c4374212cf2eda0a907b",
+      "transforms/__init__.py": "c9aad45246214f6ac22a46882d8f1b27208c7a697421fc613a3cb10f133094f9",
+      "transforms/_backends/__init__.py": "e798a5802ae3c3d95c9c1da900def18e8c5fae2fb4e1924d54baa9c92f80bc7d",
+      "transforms/_backends/scipy.py": "7dc325aaef0a2eec59490d37aa09799729c0036914db715004fa65f54962f284",
+      "transforms/_backends/sequence.py": "85cb51d7ee7fccf17018840975708e79392b3f20cd6466d3086b666e7e4c8701",
+      "transforms/_backends/sklearn.py": "ff566f60b0fd8f004dc036859e9d72725e313a34afe08b6a0f6f0d95ea6e6f14",
+      "transforms/_validation.py": "a8d1be6f4ea7dd7b091d4309e20521aeddfff9e23fc9342a2b8a27639d6de1fd",
+      "transforms/builtins/__init__.py": "f18b361572f6cb4d45e42a50cbefefdf2be4e2e9dfadab910f3c4ecd5e2d0957",
+      "transforms/builtins/composition.py": "b22f6717ae17792a09d53effdcb58bf4d4b0aa3e22a2ecaa29a847c732b0a399",
+      "transforms/builtins/decomposition.py": "beefe79c8cd144cff8d2eed7ac40ae752c22c22df31aebb765f0096a9157a60c",
+      "transforms/builtins/geometry.py": "792f2df69b49bf2f5304412a95d77f748af8ff4555e090c226f68ad2d4e02216",
+      "transforms/builtins/scaling.py": "45309692427ff8876ba023ff8a7dd558b4de36566cb39e3f1b38901f61e2177c",
+      "transforms/builtins/sequence.py": "8676ecbb204e434419c222c4a7ad92aeed0e4ff61583776b0448796458a124b9",
+      "transforms/interfaces/__init__.py": "ff05e517bbc81aeaeea3895f614ae4753c21df6b9983a6020971313e0cf7dd02",
+      "transforms/interfaces/affine.py": "1fc715e89ba02ef8805a7aff9905a51ecda659e5dc6d546c3589d490273513fc",
+      "transforms/interfaces/base.py": "93795c4fd24936a5d00d9f6e03a8418a9f9c916d41236327fb0a9ec62bc64b24",
+      "transforms/interfaces/decomposition.py": "af8e9efe322a5eef56becba7859c1eae85f8dfb8064738c254124830a28ee5c4",
+      "transforms/interfaces/geometry.py": "90fc0c810df8d07c25b82781f8fa58d5257ac86cfca0a8c1640c101a3c1229ed",
+      "transforms/interfaces/sequence.py": "948534934da786f1a1771672e25ebf364ae52274cd8a1c07bb148a777920c067",
+      "utility/__init__.py": "d005d8fde1e61c3a1d4cae38d4d71ef70c4c5fa2ba805a1b13b29c456f0b313d",
+      "utility/_backends/__init__.py": "f7416540369e35aed38f8745be7fe7ac64efd1ed427432caeb80e5135c973495",
+      "utility/_backends/functions.py": "be0706b036c9360517ee6feae57d2f9f0c4145ce64dcf897f10cf61a5dcb9446",
+      "utility/builtins/__init__.py": "fbb82184145082ae411161166dde16a512bf4f4b6aa9685bee231c06927f8286",
+      "utility/builtins/functions.py": "b922b976e46896a3f73b665323e49d0c49caac005394c1f674b5bb136a815d78",
+      "utility/interfaces/__init__.py": "45a3ba74b57b58daddea275fe089e9f2fc7490ca539dd3524a2d64c226f2089d",
+      "utility/interfaces/base.py": "78fbe6407a1d1ade6fcfeea327070c45b3a1b4efdd4a57515a70762df2de326c",
+      "volatility/__init__.py": "68caaa687898fde2535a3c18b1415a9213ce189a6361cbc96f84524811becd4c",
+      "volatility/_backends/__init__.py": "cc9afb8b8b08f8a9798a50ba229cbcdf91ec176300f9f051bb23305b9fd11f56",
+      "volatility/_backends/arch.py": "a03de05b9ad5a25f2b3af410ab537e89c80d4bbe080a502f63ae970ba77387a4",
+      "volatility/_backends/har.py": "99f21c66cc8a605f511ff42360d9f400af2d36790303596a41e6a76e7919a4de",
+      "volatility/_backends/innovations.py": "837d734e0928c331bf3159ac0e2d51a48c9f8818a37363522875bfafd152344f",
+      "volatility/builtins/__init__.py": "e677b74fbb64115e2c4d01f469e3faa2520d596c4af20fde2ef5203d6ea53d62",
+      "volatility/builtins/arch.py": "e44fc93dd929d7053a2fdf4c3694d1276aa40f79ebc60f76f0e752aaa34b381b",
+      "volatility/builtins/har.py": "2ff115ad8d16d740efd0e96aeab49542a2b9330f528856911cff320ad1804eab",
+      "volatility/builtins/innovations.py": "4da2ec02929318d64874fbfc661f4218afc8700cc2b927cdb49cd7c134b00cf7",
+      "volatility/builtins/realized.py": "924d787c3babb603814689872356372d8265a9e55e604239dbc7624d0e21d2b7",
+      "volatility/diagnostics.py": "24d6f31c722b36f5a8c06c6b70f5ba88698d79fcca442332ca1b09f2688511f5",
+      "volatility/evaluation.py": "c55234d3528caabcb72f793035a57c24ec7e15ac7d79be4e06f03a4992fec973",
+      "volatility/interfaces/__init__.py": "184710ae2df4233734a36ea6460c4c501c6382a17fc9c36b6a85694b234489c3",
+      "volatility/interfaces/base.py": "6173d3350d0528b1b7d8e3f7ac2703d0babef45fda83a29a4911aa35d7d8a70e",
+      "volatility/interfaces/result.py": "b42f07fad8afcfffdffe421c5ca7ac19f39cbf8ec3e21abc29fcc96abd8c214b",
+      "wealth/__init__.py": "1757bae292e32f974ddc7e154226457fc8c7d855348afeb87e7c0649c1202c19",
+      "wealth/_backends/__init__.py": "f7416540369e35aed38f8745be7fe7ac64efd1ed427432caeb80e5135c973495",
+      "wealth/_backends/accounting.py": "90cc9514881fd1459304bfa592420129b0377f7be3f972f09774ecbc432e86d4",
+      "wealth/builtins/__init__.py": "fefb2f6bf48fa5f217fdfec4af53def24e5340e569b577ab3794116fc361d498",
+      "wealth/builtins/transforms.py": "0da85d736413ce26abdb41029e978ac11f265cae3b5521a47c60dcb5cd00cb60",
+      "wealth/interfaces/__init__.py": "7c0849cba177e70020fbe88d97c70339d6db0ae415f1e4351b1384c8727b42ce",
+      "wealth/interfaces/base.py": "e7fc31cc662a2bf9e1a805dfe740524a35778402d580b49316d1b2e0c273d1d0"
+    },
+    "documentation_gaps": [
+      {
+        "family": "numerical",
+        "name": "DifferentiationKind",
+        "signature": "(*args, **kwargs)"
+      },
+      {
+        "family": "numerical",
+        "name": "TimeDomain",
+        "signature": "(*args, **kwargs)"
+      },
+      {
+        "family": "numerical",
+        "name": "lstsq",
+        "signature": "(a, b, *, tool=None)"
+      },
+      {
+        "family": "numerical",
+        "name": "generalized_eig",
+        "signature": "(a, b, *, hermitian=False, tool=None)"
+      },
+      {
+        "family": "numerical",
+        "name": "qr",
+        "signature": "(a, *, pivoting=False, tool=None)"
+      },
+      {
+        "family": "numerical",
+        "name": "lu",
+        "signature": "(a, *, tool=None)"
+      },
+      {
+        "family": "numerical",
+        "name": "cholesky",
+        "signature": "(a, *, tool=None)"
+      },
+      {
+        "family": "numerical",
+        "name": "schur",
+        "signature": "(a, *, tool=None)"
+      },
+      {
+        "family": "numerical",
+        "name": "matrix_rank",
+        "signature": "(a, *, tolerance=None, tool=None) -> convexity.math.numerical.interfaces.base.ArrayResult"
+      },
+      {
+        "family": "numerical",
+        "name": "condition_number",
+        "signature": "(a, *, order=None, tool=None) -> convexity.math.numerical.interfaces.linear_algebra.ConditionResult"
+      },
+      {
+        "family": "numerical",
+        "name": "norm",
+        "signature": "(a, *, order=None, tool=None) -> convexity.math.numerical.interfaces.base.ArrayResult"
+      },
+      {
+        "family": "numerical",
+        "name": "pinv",
+        "signature": "(a, *, tolerance=None, tool=None) -> convexity.math.numerical.interfaces.base.ArrayResult"
+      },
+      {
+        "family": "numerical",
+        "name": "det",
+        "signature": "(a, *, tool=None) -> convexity.math.numerical.interfaces.base.ArrayResult"
+      },
+      {
+        "family": "numerical",
+        "name": "slogdet",
+        "signature": "(a, *, tool=None) -> convexity.math.numerical.interfaces.linear_algebra.LogDetResult"
+      },
+      {
+        "family": "numerical",
+        "name": "logm",
+        "signature": "(a, *, tool=None) -> convexity.math.numerical.interfaces.base.ArrayResult"
+      },
+      {
+        "family": "numerical",
+        "name": "sqrtm",
+        "signature": "(a, *, tool=None) -> convexity.math.numerical.interfaces.base.ArrayResult"
+      },
+      {
+        "family": "numerical",
+        "name": "sparse_eig",
+        "signature": "(a, k=1, *, hermitian=True, which='LM', tool=None) -> convexity.math.numerical.interfaces.linalg.EigenResult"
+      },
+      {
+        "family": "numerical",
+        "name": "sparse_svd",
+        "signature": "(a, k=1, *, which='LM', tool=None) -> convexity.math.numerical.interfaces.linalg.SVDResult"
+      },
+      {
+        "family": "numerical",
+        "name": "fixed_point",
+        "signature": "(function, x0, *, tool=None, check_convergence=True)"
+      },
+      {
+        "family": "numerical",
+        "name": "jvp",
+        "signature": "(function, x, vector, *, tool=None, check_convergence=True)"
+      },
+      {
+        "family": "numerical",
+        "name": "vjp",
+        "signature": "(function, x, vector, *, tool=None, check_convergence=True)"
+      },
+      {
+        "family": "numerical",
+        "name": "nquad",
+        "signature": "(function, bounds, *, tool=None, check_convergence=True)"
+      },
+      {
+        "family": "numerical",
+        "name": "gauss_quad",
+        "signature": "(function, a, b, *, n=16, tool=None)"
+      },
+      {
+        "family": "numerical",
+        "name": "quadrature_rule",
+        "signature": "(n, *, family='legendre', a=-1.0, b=1.0, tool=None)"
+      },
+      {
+        "family": "numerical",
+        "name": "spline",
+        "signature": "(x, y, *, extrapolate=False, tool=None)"
+      },
+      {
+        "family": "numerical",
+        "name": "regular_grid",
+        "signature": "(axes, values, *, extrapolation='raise', tool=None)"
+      },
+      {
+        "family": "numerical",
+        "name": "scattered",
+        "signature": "(points, values, *, extrapolation='raise', tool=None)"
+      },
+      {
+        "family": "numerical",
+        "name": "polynomial_approximation",
+        "signature": "(x, y, degree, *, extrapolate=False, tool=None, check_convergence=True)"
+      },
+      {
+        "family": "numerical",
+        "name": "solve_ivp",
+        "signature": "(function, y0, t_span, *, t_eval=None, events=(), jacobian=None, tool=None, check_convergence=True)"
+      },
+      {
+        "family": "numerical",
+        "name": "solve_bvp",
+        "signature": "(function, boundary, x, y, *, tool=None, check_convergence=True)"
+      },
+      {
+        "family": "numerical",
+        "name": "linspace",
+        "signature": "(start, stop, num=50, *, endpoint=True, tool=None)"
+      },
+      {
+        "family": "numerical",
+        "name": "geomspace",
+        "signature": "(start, stop, num=50, *, endpoint=True, tool=None)"
+      },
+      {
+        "family": "numerical",
+        "name": "arange",
+        "signature": "(start, stop, step=1.0, *, tool=None)"
+      },
+      {
+        "family": "numerical",
+        "name": "cartesian_product",
+        "signature": "(*axes, tool=None)"
+      },
+      {
+        "family": "numerical",
+        "name": "differentiation_matrix",
+        "signature": "(x, *, order=1, accuracy=2, periodic=False, tool=None)"
+      },
+      {
+        "family": "numerical",
+        "name": "isclose",
+        "signature": "(actual, reference, *, tolerances=Tolerances(atol=1e-08, rtol=1e-05), equal_nan=False, tool=None)"
+      },
+      {
+        "family": "numerical",
+        "name": "allclose",
+        "signature": "(actual, reference, *, tolerances=Tolerances(atol=1e-08, rtol=1e-05), equal_nan=False, tool=None)"
+      },
+      {
+        "family": "numerical",
+        "name": "machine_precision",
+        "signature": "(dtype: DTypeLike = <class 'numpy.float64'>)"
+      },
+      {
+        "family": "distributions",
+        "name": "Measure",
+        "signature": "(*args, **kwargs)"
+      },
+      {
+        "family": "distributions",
+        "name": "bernoulli",
+        "signature": "(p) -> convexity.math.distributions.interfaces.base.Distribution"
+      },
+      {
+        "family": "distributions",
+        "name": "binomial",
+        "signature": "(n, p) -> convexity.math.distributions.interfaces.base.Distribution"
+      },
+      {
+        "family": "distributions",
+        "name": "poisson",
+        "signature": "(rate) -> convexity.math.distributions.interfaces.base.Distribution"
+      },
+      {
+        "family": "distributions",
+        "name": "transformed",
+        "signature": "(base: convexity.math.distributions.interfaces.base.Distribution, transform: convexity.math.distributions.interfaces.transforms.MonotoneTransform) -> convexity.math.distributions.interfaces.base.Distribution"
+      },
+      {
+        "family": "estimation",
+        "name": "elastic_net",
+        "signature": "(design, response, *, alpha=1.0, l1_ratio=0.5, names=None, tolerance=1e-08, maxiter=10000)"
+      },
+      {
+        "family": "estimation",
+        "name": "elastic_net_penalty",
+        "signature": "(alpha=1.0, l1_ratio=0.5, *, center: ArrayLike = 0.0, weights: ArrayLike = 1.0)"
+      },
+      {
+        "family": "estimation",
+        "name": "l1_penalty",
+        "signature": "(alpha=1.0, *, center: ArrayLike = 0.0, weights: ArrayLike = 1.0)"
+      },
+      {
+        "family": "estimation",
+        "name": "l2_penalty",
+        "signature": "(alpha=1.0, *, center: ArrayLike = 0.0, weights: ArrayLike = 1.0)"
+      },
+      {
+        "family": "estimation",
+        "name": "lasso",
+        "signature": "(design, response, *, alpha=1.0, names=None, tolerance=1e-08, maxiter=10000)"
+      },
+      {
+        "family": "estimation",
+        "name": "regularized_linear",
+        "signature": "(design, response, *, names=None, alpha=1.0, l1_ratio=0.0, tolerance=1e-08, maxiter=10000, check_convergence=True)"
+      },
+      {
+        "family": "estimation",
+        "name": "ridge",
+        "signature": "(design, response, *, alpha=1.0, names=None)"
+      },
+      {
+        "family": "estimation",
+        "name": "robust_linear",
+        "signature": "(design, response, *, names=None, loss='huber', tuning=None, covariance_type='H1', tolerance=1e-08, maxiter=200, check_convergence=True)"
+      },
+      {
+        "family": "estimation",
+        "name": "fit",
+        "signature": "(problem: ~P, estimator: convexity.math.estimation.interfaces.base.Estimator[~P], *, check_convergence=True) -> convexity.math.estimation.interfaces.base.Estimate"
+      },
+      {
+        "family": "transforms",
+        "name": "difference",
+        "signature": "(values, *, lag=1, order=1)"
+      },
+      {
+        "family": "transforms",
+        "name": "factor_analysis",
+        "signature": "(samples, n_components, *, rotation=None, tolerance=1e-06, maxiter=1000, check_convergence=True)"
+      },
+      {
+        "family": "transforms",
+        "name": "fourier_features",
+        "signature": "(n, period, *, order=1, start=0)"
+      },
+      {
+        "family": "transforms",
+        "name": "lag_features",
+        "signature": "(values, lags=(1,))"
+      },
+      {
+        "family": "transforms",
+        "name": "minmax_scale",
+        "signature": "(samples, *, lower=0.0, upper=1.0)"
+      },
+      {
+        "family": "transforms",
+        "name": "pca",
+        "signature": "(samples, n_components=None, *, whiten=False, ddof=1)"
+      },
+      {
+        "family": "transforms",
+        "name": "robust_scale",
+        "signature": "(samples, *, center=True, scale=True, quantile_range=(25.0, 75.0), unit_variance=False)"
+      },
+      {
+        "family": "transforms",
+        "name": "seasonal_features",
+        "signature": "(n, period, *, start=0, drop_first=False)"
+      },
+      {
+        "family": "transforms",
+        "name": "standardize",
+        "signature": "(samples, *, center=True, scale=True, ddof=0)"
+      },
+      {
+        "family": "transforms",
+        "name": "whitening",
+        "signature": "(samples, *, method='zca', n_components=None, ddof=1)"
+      },
+      {
+        "family": "dependence",
+        "name": "correlation_to_covariance",
+        "signature": "(correlation, standard_deviation)"
+      },
+      {
+        "family": "dependence",
+        "name": "covariance_to_correlation",
+        "signature": "(covariance)"
+      },
+      {
+        "family": "dependence",
+        "name": "ewma_covariance",
+        "signature": "(samples, *, decay=0.94, ddof=0, assume_centered=False)"
+      },
+      {
+        "family": "dependence",
+        "name": "fit_copula",
+        "signature": "(samples, *, family='gaussian', df=None, repair_correlation=False)"
+      },
+      {
+        "family": "dependence",
+        "name": "fit_gev",
+        "signature": "(maxima, *, maxiter=3000, tolerance=1e-08, check_convergence=True)"
+      },
+      {
+        "family": "dependence",
+        "name": "fit_gpd",
+        "signature": "(excesses, *, maxiter=3000, tolerance=1e-08, check_convergence=True)"
+      },
+      {
+        "family": "dependence",
+        "name": "fit_student_t",
+        "signature": "(samples, *, df=5.0, estimate_df=False, df_bounds=(0.5, 200.0), maxiter=1000, tolerance=1e-10, check_convergence=True)"
+      },
+      {
+        "family": "dependence",
+        "name": "peaks_over_threshold",
+        "signature": "(samples, threshold, *, maxiter=3000, tolerance=1e-08, check_convergence=True)"
+      },
+      {
+        "family": "dependence",
+        "name": "sample_covariance",
+        "signature": "(samples, *, ddof=1, assume_centered=False)"
+      },
+      {
+        "family": "learning",
+        "name": "elastic_net",
+        "signature": "(features, response, *, alpha=1.0, l1_ratio=0.5, sample_weight=None, **kwargs)"
+      },
+      {
+        "family": "learning",
+        "name": "generalized_linear_model",
+        "signature": "(features, response, *, frequency_weights=None, trials=None, offset=None, **kwargs)"
+      },
+      {
+        "family": "learning",
+        "name": "lasso",
+        "signature": "(features, response, *, alpha=1.0, sample_weight=None, **kwargs)"
+      },
+      {
+        "family": "learning",
+        "name": "linear_regression",
+        "signature": "(features, response, **kwargs)"
+      },
+      {
+        "family": "learning",
+        "name": "logistic_regression",
+        "signature": "(features, response, *, sample_weight=None, **kwargs)"
+      },
+      {
+        "family": "learning",
+        "name": "quantile_regression",
+        "signature": "(features, response, *, quantiles=(0.5,), sample_weight=None, **kwargs)"
+      },
+      {
+        "family": "learning",
+        "name": "ridge",
+        "signature": "(features, response, *, alpha=1.0, sample_weight=None, **kwargs)"
+      },
+      {
+        "family": "gaussian_processes",
+        "name": "gaussian_process_regression",
+        "signature": "(features, response, **kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "FlowForecaster",
+        "signature": "(**kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "VAEForecaster",
+        "signature": "(**kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "AutoregressiveForecaster",
+        "signature": "(**kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "ScoreForecaster",
+        "signature": "(**kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "TFTForecaster",
+        "signature": "(**kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "PatchTSTForecaster",
+        "signature": "(**kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "NBEATSForecaster",
+        "signature": "(**kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "NHiTSForecaster",
+        "signature": "(**kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "EncoderDecoderForecaster",
+        "signature": "(**kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "ARForecaster",
+        "signature": "(lags=1, **kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "ARIMAForecaster",
+        "signature": "(order=(1, 0, 0), *, seasonal_order=(0, 0, 0, 0), trend=None, model_options=None, **kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "ARMAForecaster",
+        "signature": "(order=(1, 1), **kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "DynamicFactorForecaster",
+        "signature": "(k_factors=1, factor_order=1, *, model_options=None, **kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "ETSForecaster",
+        "signature": "(*, error='add', trend=None, seasonal=None, seasonal_periods=None, model_options=None, **kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "ExponentialSmoothingForecaster",
+        "signature": "(*, trend=None, seasonal=None, seasonal_periods=None, damped_trend=False, model_options=None, **kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "HoltForecaster",
+        "signature": "(**kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "HoltWintersForecaster",
+        "signature": "(period=12, *, seasonal='add', **kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "SARIMAForecaster",
+        "signature": "(order=(1, 0, 0), *, seasonal_order=(1, 0, 0, 12), **kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "SARIMAXForecaster",
+        "signature": "(order=(1, 0, 0), *, seasonal_order=(0, 0, 0, 0), trend=None, model_options=None, **kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "StructuralForecaster",
+        "signature": "(level='local level', *, model_options=None, **kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "VARForecaster",
+        "signature": "(lags=1, *, fit_options=None, **kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "VARMAXForecaster",
+        "signature": "(order=(1, 0), *, model_options=None, **kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "VECMForecaster",
+        "signature": "(*, k_ar_diff=1, coint_rank=1, model_options=None, **kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "ensemble",
+        "signature": "(forecasters, **kwargs)"
+      },
+      {
+        "family": "forecasting",
+        "name": "fit",
+        "signature": "(data, forecaster: convexity.math.forecasting.interfaces.base.Forecaster, *, covariates=None)"
+      },
+      {
+        "family": "volatility",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "volatility",
+        "name": "ARCHForecaster",
+        "signature": "(p=1, **kwargs)"
+      },
+      {
+        "family": "volatility",
+        "name": "GARCHForecaster",
+        "signature": "(p=1, q=1, **kwargs)"
+      },
+      {
+        "family": "volatility",
+        "name": "GJRGARCHForecaster",
+        "signature": "(p=1, o=1, q=1, **kwargs)"
+      },
+      {
+        "family": "volatility",
+        "name": "EGARCHForecaster",
+        "signature": "(p=1, o=1, q=1, **kwargs)"
+      },
+      {
+        "family": "volatility",
+        "name": "ConstantVarianceForecaster",
+        "signature": "(**kwargs)"
+      },
+      {
+        "family": "volatility",
+        "name": "EWMAForecaster",
+        "signature": "(decay=0.94, **kwargs)"
+      },
+      {
+        "family": "volatility",
+        "name": "fit",
+        "signature": "(data, forecaster: convexity.math.forecasting.interfaces.base.Forecaster, *, covariates=None)"
+      },
+      {
+        "family": "state_space",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "state_space",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "bayesian",
+        "name": "inverse_gamma",
+        "signature": "(shape, scale=1.0)"
+      },
+      {
+        "family": "regimes",
+        "name": "infer_regimes",
+        "signature": "(data, model: convexity.math.regimes.interfaces.base.RegimeInference)"
+      },
+      {
+        "family": "regimes",
+        "name": "sample_events",
+        "signature": "(process: convexity.math.regimes.interfaces.base.EventProcess, start, end, *, rng)"
+      },
+      {
+        "family": "processes",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "processes",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "processes",
+        "name": "transition",
+        "signature": "(process: convexity.math.processes.interfaces.base.StochasticProcess, state, dt, *, time=0.0, method='exact', substeps=1)"
+      },
+      {
+        "family": "rough",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "rough",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "simulation",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "simulation",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "measures",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "measures",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "measures",
+        "name": "gbm_pair",
+        "signature": "(mu, rate, dividend, sigma)"
+      },
+      {
+        "family": "contracts",
+        "name": "day_count",
+        "signature": "(name='actual365') -> Any"
+      },
+      {
+        "family": "contracts",
+        "name": "to_quantlib_date",
+        "signature": "(value)"
+      },
+      {
+        "family": "contracts",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "contracts",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "contracts",
+        "name": "payoff",
+        "signature": "(spot, strike, *, kind='call', cash=None)"
+      },
+      {
+        "family": "contracts",
+        "name": "schedule",
+        "signature": "(start, end, *, months=6, calendar=None, convention=None, backwards=True, end_of_month=False, first_date=None, next_to_last_date=None)"
+      },
+      {
+        "family": "contracts",
+        "name": "year_fraction",
+        "signature": "(start, end, convention='actual365')"
+      },
+      {
+        "family": "contracts",
+        "name": "interest_factor",
+        "signature": "(rate, time, *, compounding='continuous', frequency=2)"
+      },
+      {
+        "family": "contracts",
+        "name": "fixed_cashflows",
+        "signature": "(dates, coupon, *, notional=100.0, convention='actual365', redemption=100.0, currency='USD')"
+      },
+      {
+        "family": "contracts",
+        "name": "split_holdings",
+        "signature": "(quantity, price, ratio)"
+      },
+      {
+        "family": "curves",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "curves",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "curves",
+        "name": "flat_curve",
+        "signature": "(reference_date, rate, *, convention='actual365')"
+      },
+      {
+        "family": "curves",
+        "name": "discount_curve",
+        "signature": "(dates, discounts, *, convention='actual365', extrapolate=False)"
+      },
+      {
+        "family": "curves",
+        "name": "zero_curve",
+        "signature": "(dates, rates, *, convention='actual365', extrapolate=False)"
+      },
+      {
+        "family": "curves",
+        "name": "futures_basis",
+        "signature": "(futures, forward)"
+      },
+      {
+        "family": "pricing",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "pricing",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "pricing",
+        "name": "price",
+        "signature": "(problem, engine: convexity.math.pricing.interfaces.base.PricingEngine)"
+      },
+      {
+        "family": "pricing",
+        "name": "barrier_price",
+        "signature": "(model, valuation_date, expiry, strike, barrier, *, barrier_type='down_out', rebate=0.0, kind='call')"
+      },
+      {
+        "family": "implied_volatility",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "implied_volatility",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "implied_volatility",
+        "name": "implied_volatility",
+        "signature": "(price, forward, strike, maturity, *, discount=1.0, kind='call', model='black76', displacement=0.0, tolerance=1e-12)"
+      },
+      {
+        "family": "implied_volatility",
+        "name": "sabr_volatility",
+        "signature": "(strike, forward, maturity, alpha, beta, nu, rho, *, model='black76', shift=0.0)"
+      },
+      {
+        "family": "implied_volatility",
+        "name": "dupire_local_volatility",
+        "signature": "(surface, discount, dividend, spot, time, strike)"
+      },
+      {
+        "family": "calibration",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "calibration",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "calibration",
+        "name": "calibrate",
+        "signature": "(problem, *, solver=None, require_success=True)"
+      },
+      {
+        "family": "stopping",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "stopping",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "sensitivities",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "sensitivities",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "fixed_income",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "fixed_income",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "fixed_income",
+        "name": "zero_coupon",
+        "signature": "(maturity, *, face=100.0, settlement_days=0, calendar=None, issue_date=None)"
+      },
+      {
+        "family": "fixed_income",
+        "name": "fixed_bond",
+        "signature": "(schedule, coupon, *, face=100.0, settlement_days=0, convention='actual365', redemption=100.0)"
+      },
+      {
+        "family": "fixed_income",
+        "name": "amortizing_bond",
+        "signature": "(schedule, notionals, coupon, *, settlement_days=0, convention='actual365')"
+      },
+      {
+        "family": "fixed_income",
+        "name": "inflation_bond",
+        "signature": "(schedule, index, base_cpi, coupon, *, observation_lag_months=3, face=100.0, settlement_days=0, convention='actual365', growth_only=False, interpolation=None)"
+      },
+      {
+        "family": "fixed_income",
+        "name": "cashflows",
+        "signature": "(bond, valuation_date, *, currency='USD')"
+      },
+      {
+        "family": "fixed_income",
+        "name": "yield_from_price",
+        "signature": "(bond, clean_price, settlement_date, *, convention='actual365', frequency=None, compounding=None, valuation_date=None)"
+      },
+      {
+        "family": "fixed_income",
+        "name": "price_from_yield",
+        "signature": "(bond, yield_rate, settlement_date, *, convention='actual365', frequency=None, compounding=None, valuation_date=None)"
+      },
+      {
+        "family": "rates",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "rates",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "rates",
+        "name": "inflation_curve",
+        "signature": "(reference_date, dates, rates, *, frequency=None, convention='actual365', year_on_year=False)"
+      },
+      {
+        "family": "rates",
+        "name": "rate_option_price",
+        "signature": "(instrument, curve, *, kind=None, method='black', volatility=None, model=None, steps=300, displacement=0.0)"
+      },
+      {
+        "family": "rates",
+        "name": "inflation_swap_price",
+        "signature": "(instrument, discount)"
+      },
+      {
+        "family": "credit",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "credit",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "credit",
+        "name": "flat_hazard",
+        "signature": "(reference_date, hazard, *, measure='Q', convention='actual365')"
+      },
+      {
+        "family": "credit",
+        "name": "survival_curve",
+        "signature": "(dates, probabilities, *, measure='Q', convention='actual365', extrapolate=False)"
+      },
+      {
+        "family": "credit",
+        "name": "bootstrap_cds",
+        "signature": "(reference_date, helpers, *, convention='actual365', extrapolate=False)"
+      },
+      {
+        "family": "credit",
+        "name": "cds_price",
+        "signature": "(schedule, spread, discount, default, *, notional=1.0, recovery=0.4, buyer=True, protection_start=None, trade_date=None, cash_settlement_days=3)"
+      },
+      {
+        "family": "risk",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "risk",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "risk",
+        "name": "variance",
+        "signature": "(losses, *, weights=None)"
+      },
+      {
+        "family": "risk",
+        "name": "value_at_risk",
+        "signature": "(losses, level=0.95, *, weights=None)"
+      },
+      {
+        "family": "risk",
+        "name": "volatility_contributions",
+        "signature": "(holdings, covariance)"
+      },
+      {
+        "family": "risk",
+        "name": "maximum_drawdown",
+        "signature": "(wealth, *, relative=True)"
+      },
+      {
+        "family": "utility",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "utility",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "utility",
+        "name": "expected_utility",
+        "signature": "(wealth, utility, *, weights=None)"
+      },
+      {
+        "family": "utility",
+        "name": "certainty_equivalent",
+        "signature": "(wealth, utility, *, weights=None)"
+      },
+      {
+        "family": "utility",
+        "name": "mean_variance",
+        "signature": "(gains, aversion=1.0, *, weights=None)"
+      },
+      {
+        "family": "utility",
+        "name": "mean_cvar",
+        "signature": "(gains, aversion=1.0, level=0.95, *, weights=None)"
+      },
+      {
+        "family": "utility",
+        "name": "preference_penalty",
+        "signature": "(trade, *, turnover=0.0, switching=0.0, scale: Any = 1.0)"
+      },
+      {
+        "family": "optimization",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "optimization",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "optimization",
+        "name": "solve",
+        "signature": "(problem, solver=None, *, check_success=True)"
+      },
+      {
+        "family": "robust",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "robust",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "robust",
+        "name": "chance_probability",
+        "signature": "(losses, bound=0.0, *, weights=None)"
+      },
+      {
+        "family": "control",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "control",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "control",
+        "name": "finite_horizon",
+        "signature": "(model: convexity.math.control.interfaces.problems.FiniteMDP, horizon, *, terminal_values=None)"
+      },
+      {
+        "family": "control",
+        "name": "value_iteration",
+        "signature": "(model: convexity.math.control.interfaces.problems.FiniteMDP, *, tolerance=1e-10, maxiter=100000)"
+      },
+      {
+        "family": "control",
+        "name": "belief_update",
+        "signature": "(belief, transition, likelihood)"
+      },
+      {
+        "family": "control",
+        "name": "scenario_mpc",
+        "signature": "(tree: convexity.math.control.interfaces.problems.ScenarioTree, a, b, q, r, initial, *, terminal_cost=None, lower_actions=-inf, upper_actions=inf, lower_states=-inf, upper_states=inf, solver=None)"
+      },
+      {
+        "family": "policies",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "policies",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "execution",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "execution",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "wealth",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "wealth",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "wealth",
+        "name": "trade",
+        "signature": "(account: convexity.math.wealth.interfaces.base.Account, quantities, prices, *, cost=0.0)"
+      },
+      {
+        "family": "diagnostics",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "diagnostics",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "diagnostics",
+        "name": "log_score",
+        "signature": "(log_density, *, weights=None)"
+      },
+      {
+        "family": "diagnostics",
+        "name": "quantile_score",
+        "signature": "(actual, prediction, level, *, weights=None)"
+      },
+      {
+        "family": "diagnostics",
+        "name": "variogram_score",
+        "signature": "(samples, actual, *, weights=None, order=0.5, pair_weights=None)"
+      },
+      {
+        "family": "diagnostics",
+        "name": "interval_coverage",
+        "signature": "(actual, lower, upper, *, weights=None)"
+      },
+      {
+        "family": "diagnostics",
+        "name": "residual_test",
+        "signature": "(residuals, *, method='ljung_box', lags=(1, 5, 10))"
+      },
+      {
+        "family": "diagnostics",
+        "name": "stationarity_test",
+        "signature": "(series, *, method='adf', regression='c', lags=None)"
+      },
+      {
+        "family": "diagnostics",
+        "name": "cointegration_test",
+        "signature": "(dependent, regressors, *, trend='c', lags=None)"
+      },
+      {
+        "family": "diagnostics",
+        "name": "adjust_pvalues",
+        "signature": "(pvalues, *, method='holm')"
+      },
+      {
+        "family": "reinforcement",
+        "name": "interfaces",
+        "signature": null
+      },
+      {
+        "family": "reinforcement",
+        "name": "builtins",
+        "signature": null
+      },
+      {
+        "family": "reinforcement",
+        "name": "bellman_loss",
+        "signature": "(predictions, targets, *, weights=None)"
+      }
+    ],
+    "remaining_blockers": [
+      "Complete ordinary public reference/type contracts; 224 undocumented export names include modules and aliases, while many shape contracts remain Any",
+      "Establish an automated compatibility gate for the declared Python/dependency range; full verification currently covers the recorded Python 3.14 provider environment, with focused Python 3.12 checks"
+    ]
+  }
+}
