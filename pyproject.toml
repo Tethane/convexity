@@ -21,6 +21,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+data = ["pandas>=2.2"]
+yahoo = ["pandas>=2.2", "yfinance>=0.2.54,<2"]
+ibkr = ["ib_async==2.1.0"]
+calendars = ["exchange-calendars>=4.13.2,<5"]
 dev = ["pytest>=8", "pyright>=1.1.408"]
 autodiff = ["torch>=2.2"]
 neural = ["torch>=2.2"]
@@ -40,7 +44,7 @@ namespaces = false
 convexity = ["py.typed"]
 
 [tool.pyright]
-include = ["convexity", "tests", "examples"]
+include = ["convexity", "tests", "docs/math/examples"]
 pythonVersion = "3.14"
 typeCheckingMode = "basic"
 

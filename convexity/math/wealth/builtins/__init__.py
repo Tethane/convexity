@@ -1,7 +1,7 @@
 """Concrete specifications and convenience functions for wealth.
 
 Ordinary workflows may import these names directly from convexity.math.wealth.
-See docs/reference/wealth.md for public signatures and mathematical conventions.
+See docs/math/reference/wealth.md for public signatures and mathematical conventions.
 """
 from .transforms import (
     trade,

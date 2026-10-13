@@ -1,7 +1,7 @@
 """Owned problem/result records and structural extension protocols for pricing.
 
 Ordinary workflows may import these names directly from convexity.math.pricing.
-See docs/reference/pricing.md for public signatures and mathematical conventions.
+See docs/math/reference/pricing.md for public signatures and mathematical conventions.
 """
 from .base import PricingProblem, PricingResult, PricingEngine, price
 

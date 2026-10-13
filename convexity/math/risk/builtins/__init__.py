@@ -1,7 +1,7 @@
 """Concrete specifications and convenience functions for risk.
 
 Ordinary workflows may import these names directly from convexity.math.risk.
-See docs/reference/risk.md for public signatures and mathematical conventions.
+See docs/math/reference/risk.md for public signatures and mathematical conventions.
 """
 from .measures import (
     variance,

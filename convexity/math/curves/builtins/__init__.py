@@ -1,7 +1,7 @@
 """Concrete specifications and convenience functions for curves.
 
 Ordinary workflows may import these names directly from convexity.math.curves.
-See docs/reference/curves.md for public signatures and mathematical conventions.
+See docs/math/reference/curves.md for public signatures and mathematical conventions.
 """
 from .curves import (
     YieldCurve,

@@ -1,7 +1,7 @@
 """Concrete specifications and convenience functions for volatility.
 
 Ordinary workflows may import these names directly from convexity.math.volatility.
-See docs/reference/volatility.md for public signatures and mathematical conventions.
+See docs/math/reference/volatility.md for public signatures and mathematical conventions.
 """
 from .arch import (ARCHModelForecaster, ARCHForecaster, GARCHForecaster,
                    GJRGARCHForecaster, EGARCHForecaster, ConstantVarianceForecaster, EWMAForecaster)

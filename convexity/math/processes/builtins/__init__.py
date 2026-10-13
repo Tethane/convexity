@@ -1,7 +1,7 @@
 """Concrete specifications and convenience functions for processes.
 
 Ordinary workflows may import these names directly from convexity.math.processes.
-See docs/reference/processes.md for public signatures and mathematical conventions.
+See docs/math/reference/processes.md for public signatures and mathematical conventions.
 """
 from .gaussian import BrownianMotion, ArithmeticBrownianMotion, OrnsteinUhlenbeck, LinearDiffusion, VectorOrnsteinUhlenbeck
 from .positive import GeometricBrownianMotion, CIR

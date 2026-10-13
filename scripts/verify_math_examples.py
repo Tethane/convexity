@@ -26,7 +26,7 @@ def main():
                OPENBLAS_NUM_THREADS='1', MPLBACKEND='Agg')
     if args.offline:
         env['HF_HUB_OFFLINE'] = '1'
-    files = (root / ('notebooks' if args.notebooks else 'examples')).glob(
+    files = (root / 'docs' / 'math' / ('notebooks' if args.notebooks else 'examples')).glob(
         '*.ipynb' if args.notebooks else '*.py')
     results = []
     for path in sorted(files):

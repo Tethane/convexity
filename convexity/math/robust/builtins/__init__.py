@@ -1,7 +1,7 @@
 """Concrete specifications and convenience functions for robust.
 
 Ordinary workflows may import these names directly from convexity.math.robust.
-See docs/reference/robust.md for public signatures and mathematical conventions.
+See docs/math/reference/robust.md for public signatures and mathematical conventions.
 """
 from .formulations import (
     Box,

@@ -1,7 +1,7 @@
 """Concrete specifications and convenience functions for reinforcement.
 
 Ordinary workflows may import these names directly from convexity.math.reinforcement.
-See docs/reference/reinforcement.md for public signatures and mathematical conventions.
+See docs/math/reference/reinforcement.md for public signatures and mathematical conventions.
 """
 from .agents import (
     q_learning,

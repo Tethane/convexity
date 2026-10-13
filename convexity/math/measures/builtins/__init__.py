@@ -1,7 +1,7 @@
 """Concrete specifications and convenience functions for measures.
 
 Ordinary workflows may import these names directly from convexity.math.measures.
-See docs/reference/measures.md for public signatures and mathematical conventions.
+See docs/math/reference/measures.md for public signatures and mathematical conventions.
 """
 from .models import (
     MoneyMarketNumeraire,

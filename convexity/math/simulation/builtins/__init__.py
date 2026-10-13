@@ -1,7 +1,7 @@
 """Concrete specifications and convenience functions for simulation.
 
 Ordinary workflows may import these names directly from convexity.math.simulation.
-See docs/reference/simulation.md for public signatures and mathematical conventions.
+See docs/math/reference/simulation.md for public signatures and mathematical conventions.
 """
 from .drivers import gaussian_innovations, brownian_increments
 from .paths import simulate, sample_paths, integrate, geometric_brownian_paths

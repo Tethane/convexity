@@ -1,7 +1,7 @@
 """Concrete specifications and convenience functions for rough.
 
 Ordinary workflows may import these names directly from convexity.math.rough.
-See docs/reference/rough.md for public signatures and mathematical conventions.
+See docs/math/reference/rough.md for public signatures and mathematical conventions.
 """
 from .kernels import FractionalKernel, ExponentialKernel, CallableKernel
 from .drivers import FractionalBrownianMotion, VolterraGaussian

@@ -219,14 +219,14 @@ print('Actor-critic action:', agent.action(0), 'exact action:', exact.policy[0])
 def build(name, index):
     title, intro, heading, narrative, code = BOOKS[name]
     script = "optimal_control" if name == "control" else name
-    example = (ROOT / "examples" / f"{script}.py").read_text()
+    example = (ROOT / "docs" / "math" / "examples" / f"{script}.py").read_text()
     cells = [
         nbf.v4.new_markdown_cell(f"# {title}\n\nFamily {index}. {intro}"),
         nbf.v4.new_code_cell(textwrap.dedent(SETUP).strip()),
         nbf.v4.new_markdown_cell(
             "## Public workflow\n\nThe executable example uses only supplied or generated inputs."
             + (
-                "\n\nThe standalone script is `examples/optimal_control.py` to avoid shadowing the python-control provider."
+                "\n\nThe standalone script is `docs/math/examples/optimal_control.py` to avoid shadowing the python-control provider."
                 if name == "control"
                 else ""
             )
@@ -236,7 +236,7 @@ def build(name, index):
         nbf.v4.new_code_cell(textwrap.dedent(code).strip()),
         nbf.v4.new_markdown_cell(
             "## Scope of this evidence\n\nThese experiments illustrate the declared finite catalog, not live trading performance. "
-            "See the [contracts and limitations](../docs/decision_mathematics.md) and "
+            "See the [contracts and limitations](../decision_mathematics.md) and "
             "`tests/math/decisions/` for mathematical acceptance checks."
         ),
     ]
@@ -295,7 +295,7 @@ def main():
                 if km.has_kernel:
                     km.shutdown_kernel(now=True)
         nbf.validate(notebook)
-        nbf.write(notebook, ROOT / "notebooks" / f"{name}.ipynb")
+        nbf.write(notebook, ROOT / "docs" / "math" / "notebooks" / f"{name}.ipynb")
         print(name, "executed" if args.execute else "built", flush=True)
 
 

@@ -1,7 +1,7 @@
 """Concrete specifications and convenience functions for rates.
 
 Ordinary workflows may import these names directly from convexity.math.rates.
-See docs/reference/rates.md for public signatures and mathematical conventions.
+See docs/math/reference/rates.md for public signatures and mathematical conventions.
 """
 from .models import (
     ShortRateModel,

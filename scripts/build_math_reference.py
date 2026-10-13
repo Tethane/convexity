@@ -114,7 +114,7 @@ def main() -> int:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path(__file__).resolve().parents[1] / "docs" / "reference",
+        default=Path(__file__).resolve().parents[1] / "docs" / "math" / "reference",
     )
     args = parser.parse_args()
     stale = []

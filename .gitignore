@@ -8,6 +8,7 @@ __pycache__/
 .ipynb_checkpoints/
 .pytest_cache/
 .cache/
+.convexity/
 
 # Local environments and editor settings
 .venv/

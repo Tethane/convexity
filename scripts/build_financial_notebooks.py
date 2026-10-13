@@ -56,8 +56,8 @@ def notebook(title, seed, intro, sections):
             "## Scope of the evidence\n\nThese are generated-data experiments under the stated models, "
             "not market forecasts or universal model rankings. Numerical errors, backend restrictions "
             "and measure assumptions are documented in the "
-            "[financial catalog](../docs/financial_mathematics.md) and "
-            "[QA record](../docs/financial_qa.md). Automated adversarial checks live in `tests/math/finance/`."
+            "[financial catalog](../financial_mathematics.md) and "
+            "[QA record](../financial_qa.md). Automated adversarial checks live in `tests/math/finance/`."
         )
     )
     return nbf.v4.new_notebook(
@@ -810,7 +810,7 @@ def main():
     parser.add_argument("--only", nargs="*", choices=list(BOOKS))
     args = parser.parse_args()
     for name in args.only or BOOKS:
-        path = ROOT / "notebooks" / f"{name}.ipynb"
+        path = ROOT / "docs" / "math" / "notebooks" / f"{name}.ipynb"
         nb = BOOKS[name]
         if args.execute:
             from nbclient import NotebookClient
