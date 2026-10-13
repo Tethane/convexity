@@ -43,21 +43,25 @@ class BarSubscription:
 
 
 @dataclass(frozen=True)
-class ClockSubscription:
-    """One named wall-clock event per trading session, within its open/close."""
+class ClockSchedule:
+    """A typed local time resolved once per exchange session into a UTC Timer.
+
+    Use as EventSubscription(Timer, schedule=ClockSchedule(...)). Times outside
+    a session (including early closes) are skipped; DST follows the named zone.
+    """
     name: str
-    at: str = "15:50"
+    at: time = time(15, 50)
     timezone: str = "America/New_York"
     calendar: str = "XNYS"
 
     def __post_init__(self):
         if not self.name or not self.calendar:
-            raise ValueError("Clock subscriptions require a name and calendar.")
-        clock = time.fromisoformat(self.at)
-        if clock.tzinfo is not None:
+            raise ValueError("Clock schedules require a name and calendar.")
+        if type(self.at) is not time:
+            raise TypeError("ClockSchedule.at requires datetime.time, e.g. time(15, 50).")
+        if self.at.tzinfo is not None:
             raise ValueError("Use a local wall-clock time and the timezone field.")
         ZoneInfo(self.timezone)
-
 
     @property
     def namespace(self) -> str:
@@ -73,23 +77,46 @@ class ClockSubscription:
             local_date = session.open.astimezone(zone).date()
             last_date = session.close.astimezone(zone).date()
             while local_date <= last_date:
-                due = datetime.combine(local_date, time.fromisoformat(self.at), zone).astimezone(timezone.utc)
+                due = datetime.combine(local_date, self.at, zone).astimezone(timezone.utc)
                 if session.open <= due <= session.close:
                     timers.append(Timer(due, self.name))
                 local_date += timedelta(days=1)
         return ScheduleSpec(f"{self.namespace}:{year}", tuple(timers))
 
 
+class ClockSubscription(ClockSchedule):
+    """Compatibility spelling; prefer EventSubscription(Timer, schedule=ClockSchedule(...))."""
+
+    def __init__(self, name: str, at: time | str = time(15, 50),
+                 timezone: str = "America/New_York", calendar: str = "XNYS"):
+        super().__init__(name, time.fromisoformat(at) if isinstance(at, str) else at, timezone, calendar)
+
+
 @dataclass(frozen=True)
 class EventSubscription:
-    """Opt in to an event class, e.g. FillEvent or OrderUpdate."""
+    """Opt in to an event class. Timer subscriptions also declare their schedule."""
     event_type: type
+    schedule: ClockSchedule | SessionSchedule | None = None
 
     def __post_init__(self):
         if not isinstance(self.event_type, type):
             raise TypeError("EventSubscription requires an event class.")
-        if self.event_type in (Bars, Timer):
-            raise ValueError("Use BarSubscription or ClockSubscription for market bars or clocks.")
+        if self.event_type is Bars:
+            raise ValueError("Use BarSubscription for market bars.")
+        if self.event_type is Timer:
+            if not isinstance(self.schedule, (ClockSchedule, SessionSchedule)):
+                raise ValueError("Timer subscriptions require a ClockSchedule or SessionSchedule.")
+        elif self.schedule is not None:
+            raise ValueError("Only Timer events accept a schedule.")
+
+
+def event_schedule(subscription) -> ClockSchedule | SessionSchedule | None:
+    """Resolve the schedule for a Timer event, including legacy declarations."""
+    if isinstance(subscription, EventSubscription):
+        return subscription.schedule
+    if isinstance(subscription, (ClockSubscription, SessionSchedule)):
+        return subscription
+    return None
 
 
 @dataclass(frozen=True)
@@ -113,7 +140,7 @@ class StrategyContract:
             raise TypeError("Unsupported strategy subscription.")
         if type(self.warmup_sessions) is not int or self.warmup_sessions < 0:
             raise ValueError("warmup_sessions must be a nonnegative integer.")
-        clocks = [s.name for s in self.subscriptions if isinstance(s, (ClockSubscription, SessionSchedule))]
+        clocks = [schedule.name for s in self.subscriptions if (schedule := event_schedule(s)) is not None]
         if len(set(clocks)) != len(clocks):
             raise ValueError("Clock names must be unique within a strategy contract.")
 
@@ -169,7 +196,7 @@ def select_event(strategy, event, *, subscriptions=None):
         bars = {s: b for s, b in event.bars.items() if s in observed}
         return Bars(event.time, bars) if bars else None
     if isinstance(event, Timer):
-        return event if any(isinstance(s, (ClockSubscription, SessionSchedule)) and s.name == event.name for s in subscriptions) else None
+        return event if any((schedule := event_schedule(s)) is not None and schedule.name == event.name for s in subscriptions) else None
     if not any(isinstance(s, EventSubscription) and isinstance(event, s.event_type) for s in subscriptions):
         return None
     visible = set(contract.symbols) | observed

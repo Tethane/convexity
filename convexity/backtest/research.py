@@ -16,7 +16,7 @@ import weakref
 from zoneinfo import ZoneInfo
 
 from convexity.runtime import Bars, FillEvent, OrderUpdate, Rejection, Instrument, RiskLimits, Strategy, Timer
-from convexity.runtime.contracts import BarSubscription, ClockSubscription, EventSubscription, StrategyContract, StrategyMetadata
+from convexity.runtime.contracts import BarSubscription, ClockSchedule, EventSubscription, StrategyContract, StrategyMetadata, event_schedule
 from convexity.runtime.calendar_schedule import SessionSchedule
 from convexity.runtime.types import SubscriptionUpdate
 from convexity.runtime.capabilities import RESEARCH_CAPABILITIES
@@ -38,9 +38,9 @@ class Research:
 
     ``Research(start, end).run(MyStrategy)`` discovers instruments, subscriptions,
     warmup and identity from the strategy. Infrastructure overrides belong to
-    ``run``. The default historical source is a read-only IBKR connection and
-    durable SQLite cache; no account configuration file or synthetic fallback
-    is used. Async applications use ``await research.run_async(MyStrategy)``.
+    ``run``. The default historical source is Alpaca SIP, with read-only IBKR
+    fallback and separate durable SQLite caches. Async applications use
+    ``await research.run_async(MyStrategy)``.
     """
 
     capabilities = RESEARCH_CAPABILITIES
@@ -92,10 +92,11 @@ class Research:
     def _timers(subscriptions, calendar: SessionCalendar) -> tuple[Timer, ...]:
         values = []
         first, last = calendar.sessions[0].open, calendar.sessions[-1].close
-        for subscription in subscriptions:
-            if isinstance(subscription, ClockSubscription):
+        for declaration in subscriptions:
+            subscription = event_schedule(declaration)
+            if isinstance(subscription, ClockSchedule):
                 zone = ZoneInfo(subscription.timezone)
-                at = time.fromisoformat(subscription.at)
+                at = subscription.at
                 for session in calendar.sessions:
                     local_date = session.open.astimezone(zone).date()
                     final_date = session.close.astimezone(zone).date()
@@ -135,21 +136,23 @@ class Research:
         Execution prices are private to the simulator; only subscribed observations
         populate strategy history and trigger bar callbacks.
         """
-        from .history import HistoryRequest, IBKRHistoricalData, validate_coverage
+        from .history import HistoryRequest, validate_coverage
         from .cache import CachedHistoricalProvider
+        from .providers import FallbackHistoricalProvider
         if not self._lock.acquire(blocking=False):
             raise RuntimeError("A Research instance cannot run concurrently; create another instance.")
         try:
             instances = self._instantiate(strategies)
             subscriptions = tuple(sub for strategy in instances.values() for sub in strategy.contract.all_subscriptions)
             unsupported = [sub.event_type.__name__ for sub in subscriptions
-                           if isinstance(sub, EventSubscription) and sub.event_type not in (FillEvent, OrderUpdate, Rejection, SubscriptionUpdate)]
+                           if isinstance(sub, EventSubscription) and sub.event_type not in (Timer, FillEvent, OrderUpdate, Rejection, SubscriptionUpdate)]
             if unsupported:
-                raise NotImplementedError(f"This simulator has no event source for: {', '.join(sorted(set(unsupported)))}. Supported event subscriptions are FillEvent, OrderUpdate and Rejection, plus bar and clock subscriptions.")
-            if any(isinstance(sub, ClockSubscription) and time.fromisoformat(sub.at).microsecond for sub in subscriptions):
+                raise NotImplementedError(f"This simulator has no event source for: {', '.join(sorted(set(unsupported)))}. Supported event subscriptions are Timer, FillEvent, OrderUpdate, Rejection and SubscriptionUpdate, plus bar subscriptions.")
+            schedules = tuple(schedule for sub in subscriptions if (schedule := event_schedule(sub)) is not None)
+            if any(isinstance(schedule, ClockSchedule) and schedule.at.microsecond for schedule in schedules):
                 raise ValueError("Clock subscriptions currently require whole-second resolution.")
             bar_subscriptions = tuple(sub for sub in subscriptions if isinstance(sub, BarSubscription))
-            calendars = {sub.calendar for sub in subscriptions if isinstance(sub, (BarSubscription, ClockSubscription, SessionSchedule))}
+            calendars = {sub.calendar for sub in subscriptions if isinstance(sub, BarSubscription)} | {schedule.calendar for schedule in schedules}
             if len(calendars) > 1:
                 raise ValueError("This simulator currently requires subscriptions on one exchange calendar.")
             calendar_name = next(iter(calendars), "XNYS")
@@ -222,8 +225,8 @@ class Research:
             request = HistoryRequest(tuple(instruments), history_start, self.end,
                                      bar_size=execution_size, calendar=calendar_name)
             if provider is None:
-                provider = IBKRHistoricalData()
-            if cache is not None and not isinstance(provider, CachedHistoricalProvider):
+                provider = FallbackHistoricalProvider(cache=cache)
+            if cache is not None and not isinstance(provider, (CachedHistoricalProvider, FallbackHistoricalProvider)):
                 provider = CachedHistoricalProvider(provider, cache)
             dataset = await provider.fetch(request, refresh=refresh)
             if {bar.symbol for bar in dataset.data.bars} != set(request.symbols):

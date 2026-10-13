@@ -1,4 +1,4 @@
-"""Observed prices, shared sizing capacity, native cash and dated FX accounting."""
+"""Observed prices, account capacity, native cash and dated FX accounting."""
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal as D
@@ -33,29 +33,18 @@ def test_price_uses_latest_mark_not_oldest_history_and_checks_time():
         replace(ctx, time=T + timedelta(minutes=5)).price("NVDA", max_age=timedelta(minutes=1))
 
 
-def test_buy_uses_ask_and_shared_budget_with_reserve_and_buffer():
+def test_buy_price_uses_observed_ask():
     ctx = replace(context(), ask_prices={"NVDA": cx.PriceObservation(D(101), T, "USD", "ask")})
     assert ctx.price("NVDA", side="BUY") == 101
-    assert ctx.buy_quantities({"NVDA": D(".5"), "AAPL": D(".5")}, reserve=10, price_buffer=".01") == {"NVDA": 4, "AAPL": 2}
-    with pytest.raises(ValueError, match="sum"):
-        ctx.buy_quantities({"NVDA": 1, "AAPL": 1})
-    with pytest.raises(ValueError, match="unavailable"):
-        replace(ctx, account=None).buy_quantities({"NVDA": 1})
 
 
-def test_size_respects_currency_and_strategy_and_order_limits():
-    ctx = context()
-    assert ctx.account is not None
-    account = replace(ctx.account, fx_rates={"CAD": cx.FXRate("CAD", "USD", D(".75"), T)})
-    ctx = replace(ctx, account=account, instrument_currencies={"NVDA": "CAD"},
-                  sizing_limit=D(300), order_notional_limit=D(200))
-    assert ctx.buy_quantities({"NVDA": 1}) == {"NVDA": 2}
+def test_account_conversion_requires_observed_currency_rate():
+    state = context().account
+    assert state is not None
+    account = replace(state, fx_rates={"CAD": cx.FXRate("CAD", "USD", D(".75"), T)})
     assert account.equity_in("CAD") == D(1000) / D(".75")
     with pytest.raises(ValueError, match="No observed FX"):
         account.equity_in("GBP")
-    with pytest.raises(ValueError, match="stale"):
-        replace(ctx, time=T + timedelta(minutes=5)).buy_quantities(
-            {"NVDA": 1}, account_max_age=timedelta(minutes=1))
 
 
 def test_fx_rejects_future_and_stale_and_keeps_cash_immutable():
@@ -86,7 +75,6 @@ def test_pending_orders_reduce_capacity_and_cancellation_releases_it():
     assert state is not None
     assert state.reserved == 400
     assert state.sizing_power == 600
-    assert rt.context("s").buy_quantities({"AAPL": 1}) == {"AAPL": 3}
     rt.command("s", cx.CancelOrder("s:entry"))
     assert rt.account_state().sizing_power == 1000
 

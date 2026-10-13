@@ -98,6 +98,11 @@ class Timer:
 
 @dataclass(frozen=True)
 class SubmitOrder:
+    """One order intent. An explicit client_order_id is an idempotency key.
+
+    Reuse it only to retry the same order, including after it becomes terminal.
+    Recurring decisions must omit it or supply a unique key per decision/event.
+    """
     symbol: str
     side: Literal["BUY", "SELL"]
     quantity: int
@@ -493,9 +498,6 @@ class Context:
     prices: Mapping[str, PriceObservation] = field(default_factory=dict)
     ask_prices: Mapping[str, PriceObservation] = field(default_factory=dict)
     bid_prices: Mapping[str, PriceObservation] = field(default_factory=dict)
-    sizing_limit: Decimal | None = None
-    order_notional_limit: Decimal | None = None
-    minimum_price_buffer: Decimal = ZERO
 
     def __post_init__(self):
         for name in ("instrument_currencies", "prices", "ask_prices", "bid_prices", "positions", "account_positions", "marks", "mark_times", "history", "subscriptions"):
@@ -527,51 +529,6 @@ class Context:
     def price(self, symbol: str, *, side: Literal["BUY", "SELL", "MARK"] = "MARK",
               max_age: timedelta | None = None) -> Decimal:
         return self.price_info(symbol, side=side, max_age=max_age).value
-
-    def buy_quantities(self, weights: Mapping[str, Decimal | float | int], *,
-                       reserve: Decimal | float | int | str = 0,
-                       price_buffer: Decimal | float | int | str = 0, max_age: timedelta | None = None,
-                       fx_max_age: timedelta | None = None,
-                       account_max_age: timedelta | None = None) -> dict[str, int]:
-        """Allocate fractions of remaining capacity to additional whole-share buys.
-
-        reserve is in account base currency (e.g. fees); price_buffer is a
-        fraction (0.01 = 1%). This is an estimate, not broker margin approval.
-        """
-        if self.account is None or self.account.sizing_power is None:
-            raise ValueError("Account sizing capacity is unavailable.")
-        if account_max_age is not None:
-            if account_max_age < timedelta(0):
-                raise ValueError("account_max_age must be nonnegative.")
-            if self.time - self.account.time > account_max_age:
-                raise ValueError("Account snapshot is stale.")
-        if self.account.time > self.time:
-            raise ValueError("Account snapshot is ahead of context.time.")
-        amounts = {s: decimal(w) for s, w in weights.items()}
-        reserve, buffer = decimal(reserve), decimal(price_buffer)
-        if any(w < 0 for w in amounts.values()) or sum(amounts.values(), ZERO) > 1:
-            raise ValueError("Weights must be nonnegative and sum to at most one.")
-        if reserve < 0 or buffer < 0:
-            raise ValueError("reserve and price_buffer must be nonnegative.")
-        capacity = self.account.sizing_power
-        if self.sizing_limit is not None:
-            capacity = min(capacity, self.sizing_limit)
-        budget = max(ZERO, capacity - reserve)
-        buffer = max(buffer, self.minimum_price_buffer)
-        result = {}
-        for symbol, weight in amounts.items():
-            price = self.price_info(symbol, side="BUY", max_age=max_age)
-            if fx_max_age is not None and price.currency != self.account.base_currency:
-                rate = self.account.fx_rates.get(price.currency)
-                if rate is not None and self.time - rate.time > fx_max_age:
-                    raise ValueError(f"Stale FX rate for {price.currency}.")
-            cost = self.account.convert(price.value * (1 + buffer), price.currency,
-                                        max_age=fx_max_age)
-            allocation = budget * weight
-            if self.order_notional_limit is not None:
-                allocation = min(allocation, self.order_notional_limit)
-            result[symbol] = int(allocation // cost)
-        return result
 
     def position(self, symbol: str) -> int:
         return self.positions.get(symbol, Position()).quantity

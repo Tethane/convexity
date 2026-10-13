@@ -382,11 +382,6 @@ class PaperRuntime:
                   for s, p in marks.items() for q in (self.quotes[s],)}
         asks = {s: observed(s, q.ask, q.ask_received_at) for s, q in self.quotes.items() if q.ask is not None and q.ask > 0}
         bids = {s: observed(s, q.bid, q.bid_received_at) for s, q in self.quotes.items() if q.bid is not None and q.bid > 0}
-        owned_gross = sum((abs(p.quantity) * cast(Decimal, self.quotes[s].ask)
-                           for (o, s), p in positions.items() if o == owner and p.quantity
-                           and s in self.quotes and self.quotes[s].ask is not None), ZERO)
-        # Reserve all account pending notional conservatively for strategy sizing.
-        strategy_capacity = max(ZERO, state.convert(self.budgets[owner] - owned_gross, "USD") - reserved)
         return self._subscriptions[owner].filter_context(Context(self.time, owner, state.cash, state.equity,
             {symbol: position for (strategy, symbol), position in positions.items() if strategy == owner}, account,
             marks, {symbol: quote.completed_at for symbol, quote in self.quotes.items()},
@@ -394,10 +389,7 @@ class PaperRuntime:
             history,
             tuple(record for record in self._broker_records() if record.request.strategy_id == owner),
             account=state, instrument_currencies={s: i.currency for s, i in self.instruments.items()},
-            prices=prices, ask_prices=asks, bid_prices=bids,
-            sizing_limit=strategy_capacity,
-            order_notional_limit=state.convert(self.max_order_notional, "USD"),
-            minimum_price_buffer=self.market_collar_bps / Decimal(10000)))
+            prices=prices, ask_prices=asks, bid_prices=bids))
 
     def _quote_valid(self, quote: Quote) -> bool:
         now = datetime.now(timezone.utc)

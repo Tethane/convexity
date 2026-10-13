@@ -514,11 +514,11 @@ def test_non_usd_base_account_preserves_ledger_and_converts_usd_risk(tmp_path):
                 assert context.account.sizing_power == 1400
                 assert context.account.equity_in("USD") == 20000
                 assert context.price("A", side="BUY") == 100
-                assert context.buy_quantities({"A": 1}) == {"A": 9}
                 await runtime.command("s", SubmitOrder.market("A", "BUY", 4, client_order_id="entry"))
                 assert len(broker.sent) == 1
                 context = runtime.context("s")
                 assert context.account is not None
                 assert context.account.reserved > 0
-                assert context.buy_quantities({"A": 1})["A"] < 10
+                assert context.account.sizing_power is not None
+                assert context.account.sizing_power < 1400
     asyncio.run(exercise())

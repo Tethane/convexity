@@ -1,6 +1,7 @@
 """Persistent, validated historical observations shared across research runs."""
 from __future__ import annotations
 
+from bisect import bisect_right
 from datetime import datetime, timezone
 import json
 from pathlib import Path
@@ -71,6 +72,7 @@ class CachedHistoricalProvider:
         base = HistoryRequest(request.symbols, request.start, request.end, resolution, request.calendar)
         key = (self.namespace, request.calendar, resolution)
         records = {}
+        decoded_bars = {}
         basis = self.price_basis
         db = None
         try:
@@ -99,6 +101,7 @@ class CachedHistoricalProvider:
                 validate_coverage(single, SessionCalendar((session,), calendar.name),
                                   HistoryRequest((symbol,), session.label, session.label, resolution, request.calendar))
                 records[symbol, label] = record
+                decoded_bars[symbol, label] = single.bars
 
             # A missing run is contiguous in the exchange calendar, not civil
             # dates: holidays/weekends never cause unnecessary acquisitions.
@@ -129,10 +132,16 @@ class CachedHistoricalProvider:
                 provenance[provenance_id] = dataset.manifest
                 if records and any(record["source"] != dataset.data.source for record in records.values()):
                     raise HistoryError("Provider source differs from cached history; use a distinct cache namespace.")
+                # Partition once, instead of scanning the complete dataset for
+                # every symbol/session (quadratic on multi-year minute history).
+                opens = [session.open for session in authoritative.sessions]
+                grouped = {}
+                for bar in dataset.data.bars:
+                    session = authoritative.sessions[bisect_right(opens, bar.start) - 1]
+                    grouped.setdefault((bar.symbol, str(session.label)), []).append(bar)
                 for session in authoritative.sessions:
                     for symbol in symbols:
-                        bars = [bar for bar in dataset.data.bars if bar.symbol == symbol
-                                and session.open <= bar.start and bar.end <= session.close]
+                        bars = grouped[symbol, str(session.label)]
                         record = dict(open=session.open.isoformat(), close=session.close.isoformat(),
                                       source=dataset.data.source,
                                       bars=[dict(symbol=b.symbol, start=b.start.isoformat(), end=b.end.isoformat(),
@@ -140,12 +149,13 @@ class CachedHistoricalProvider:
                                                  volume=b.volume) for b in bars],
                                       provenance=provenance_id)
                         records[symbol, str(session.label)] = record
+                        decoded_bars[symbol, str(session.label)] = tuple(bars)
                         pending.append((*key, basis, symbol, str(session.label),
                                         json.dumps(record, sort_keys=True, separators=(",", ":"), allow_nan=False), _digest(record)))
             source_names = {record["source"] for record in records.values()}
             if len(source_names) != 1 or basis is None:
                 raise HistoryError("Historical cache contains inconsistent source metadata.")
-            data = HistoricalData(tuple(self._bar(bar) for record in records.values() for bar in record["bars"]),
+            data = HistoricalData(tuple(bar for bars in decoded_bars.values() for bar in bars),
                                   next(iter(source_names)), basis)
             validate_coverage(data, calendar, base)
             if resolution != request.bar_size:

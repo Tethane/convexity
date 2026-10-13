@@ -120,13 +120,14 @@ activated later. This keeps data requirements discoverable before research and
 prevents a strategy from expanding its permissions during execution.
 
 ```python
+from datetime import time
 BARS = cx.BarSubscription(("SPY",), bar_size="1 min")
 
 class Selective(cx.Strategy):
     metadata = cx.StrategyMetadata("selective")
     contract = cx.StrategyContract(
         instruments=("SPY",),
-        subscriptions=(cx.ClockSubscription("stop-observing", at="15:50"),),
+        subscriptions=(cx.EventSubscription(cx.Timer, schedule=cx.ClockSchedule("stop-observing", at=time(15, 50))),),
         available_subscriptions=(BARS,),
     )
 

@@ -61,6 +61,24 @@ def test_repeated_runs_identical_and_factory_creates_fresh_state(tmp_path):
     assert json.loads((tmp_path / "a/result.json").read_text())["status"] == "completed"
 
 
+def test_timer_routing_validates_once_and_passes_only_current_timers(monkeypatch):
+    first, last = Timer(T + timedelta(hours=1), "first"), Timer(T + timedelta(hours=3), "last")
+    observed = []
+    class Clock(Strategy):
+        def on_timer(self, event, context):
+            observed.append(event.name)
+    advance = Runtime.advance
+    def checked(self, time, bars=None, timers=(), **kwargs):
+        assert set(kwargs.get("timer_owners") or {}) <= set(timers)
+        return advance(self, time, bars, timers, **kwargs)
+    monkeypatch.setattr(Runtime, "advance", checked)
+    options = dict(data=data(), strategies={"test": Clock}, timers=(first, last))
+    result = Backtest(**options, timer_owners={first: ("test",), last: ()}).run()
+    assert result.status == "completed" and observed == ["first"]
+    with pytest.raises(ValueError, match="registered strategy"):
+        Backtest(**options, timer_owners={last: ("unknown",)})
+
+
 def test_friction_and_commissions_are_hand_calculable():
     result = run(execution=ExecutionModel(spread_bps=D(20), slippage_bps=D(10),
                                          commission_per_share=D(".1"), minimum_commission=D(2)))

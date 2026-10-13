@@ -1,7 +1,7 @@
 """Fresh deterministic replay state, inspectable results, JSON/CSV export."""
 from bisect import bisect_right
 from dataclasses import dataclass, fields, is_dataclass
-from datetime import datetime, date
+from datetime import datetime, date, time, timedelta
 from decimal import Decimal
 from pathlib import Path
 from collections.abc import Callable, Mapping
@@ -29,7 +29,9 @@ def serialize(value: Any) -> Any:
         return [serialize(v) for v in value]
     if isinstance(value, type):
         return f"{value.__module__}.{value.__qualname__}"
-    if isinstance(value, (Decimal, datetime, date)):
+    if isinstance(value, timedelta):
+        return {"seconds": value.total_seconds()}
+    if isinstance(value, (Decimal, datetime, date, time)):
         return str(value)
     return value
 
@@ -180,6 +182,9 @@ class Backtest:
             raise ValueError("Instrument identities must match the dataset exactly.")
         self.calendar = calendar
         self.timers = tuple(sorted(set(timers), key=lambda t: (t.time, t.name)))
+        if timer_owners is not None and any(owner not in self.strategies
+                                            for owners in timer_owners.values() for owner in owners):
+            raise ValueError("Timer recipients must be registered strategy owners.")
         first = start or min((b.start for b in data_bars), default=None)
         last = end or max((b.end for b in data_bars), default=None)
         if first is None or last is None:
@@ -289,9 +294,14 @@ class Backtest:
         try:
             runtime.start(self.start)
             for time in times:
-                runtime.advance(time, panels.get(time), tuple(timer_map.get(time, ())),
+                current_timers = tuple(timer_map.get(time, ()))
+                # Runtime validates its routing table on every advance. Passing
+                # the entire multi-year schedule here made minute replay O(bars * timers).
+                current_owners = ({timer: self.timer_owners.get(timer, ()) for timer in current_timers}
+                                  if self.timer_owners is not None and current_timers else None)
+                runtime.advance(time, panels.get(time), current_timers,
                                 publish_bars=self.publish_bars and self.observations is None, observation=observations.get(time),
-                                observations_by_owner=owner_observations.get(time), timer_owners=self.timer_owners)
+                                observations_by_owner=owner_observations.get(time), timer_owners=current_owners)
             runtime.stop()
         except Exception as exc:
             runtime.diagnostics.append(f"Replay stopped: {type(exc).__name__}: {exc}")

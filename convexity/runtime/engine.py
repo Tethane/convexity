@@ -117,13 +117,13 @@ class Runtime:
                      for (_, s), p in self.positions.items() if p.quantity), ZERO)
         # Reserve conservative incremental gross exposure, grouping OCO peers.
         reserved = ZERO
-        by_owner = {}
         for owner in self.strategies:
-            owner_gross = ZERO
             for symbol in self.instruments:
                 q = self.positions.get((owner, symbol), Position()).quantity
                 pending = [o for o in self._active_orders.values()
                            if o.strategy_id == owner and o.request.symbol == symbol and o.active and not o.terminal]
+                if not pending:
+                    continue  # With no pending orders, incremental exposure and fees are zero.
                 def quantity(side):
                     groups = {}
                     for order in pending:
@@ -138,17 +138,15 @@ class Runtime:
                 current = self._value(symbol, abs(q) * mark) if q else ZERO
                 fees = sum((self._value(symbol, self.exchange.fee(o.remaining, o.filled_quantity)) for o in pending), ZERO)
                 reserved += max(ZERO, projected - current) + fees
-                owner_gross += projected + fees
-            by_owner[owner] = owner_gross
-        self._sizing_gross_by_owner = by_owner
         leverage = self.limits.gross_leverage
         initial = gross / leverage
         maintenance = gross * (self.limits.maintenance_margin_rate
                                if self.limits.maintenance_margin_rate is not None else 1 / leverage)
-        buying_power = max(ZERO, self.equity * leverage - gross)
+        cash, equity = self.cash, self.equity
+        buying_power = max(ZERO, equity * leverage - gross)
         return AccountState(self.time, self.base_currency, self.cash_balances, self.fx_rates,
-                            self.cash, self.equity, "simulated_gross_leverage",
-                            initial, maintenance, self.equity - initial, self.equity - maintenance,
+                            cash, equity, "simulated_gross_leverage",
+                            initial, maintenance, equity - initial, equity - maintenance,
                             buying_power, reserved, max(ZERO, buying_power - reserved))
 
     @property
@@ -174,7 +172,6 @@ class Runtime:
                 history[bar.symbol] = (*history.get(bar.symbol, ()), bar)
             history = {s: tuple(sorted(bars, key=lambda b: b.end)) for s, bars in history.items()}
         account_state = self.account_state()
-        cap = self.limits.strategy_gross_limits.get(strategy_id)
         return self._subscriptions[strategy_id].filter_context(Context(self.time, strategy_id, self.cash, self.equity,
                        {s: p for (owner, s), p in self.positions.items() if owner == strategy_id},
                        self.account_positions, self.marks, self.mark_times,
@@ -182,9 +179,7 @@ class Runtime:
                        history, account=account_state,
                        instrument_currencies={s: i.currency for s, i in self.instruments.items()},
                        prices={s: PriceObservation(p, self.mark_times[s], self.instruments[s].currency, "bar_close")
-                               for s, p in self.marks.items() if s in self.mark_times},
-                       sizing_limit=max(ZERO, cap - self._sizing_gross_by_owner[strategy_id]) if cap is not None else None,
-                       order_notional_limit=self.limits.max_order_notional))
+                               for s, p in self.marks.items() if s in self.mark_times}))
 
     def warmup_history(self, owner: str, bars) -> None:
         """Seed only this owner's declared prestart observations, without callbacks."""
@@ -712,7 +707,7 @@ class Runtime:
 
     def record_equity(self) -> None:
         state = self.account_state()
-        self.equity_history.append(dict(time=self.time, cash=self.cash, equity=self.equity,
+        self.equity_history.append(dict(time=self.time, cash=state.cash, equity=state.equity,
                                        fees=self.fees, borrow_cost=self.borrow_cost,
                                        base_currency=self.base_currency, cash_balances=dict(self.cash_balances),
                                        initial_margin=state.initial_margin, maintenance_margin=state.maintenance_margin,

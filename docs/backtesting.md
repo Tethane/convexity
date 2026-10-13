@@ -18,9 +18,38 @@ From the repository root, install the research dependencies with Python 3.14+:
 python -m pip install -e '.[ibkr,calendars]'
 ```
 
-The default historical provider uses a read-only IBKR connection. TWS or IB
-Gateway must be available for data not already cached, with the required data
-permissions. With no host/port configured, discovery tries Gateway paper (4002),
+Research defaults to Alpaca consolidated SIP history, with a read-only IBKR
+fallback. A paper Alpaca account is sufficient. The free Basic plan supports
+historical SIP queries ending at least 15 minutes ago (200 API calls/minute;
+history since 2016). This covers completed-session backtests without buying a
+real-time subscription. See [Alpaca's data plans](https://docs.alpaca.markets/us/docs/about-market-data-api)
+and [SIP access FAQ](https://docs.alpaca.markets/us/docs/market-data-faq).
+
+Generate or regenerate your paper API key pair in the
+[Alpaca dashboard](https://app.alpaca.markets/). From this repository, run:
+
+```sh
+python scripts/configure_alpaca.py
+```
+
+Paste the key and secret at the two hidden prompts. The script writes
+`~/.config/convexity/alpaca.json` (or `$XDG_CONFIG_HOME/convexity/alpaca.json`)
+with file mode `600` and directory mode `700`. It never prints the keys or puts
+them in shell history. Keep `XDG_CONFIG_HOME` outside the repository. This is a
+local plaintext credential file protected by filesystem permissions, not an
+encrypted vault. Do not paste keys into chat, notebooks, source files, or command
+arguments. Regenerating keys invalidates the old pair. Research loads the file
+when an uncached Alpaca request needs it, so there is no shell export to repeat.
+Restart an existing notebook kernel once to load the updated library code.
+
+Alternatively, provide **both** `APCA_API_KEY_ID` and `APCA_API_SECRET_KEY` in the
+process environment; they override the file. Credentials are not included in
+provider representations, cache entries, exported manifests or error messages.
+The integration calls only the market data endpoint, never Alpaca trading APIs.
+It uses the Python standard library; no Alpaca SDK installation is required.
+
+For IBKR fallback, TWS or IB Gateway must be available for data not already
+cached, with the required data permissions. With no host/port configured, discovery tries Gateway paper (4002),
 TWS paper (7497), Gateway live (4001), then TWS live (7496), always read-only.
 For each port it tries localhost and, under WSL, the Windows host detected from
 the default route. Explicit `IBKR_HOST` and `IBKR_PORT` pin their respective
@@ -31,6 +60,7 @@ The standalone `cx.data.IBKR` adapter uses the same host/port discovery.
 Research does not require a paper account configuration or submit broker orders.
 
 ```python
+from datetime import date
 import convexity as cx
 
 class BuyAndHold(cx.Strategy):
@@ -41,7 +71,7 @@ class BuyAndHold(cx.Strategy):
         return cx.SubmitOrder.market("SPY", "BUY", 10, time_in_force="DAY",
                                      client_order_id="entry")
 
-result = cx.Research("2025-01-02", "2025-02-07").run(BuyAndHold)
+result = cx.Research(date(2025, 1, 2), date(2025, 2, 7)).run(BuyAndHold)
 print(result.metrics, result.positions, result.open_orders)
 ```
 
@@ -58,7 +88,7 @@ permission to trade it.
 
 ## Run configuration
 
-`Research(start, end)` accepts ISO date strings or Python `date` objects. Both
+`Research(start, end)` uses Python `datetime.date` objects. ISO date strings remain accepted at the boundary for compatibility and are normalized immediately. Both
 dates are inclusive exchange-session dates; weekends and holidays contribute no
 sessions. A range containing no sessions fails explicitly.
 
@@ -68,7 +98,8 @@ must be unique. Parameterized strategies may set metadata and contract in
 `__init__`.
 
 ```python
-research = cx.Research("2025-01-02", "2025-02-07")
+from datetime import date
+research = cx.Research(date(2025, 1, 2), date(2025, 2, 7))
 result = research.run(
     BuyAndHold,
     execution="conservative",
@@ -81,7 +112,7 @@ Infrastructure options belong to `run` or `run_async`:
 
 | Option | Default | Purpose |
 | --- | --- | --- |
-| `provider` | Read-only IBKR history | A `HistoricalProvider` implementation |
+| `provider` | Alpaca SIP, then read-only IBKR | A `HistoricalProvider` implementation |
 | `cache` | `.convexity/history.sqlite3` | Persistent validated history; `None` disables the outer cache |
 | `execution` | `"standard"` | A named preset or `ExecutionModel` |
 | `initial_cash` | `100_000` | Starting simulated account cash |
@@ -113,12 +144,13 @@ For custom networking or ports, check `ip route` and pass the connection
 explicitly in a notebook:
 
 ```python
+from datetime import date
 provider = cx.IBKRHistoricalData(cx.HistoricalConnectionConfig(
     host="172.31.96.1",  # Replace with your reachable Gateway host.
     port=4002,          # Match Gateway's configured API socket port.
     client_id=72,
 ))
-result = await cx.Research("2025-01-02", "2025-02-07").run_async(
+result = await cx.Research(date(2025, 1, 2), date(2025, 2, 7)).run_async(
     BuyAndHold, provider=provider,
 )
 print(result.metrics, result.positions, result.open_orders)
@@ -132,13 +164,15 @@ history and simulates orders locally; unavailable history has no synthetic fallb
 ## Clock events
 
 ```python
+from datetime import date, time
+
 class Overnight(cx.Strategy):
     metadata = cx.StrategyMetadata("overnight")
     contract = cx.StrategyContract(
         instruments=("SPY",),
         subscriptions=(
-            cx.ClockSubscription("enter", at="15:50"),
-            cx.ClockSubscription("exit", at="09:30"),
+            cx.EventSubscription(cx.Timer, schedule=cx.ClockSchedule("enter", at=time(15, 50))),
+            cx.EventSubscription(cx.Timer, schedule=cx.ClockSchedule("exit", at=time(9, 30))),
             cx.EventSubscription(cx.OrderUpdate),
             cx.EventSubscription(cx.FillEvent),
         ),
@@ -159,15 +193,50 @@ class Overnight(cx.Strategy):
         # event.fill contains execution quantity, price, fee and timestamps.
         pass
 
-result = cx.Research("2025-01-02", "2025-02-07").run(Overnight)
+result = cx.Research(date(2025, 1, 2), date(2025, 2, 7)).run(Overnight)
 ```
 
-Clock subscriptions default to `America/New_York` and the `XNYS` exchange
-calendar. They occur only within actual sessions: holidays are absent, DST is
+`ClockSchedule` uses typed `datetime.time` values and defaults to
+`America/New_York` and the `XNYS` exchange calendar. Events occur only within
+actual sessions: holidays are absent, DST is
 respected, and 15:50 is skipped on a session closing at 13:00. The simulator
 selects a sufficiently fine execution feed for these events. This strategy does
 not receive bar callbacks. For exchange-relative daily/monthly schedules, include
-`SessionSchedule(...)` in the strategy's subscriptions.
+`EventSubscription(Timer, schedule=SessionSchedule(...))` in the strategy's subscriptions.
+
+The schedule declares when to produce `Timer` events; `EventSubscription` declares
+which events the strategy receives. The historical runner generates a timer for
+every eligible exchange session and delivers it through `Runtime.advance` to
+`on_timer`. The simulated exchange handles order fills; it does not run a real
+wall clock. Paper trading materializes the same declarations through its durable
+scheduler. `ClockSubscription` remains a compatibility spelling for older code;
+new strategies should use `EventSubscription(Timer, schedule=ClockSchedule(...))`.
+
+A clock callback firing does not guarantee a new order. In particular,
+`client_order_id="entry"` identifies **one order for the whole run**, even after
+it fills. Repeating it either deduplicates the same intent or rejects changed
+parameters. For recurring entries, omit the ID or use an event-specific ID such
+as `f"entry:{event.time.isoformat()}"`. This preserves idempotent retries while
+allowing the next session to submit a new order. Subscribe to `Rejection` and
+inspect `result.events` when a strategy unexpectedly stops trading.
+
+The complete [overnight hold example](../examples/overnight_hold.py) uses typed
+dates/times, recurring timer event subscriptions and unique per-decision order
+IDs. It stops visibly on order rejection. The final overnight position remains
+open unless an exit occurs within the requested backtest interval.
+
+```python
+from collections import Counter
+from datetime import date
+import convexity as cx
+from examples.overnight_hold import OvernightHold
+
+result = await cx.Research(date(2025, 1, 2), date(2026, 10, 12)).run_async(
+    OvernightHold, initial_cash=100_000, base_currency="USD",
+)
+print(Counter(event.name for event in result.events if isinstance(event, cx.Timer)))
+print("fills:", len(result.fills))
+```
 
 ## Bars, warmup, and callbacks
 
@@ -181,7 +250,7 @@ trading permissions remain the `instruments` declaration.
 | Subscription | Callback (fallback: `on_event`) |
 | --- | --- |
 | `BarSubscription` | `on_bar(event, context)` |
-| `ClockSubscription` / `SessionSchedule` | `on_timer(event, context)` |
+| `EventSubscription(Timer, schedule=...)` | `on_timer(event, context)` |
 | `EventSubscription(FillEvent)` | `on_fill(event, context)` |
 | `EventSubscription(OrderUpdate)` | `on_partial` for partial status, falling back to `on_order` |
 | `EventSubscription(Rejection)` | `on_rejection(event, context)` |
@@ -250,8 +319,31 @@ and paper execution, see [order and subscription lifecycle](order-lifecycle.md).
 
 ## Historical data and persistent cache
 
-To override the default connection in Python, pass
-`provider=cx.IBKRHistoricalData(cx.HistoricalConnectionConfig(...))` to `run`.
+Use `provider=cx.AlpacaHistoricalData()` to require Alpaca and fail immediately
+instead of falling back, or `provider=cx.IBKRHistoricalData(...)` to force IBKR.
+The default selector warns when Alpaca fails, then retries the entire requested
+universe/date range using IBKR. It does not splice the two feeds together.
+Fallback selection and reason are recorded in
+`result.config["metadata"]["research"]["history"]["fallback"]`. The actual feed
+is always in `result.config["data_source"]`. Each provider has its own cache
+namespace, including existing IBKR caches. Later runs try Alpaca again.
+
+Alpaca uses explicit `feed=sip`, `adjustment=split`, and `asof=-` (fixed symbols),
+10,000-row pages, and every `next_page_token`, including partially filled pages.
+It filters minute bars against the exchange calendar, including holidays, DST,
+and early closes, then aggregates larger bars locally. Native daily bars are
+not substituted for regular-session minute aggregates. Seconds-based requests
+that cannot be built from minutes fall back to IBKR. Missing regular-session
+minutes fail validation; no prices are invented. This is best suited to liquid
+US stocks/ETFs such as SPY, not guaranteed dense data for every stock.
+
+Alpaca requests have a 15-second network timeout and a 120-second total
+acquisition deadline, with bounded retries for rate limits/server errors.
+Configure these through `cx.AlpacaHistoricalData(request_timeout=...,
+total_timeout=...)`, and use `cx.FallbackHistoricalProvider(primary=...,
+fallback=..., cache=...)` for custom routing. The selector owns its inner caches;
+when passing one explicitly, configure its `cache` argument directly.
+`cache=None` disables SQLite; IBKR still has its own exact-request snapshot cache.
 There is no synthetic fallback when acquisition fails.
 
 Validated observations are stored in `.convexity/history.sqlite3`. Repeating a
@@ -264,6 +356,13 @@ are wrapped by the same cache; give them a stable `cache_identity`.
 Covered requests can replay offline, including subsets of previously acquired
 history. Execution feeds and required prior-session data must also be cached.
 
+A 15:50 timer requires minute execution data across the whole period, not just
+two observations per day. The default replay retains per-minute valuation and
+fill checks. Download time and local replay time are separate: changing data
+providers speeds acquisition, while cached runs still parse, validate and replay
+the observations. Alpaca network speed must be measured with your keys; a cold
+multi-year request is not guaranteed to finish in a few seconds.
+
 This cache belongs to `Research`. The standalone `convexity.data.history()` API
 returns DataFrames and does not share it. Its `end` boundary is exclusive,
 whereas `Research` includes the end session. A DataFrame provider is not a
@@ -272,7 +371,7 @@ whereas `Research` includes the end session. A DataFrame provider is not a
 ## Scope and interpretation
 
 Prices and coverage are validated before replay. Missing intervals fail rather
-than being forward-filled. IBKR datasets use split-adjusted price-return units;
+than being forward-filled. Alpaca and IBKR datasets use split-adjusted price-return units;
 dividend cash flows, corporate-action accounting, historical universe membership,
 and L2 replay are outside this MVP. The simulator currently uses one exchange
 calendar per run and one bar resolution per symbol within each strategy.
@@ -292,9 +391,10 @@ currency/balance mapping, and a tuple of dated `FXRate` observations.
 For example, configuration with caller-supplied historical rates looks like:
 
 ```python
+from datetime import date
 from decimal import Decimal
 
-result = await cx.Research("2025-01-02", "2025-02-07").run_async(
+result = await cx.Research(date(2025, 1, 2), date(2025, 2, 7)).run_async(
     MyStrategy,
     base_currency="USD",
     initial_cash={"USD": Decimal("50000"), "CAD": Decimal("20000")},

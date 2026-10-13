@@ -1,6 +1,7 @@
 """Local, explicitly timestamped stock bars and supplied exchange-session tables."""
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
+from functools import cached_property
 import csv
 import hashlib
 import json
@@ -42,7 +43,7 @@ class HistoricalData:
                 raise ValueError("Bar panels overlap.")
             previous_end = end
 
-    @property
+    @cached_property
     def identity(self) -> str:
         payload = [(b.symbol, b.start.isoformat(), b.end.isoformat(), str(b.open), str(b.high),
                     str(b.low), str(b.close), b.volume) for b in self.bars]

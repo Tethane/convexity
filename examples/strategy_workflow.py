@@ -1,6 +1,6 @@
 """One user strategy, historical replay or managed IBKR paper execution.
 
-Backtests require explicit symbols and dates, fetch real IBKR history, and
+Backtests require explicit symbols and dates, fetch Alpaca history (IBKR fallback), and
 cache the validated observations. No synthetic fallback exists. --mode paper
 sends actual paper orders; stopping never implies liquidation.
 """

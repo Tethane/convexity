@@ -14,8 +14,9 @@ if TYPE_CHECKING:
                           DeliveryError, FillEvent, Instrument, OptionQuotes, OrderUpdate,
                           PaperTrading, Rejection, RiskLimits, ScheduleSpec, SessionSchedule, StockQuotes,
                           StockSubscription, Strategy, SubmitOrder, Timer)
-    from .runtime import (StrategyMetadata, StrategyContract, BarSubscription, ClockSubscription, EventSubscription, ContractViolation)
-    from .backtest import (CachedHistoricalProvider, HistoricalConnectionConfig)
+    from .runtime import (StrategyMetadata, StrategyContract, BarSubscription, ClockSchedule, ClockSubscription, EventSubscription, ContractViolation)
+    from .backtest import (CachedHistoricalProvider, HistoricalConnectionConfig,
+                           AlpacaCredentials, AlpacaHistoricalData, FallbackHistoricalProvider)
     from .runtime import (ReplaceOrder, CancelOrders, BracketOrder, OCOOrders, Subscribe, Unsubscribe, SubscriptionUpdate, RuntimeCapabilities, RESEARCH_CAPABILITIES, PAPER_CAPABILITIES)
     from .strategies import TargetStrategy
 
@@ -27,8 +28,9 @@ _API_EXPORTS = {
     **dict.fromkeys(("AccountUpdate", "Bar", "Bars", "CancelOrder", "ConnectionHealth", "Context", "FillEvent",
                     "Instrument", "OptionQuotes", "OrderUpdate", "Rejection", "RiskLimits", "StockQuotes", "Strategy",
                     "SubmitOrder", "Timer", "PaperTrading", "ScheduleSpec", "SessionSchedule", "StockSubscription", "DeliveryError"), "runtime"),
-    **dict.fromkeys(('StrategyMetadata', 'StrategyContract', 'BarSubscription', 'ClockSubscription', 'EventSubscription', 'ContractViolation'), "runtime"),
-    **dict.fromkeys(('CachedHistoricalProvider', 'HistoricalConnectionConfig'), "backtest"),
+    **dict.fromkeys(('StrategyMetadata', 'StrategyContract', 'BarSubscription', 'ClockSchedule', 'ClockSubscription', 'EventSubscription', 'ContractViolation'), "runtime"),
+    **dict.fromkeys(('CachedHistoricalProvider', 'HistoricalConnectionConfig', 'AlpacaCredentials',
+                    'AlpacaHistoricalData', 'FallbackHistoricalProvider'), "backtest"),
     **dict.fromkeys(('ReplaceOrder', 'CancelOrders', 'BracketOrder', 'OCOOrders', 'Subscribe', 'Unsubscribe', 'SubscriptionUpdate', 'RuntimeCapabilities', 'RESEARCH_CAPABILITIES', 'PAPER_CAPABILITIES'), "runtime"),
     "PaperAccountConfig": "brokers.ibkr",
     "TargetStrategy": "strategies",
@@ -41,7 +43,8 @@ __all__ = ["math", "runtime", "backtest", "trading", "brokers", "strategies", "d
            "SubmitOrder", "Timer", "PaperTrading", "ScheduleSpec", "SessionSchedule", "StockSubscription",
            "DeliveryError", "PaperAccountConfig", "TargetStrategy"]
 
-__all__ += ['StrategyMetadata', 'StrategyContract', 'BarSubscription', 'ClockSubscription', 'EventSubscription', 'ContractViolation', 'CachedHistoricalProvider', 'HistoricalConnectionConfig']
+__all__ += ['StrategyMetadata', 'StrategyContract', 'BarSubscription', 'ClockSchedule', 'ClockSubscription', 'EventSubscription', 'ContractViolation', 'CachedHistoricalProvider', 'HistoricalConnectionConfig']
+__all__ += ['AlpacaCredentials', 'AlpacaHistoricalData', 'FallbackHistoricalProvider']
 __all__ += ['ReplaceOrder', 'CancelOrders', 'BracketOrder', 'OCOOrders', 'Subscribe', 'Unsubscribe', 'SubscriptionUpdate', 'RuntimeCapabilities', 'RESEARCH_CAPABILITIES', 'PAPER_CAPABILITIES']
 
 def __getattr__(name):

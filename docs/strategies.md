@@ -45,6 +45,7 @@ the same strategy ownership and checkpoint on another run.
 For your own Python module, the composition is:
 
 ```python
+from datetime import date
 import asyncio
 from decimal import Decimal
 import convexity as cx
@@ -61,7 +62,7 @@ class MyStrategy(cx.Strategy):
         # Calculate a signal using observed history; return commands or None.
         return None
 
-result = cx.Research("2025-01-02", "2025-01-03").run(
+result = cx.Research(date(2025, 1, 2), date(2025, 1, 3)).run(
     MyStrategy, output="out/my-research",
 )
 paper = cx.PaperTrading(
@@ -134,44 +135,65 @@ Backtests use observed marks for both. Missing, future-dated, and unusable
 broker prices raise `ValueError`. Set `max_age=timedelta(...)` to reject
 old observations explicitly; choose an age appropriate to the subscription.
 
-Allocate one shared budget across symbols, rather than spending the entire
-account separately on each symbol:
+Position sizing belongs in the strategy. Context exposes observed prices and
+account data; it does not choose allocations or calculate share quantities.
+For example, this single-entry strategy explicitly chooses cash funding, a fee
+reserve and price headroom:
 
 ```python
+from datetime import date
 from datetime import timedelta
 from decimal import Decimal
 import convexity as cx
 
-class TwoStocks(cx.Strategy):
-    metadata = cx.StrategyMetadata("two-stocks")
-    contract = cx.StrategyContract(
-        instruments=("NVDA", "AAPL"),
-        subscriptions=(cx.BarSubscription(("NVDA", "AAPL"), bar_size="1 day"),),
-    )
+class BuyAndHold(cx.Strategy):
+    metadata = cx.StrategyMetadata("buy-hold", version="2")
+    contract = cx.StrategyContract(instruments=("SPY",))
 
-    def on_bar(self, event, context):
-        if any(context.position(s) or context.pending(s) for s in ("NVDA", "AAPL")):
+    def on_start(self, context):
+        account = context.account
+        if account is None or account.base_currency != "USD":
+            raise ValueError("This strategy requires a USD reporting account.")
+        price = context.price("SPY", max_age=timedelta(days=4))
+        position = context.positions.get("SPY")
+        if (position is not None and position.quantity != 0) or any(
+            not order.terminal for order in context.orders
+        ):
             return None
-        quantities = context.buy_quantities(
-            {"NVDA": Decimal("0.5"), "AAPL": Decimal("0.5")},
-            reserve=Decimal("10"),       # Fee reserve in account base currency.
-            price_buffer=Decimal("0.01"),
-            max_age=timedelta(days=1),
+        if not account.cash_balances_complete or account.available_funds is None:
+            raise ValueError("Cash balances and available funds are required.")
+
+        cash = account.cash_balances.get("USD", Decimal(0))
+        budget = max(
+            Decimal(0),
+            min(cash, account.available_funds) - account.reserved - Decimal("10"),
         )
-        return [
-            cx.SubmitOrder.market(symbol, "BUY", quantity)
-            for symbol, quantity in quantities.items() if quantity > 0
-        ]
+        shares = int(budget // (price * Decimal("1.01")))
+        if shares == 0:
+            return None
+        return cx.SubmitOrder.market(
+            "SPY", "BUY", shares,
+            time_in_force="DAY", client_order_id="entry",
+        )
+
+result = await cx.Research(date(2025, 1, 2), date(2026, 10, 12)).run_async(
+    BuyAndHold, initial_cash=100_000, base_currency="USD",
+)
 ```
 
-Weights are nonnegative fractions of remaining capacity, summing to at most one.
-Results are **additional whole shares**, not target positions. Capacity includes
-pending-order reservations and strategy/order caps. Paper sizing includes at least
-the configured market-order collar; additional tick rounding, fees, price moves,
-and broker-specific margin rules can still reduce executable quantities.
-Use `reserve` and `price_buffer` for headroom. All returned commands still
-pass through runtime/broker checks. Repeated sizing calls on the same context
-do not reserve money; submit one combined allocation for a shared budget.
+The four-calendar-day age limit accommodates ordinary weekends and the New Year
+holiday; it is a strategy policy, not a guarantee that every startup has a recent
+price. The startup price is the prior completed bar, not the coming opening
+price. A market order may gap past the 1% headroom and be rejected by execution
+risk checks. Use a limit order if you need a hard maximum purchase price, accepting
+that it may not fill. A DAY order can also expire unfilled; this startup-only
+strategy does not retry.
+
+For multiple symbols, split a single budget explicitly before calculating each
+integer quantity. Account equity includes held assets and is not the same as
+spendable cash. For margin or multi-currency sizing, make the funding and FX policy
+explicit in your strategy using the account fields below. Runtime strategy caps,
+pending-order checks and broker risk checks continue to apply to submitted orders.
 
 ## Account state, margin, and currencies
 
@@ -201,7 +223,8 @@ usd_value = account.convert(Decimal("1000"), "GBP", "USD")
 
 Valuation never converts the actual cash holdings. Missing FX rates raise errors.
 Pass `max_age` to `account.convert` or `equity_in` to bound rate age.
-Sizing also accepts `fx_max_age` and `account_max_age` (timedeltas).
+Check `context.time - account.time` explicitly when your strategy requires a
+fresh account snapshot.
 
 Paper accounts preserve IBKR's currency ledger and base-currency totals. Missing
 optional margin fields remain `None`; absent currency-ledger data leaves
@@ -466,7 +489,10 @@ Explicit stock client IDs are scoped to the strategy: a command with
 `my-strategy:entry-1` in context, order updates and fills. Cancel that public ID,
 or read `order.order_id` from context. Broker-safe transport IDs remain internal.
 Reusing an ID for a different side, quantity, symbol, type, price or lifetime
-emits `Rejection`; an identical retry does not resubmit. Old journals without
+emits `Rejection`; an identical retry does not resubmit. IDs remain reserved
+for the whole run/deployment after an order fills or cancels. A recurring entry
+must omit the ID or use `f"entry:{event.time.isoformat()}"`; a constant `"entry"`
+will not create a new daily order. Old journals without
 original-command metadata remain readable, but ambiguous intent reuse is rejected.
 
 Both execution modes emit `Rejection` for rejected commands. When a recorded

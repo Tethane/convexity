@@ -50,10 +50,10 @@ def __getattr__(name):
 def __dir__():
     return sorted(set(globals()) | set(__all__))
 
-from .contracts import (BarSubscription, ClockSubscription, ContractViolation, EventSubscription,
+from .contracts import (BarSubscription, ClockSchedule, ClockSubscription, ContractViolation, EventSubscription,
                         StrategyContract, StrategyMetadata)
 
-__all__ += ["BarSubscription", "ClockSubscription", "ContractViolation", "EventSubscription",
+__all__ += ["BarSubscription", "ClockSchedule", "ClockSubscription", "ContractViolation", "EventSubscription",
             "StrategyContract", "StrategyMetadata"]
 
 from .types import (ReplaceOrder, CancelOrders, BracketOrder, OCOOrders, Subscribe, Unsubscribe, SubscriptionUpdate)

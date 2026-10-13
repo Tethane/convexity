@@ -89,3 +89,49 @@ def test_mapping_factories_derive_instance_contracts_and_reuse_initial_instance(
     assert len(created) == 1
     assert work.factories['configured']() is created[0]
     assert len(created) == 1
+
+
+def test_typed_timer_events_materialize_per_owner_and_repeat_after_restart(tmp_path):
+    from datetime import time
+    from convexity.runtime import ClockSchedule, EventSubscription, Timer
+    from convexity.runtime.subscriptions import SubscriptionBook
+    class Morning(Strategy):
+        metadata = StrategyMetadata('morning')
+        contract = StrategyContract(('A',), (
+            EventSubscription(Timer, schedule=ClockSchedule('trade', time(9, 30))),))
+    class Afternoon(Strategy):
+        metadata = StrategyMetadata('afternoon')
+        contract = StrategyContract(('A',), (
+            EventSubscription(Timer, schedule=ClockSchedule('trade', time(15, 50))),))
+    started = datetime(2024, 1, 2, 0, tzinfo=timezone.utc)
+    due = datetime(2024, 1, 3, 21, tzinfo=timezone.utc)
+    work = runner(tmp_path, [Morning, Afternoon])
+    assert all(isinstance(s, ClockSchedule) for s in work.schedule_specs)
+    books = {'morning': SubscriptionBook(Morning.contract, 'morning'),
+             'afternoon': SubscriptionBook(Afternoon.contract, 'afternoon')}
+    received = {owner: [] for owner in books}
+    schedules = []
+    work._sync_schedules(schedules, started, due)
+    try:
+        for schedule in schedules:
+            _, owner = work._schedule_owners[schedule.namespace]
+            def deliver(run, owner=owner):
+                assert books[owner].select(run.timer) == run.timer
+                received[owner].append(run.timer)
+            schedule.poll(due, deliver)
+        assert [e.time.hour for e in received['morning']] == [14, 14]
+        assert [e.time.hour for e in received['afternoon']] == [20, 20]
+    finally:
+        for schedule in schedules: schedule.close()
+    restarted = runner(tmp_path, [Morning, Afternoon])
+    schedules = []
+    next_due = datetime(2024, 1, 4, 21, tzinfo=timezone.utc)
+    restarted._sync_schedules(schedules, started, next_due)
+    delivered = []
+    try:
+        for schedule in schedules:
+            delivered.extend(schedule.poll(next_due, lambda run: None))
+        assert len(delivered) == 2
+        assert all(run.timer.time.day == 4 for run in delivered)
+    finally:
+        for schedule in schedules: schedule.close()

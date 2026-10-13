@@ -21,7 +21,7 @@ from convexity.brokers.ibkr_trading import PaperBroker
 from convexity.brokers.ibkr_verticals import VerticalBroker
 from convexity.trading import OrderJournal
 from .capabilities import PAPER_CAPABILITIES
-from .contracts import BarSubscription, ClockSubscription, StrategyMetadata, strategy_contract
+from .contracts import BarSubscription, ClockSchedule, StrategyMetadata, event_schedule, strategy_contract
 from .paper import PaperRuntime
 from .schedules import DurableSchedule
 from .calendar_schedule import SessionSchedule
@@ -139,7 +139,7 @@ class PaperTrading:
                  market_collar_bps: Decimal,
                  subscriptions: Mapping[str, StockSubscription] | None = None,
                  option_requests: Sequence[OptionQuoteRequest] = (),
-                 schedules: Sequence[ScheduleSpec | SessionSchedule | ClockSubscription] | None = None, poll_interval: float = 1,
+                 schedules: Sequence[ScheduleSpec | SessionSchedule | ClockSchedule] | None = None, poll_interval: float = 1,
                  history_interval: float = 30, quote_max_age: float = 30,
                  decision_max_age: float = 120, allow_short: bool = False,
                  max_contracts: int = 1, reconnect_attempts: int = 5,
@@ -199,10 +199,10 @@ class PaperTrading:
                                 candidate = replace(candidate, warmup_sessions=max(prior.warmup_sessions, candidate.warmup_sessions),
                                                     max_bars=max(prior.max_bars, candidate.max_bars))
                             derived_subscriptions[symbol] = candidate
-                    elif isinstance(sub, (ClockSubscription, SessionSchedule)):
-                        if sub.namespace in derived_schedules and derived_schedules[sub.namespace] != sub:
+                    elif (schedule := event_schedule(sub)) is not None:
+                        if schedule.namespace in derived_schedules and derived_schedules[schedule.namespace] != schedule:
                             raise ValueError("Strategies disagree on a named schedule.")
-                        derived_schedules[sub.namespace] = sub
+                        derived_schedules[schedule.namespace] = schedule
             if instruments is not None and dict(instruments) != derived_instruments:
                 raise ValueError("Configured instruments must match strategy declarations.")
             instruments = derived_instruments
@@ -356,7 +356,7 @@ class PaperTrading:
         """Materialize recurring years as they arrive, preserving durable namespaces."""
         existing = {logical for logical, _ in self._schedule_owners.values()}
         for declaration in self.schedule_specs:
-            if isinstance(declaration, (SessionSchedule, ClockSubscription)):
+            if isinstance(declaration, (SessionSchedule, ClockSchedule)):
                 # Include the adjacent year: an offset before the first session
                 # can make its timer due in the previous calendar year.
                 horizon = min(9999, now.year + 1)
@@ -373,7 +373,7 @@ class PaperTrading:
             for spec in specs:
                 for owner in self.factories:
                     contract = self._strategy_contracts.get(owner)
-                    if contract is not None and declaration not in contract.all_subscriptions:
+                    if contract is not None and declaration not in tuple(event_schedule(sub) for sub in contract.all_subscriptions):
                         continue
                     namespace = "managed:" + json.dumps((spec.namespace, owner), separators=(",", ":"))
                     schedules.append(DurableSchedule(self.path / "schedules.sqlite", namespace,

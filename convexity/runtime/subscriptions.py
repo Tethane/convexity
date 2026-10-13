@@ -8,7 +8,7 @@ import json
 from types import MappingProxyType, SimpleNamespace
 
 from .contracts import (BarSubscription, ClockSubscription, EventSubscription,
-                        StrategyContract, filter_context, select_event)
+                        StrategyContract, event_schedule, filter_context, select_event)
 from .calendar_schedule import SessionSchedule
 from .types import Bars, Context, Subscribe, SubscriptionUpdate, Timer, Unsubscribe, aware
 
@@ -121,10 +121,10 @@ class SubscriptionBook:
             bars = {symbol: bar for symbol, bar in event.bars.items() if symbol in symbols}
             return Bars(event.time, bars) if bars else None
         if isinstance(event, Timer):
-            candidates = [sub for sub, _ in active if isinstance(sub, (ClockSubscription, SessionSchedule)) and sub.name == event.name]
+            candidates = [schedule for sub, _ in active if (schedule := event_schedule(sub)) is not None and schedule.name == event.name]
             # Source runners scope declared schedules to owners. Disambiguate
             # same-name capabilities at different times when selecting activation.
-            same_name = [sub for sub in self._pool.values() if isinstance(sub, (ClockSubscription, SessionSchedule)) and sub.name == event.name]
+            same_name = [schedule for sub in self._pool.values() if (schedule := event_schedule(sub)) is not None and schedule.name == event.name]
             if len(same_name) > 1:
                 candidates = [sub for sub in candidates if self._timer_matches(sub, event)]
             return event if candidates else None

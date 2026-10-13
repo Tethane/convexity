@@ -165,7 +165,7 @@ def test_paper_startup_keeps_current_session_observations_for_warm_and_cold_owne
 
 
 def test_default_research_path_reuses_sqlite_then_fetches_only_new_instrument(tmp_path, monkeypatch):
-    import convexity.backtest.history as history
+    import convexity.backtest.providers as providers
     class RecordingProvider(ReviewProvider):
         def __init__(self):
             self.requests = []
@@ -173,7 +173,7 @@ def test_default_research_path_reuses_sqlite_then_fetches_only_new_instrument(tm
             self.requests.append(request)
             return await super().fetch(request, refresh=refresh)
     provider = RecordingProvider()
-    monkeypatch.setattr(history, "IBKRHistoricalData", lambda: provider)
+    monkeypatch.setattr(providers, "AlpacaHistoricalData", lambda: provider)
     class SPY(Strategy):
         metadata = StrategyMetadata("spy")
         contract = StrategyContract(("SPY",))

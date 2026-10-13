@@ -37,7 +37,8 @@ result = cx.Research("2025-01-02", "2025-02-07").run(BuyAndHold)
 print(result.metrics, result.positions, result.open_orders)
 ```
 
-The default provider acquires history through a read-only IBKR connection.
+The default provider acquires Alpaca SIP history, with read-only IBKR fallback.
+Run `python scripts/configure_alpaca.py` to save paper API keys outside the repo.
 Validated observations persist in SQLite; covered requests replay offline and
 expanded requests acquire missing sessions. Research needs no paper-account
 configuration. Orders enter the simulated exchange queue; callbacks report
