@@ -1,4 +1,5 @@
 """Duration parsing and explicit session/calendar OHLCV aggregation rules."""
+
 from dataclasses import dataclass
 from datetime import date, timedelta
 from decimal import Decimal
@@ -42,26 +43,63 @@ class BarSize:
 
 
 def parse_bar_size(value: str) -> BarSize:
-    match = re.fullmatch(r"\s*(\d+(?:\.\d+)?)\s*([a-zA-Z]+)\s*", value) if isinstance(value, str) else None
+    match = (
+        re.fullmatch(r"\s*(\d+(?:\.\d+)?)\s*([a-zA-Z]+)\s*", value)
+        if isinstance(value, str)
+        else None
+    )
     if not match:
-        raise ValueError("bar_size must be a positive duration, e.g. '7 mins', '90 secs', '2 hours', or '1 week'.")
+        raise ValueError(
+            "bar_size must be a positive duration, e.g. '7 mins', '90 secs', '2 hours', or '1 week'."
+        )
     number, unit = Decimal(match[1]), match[2].lower()
-    seconds = {"s": 1, "sec": 1, "secs": 1, "second": 1, "seconds": 1,
-               "m": 60, "min": 60, "mins": 60, "minute": 60, "minutes": 60,
-               "h": 3600, "hr": 3600, "hrs": 3600, "hour": 3600, "hours": 3600}
-    periods = {"d": "day", "day": "day", "days": "day",
-               "w": "week", "wk": "week", "wks": "week", "week": "week", "weeks": "week",
-               "mo": "month", "month": "month", "months": "month",
-               "y": "year", "yr": "year", "year": "year", "years": "year"}
+    seconds = {
+        "s": 1,
+        "sec": 1,
+        "secs": 1,
+        "second": 1,
+        "seconds": 1,
+        "m": 60,
+        "min": 60,
+        "mins": 60,
+        "minute": 60,
+        "minutes": 60,
+        "h": 3600,
+        "hr": 3600,
+        "hrs": 3600,
+        "hour": 3600,
+        "hours": 3600,
+    }
+    periods = {
+        "d": "day",
+        "day": "day",
+        "days": "day",
+        "w": "week",
+        "wk": "week",
+        "wks": "week",
+        "week": "week",
+        "weeks": "week",
+        "mo": "month",
+        "month": "month",
+        "months": "month",
+        "y": "year",
+        "yr": "year",
+        "year": "year",
+        "years": "year",
+    }
     if unit in seconds:
         number *= seconds[unit]
         unit = "second"
     elif unit in periods:
         unit = periods[unit]
     else:
-        raise ValueError("Use seconds, minutes, hours, days, weeks, months, or years for bar_size.")
+        raise ValueError(
+            "Use seconds, minutes, hours, days, weeks, months, or years for bar_size."
+        )
     if number <= 0 or number != number.to_integral_value():
-        raise ValueError("Bar sizes must be positive, with whole-second intraday resolution or whole calendar/session periods.")
+        raise ValueError(
+            "Bar sizes must be positive, with whole-second intraday resolution or whole calendar/session periods."
+        )
     return BarSize(int(number), unit)
 
 
@@ -72,7 +110,9 @@ def intervals(sessions: tuple[Session, ...], bar_size: str):
         for session in sessions:
             start = session.open
             # Limit before constructing timedelta, so even very large sizes clip safely.
-            step = timedelta(seconds=min(spec.count, int((session.close - start).total_seconds())))
+            step = timedelta(
+                seconds=min(spec.count, int((session.close - start).total_seconds()))
+            )
             while start < session.close:
                 end = min(start + step, session.close)
                 yield start, end

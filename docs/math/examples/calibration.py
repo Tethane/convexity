@@ -1,4 +1,4 @@
-"""Family 21: recover volatility from synthetic option prices."""
+"""recover volatility from synthetic option prices."""
 
 import numpy as np
 from convexity.math.calibration import CalibrationProblem, calibrate

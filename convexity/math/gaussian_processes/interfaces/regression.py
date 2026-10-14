@@ -28,6 +28,7 @@ from .prediction import GaussianPrediction
 
 class Regressor(Protocol):
     """Fit a Gaussian-process prediction contract from supplied feature rows and responses."""
+
     def fit(
         self, features: ArrayLike, response: ArrayLike
     ) -> "FittedGaussianProcess": ...
@@ -48,6 +49,7 @@ class Diagnostics:
 
 class ConvergenceError(RuntimeError):
     """Raised when a checked numerical method does not converge; result retains the attempted solution and diagnostics."""
+
     def __init__(self, result: FittedGaussianProcess) -> None:
         self.result = result
         super().__init__(

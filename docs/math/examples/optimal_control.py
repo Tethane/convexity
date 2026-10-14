@@ -1,4 +1,4 @@
-"""Family 31: exact Bellman, Riccati and nonanticipative stochastic MPC."""
+"""exact Bellman, Riccati and nonanticipative stochastic MPC."""
 
 from convexity.math import control
 

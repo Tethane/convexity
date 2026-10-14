@@ -1,4 +1,4 @@
-"""Family 32: immutable fixed-deadline lifecycle and no-action bands."""
+"""immutable fixed-deadline lifecycle and no-action bands."""
 
 from convexity.math import policies
 

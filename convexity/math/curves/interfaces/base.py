@@ -41,6 +41,7 @@ class CurveFitResult:
 
 class DiscountCurve(Protocol):
     """Discount-factor term structure measured from its reference date under an explicit day-count convention."""
+
     @property
     def reference_date(self) -> DateLike | NativeDate: ...
     def time(self, maturity: float | DateLike | NativeDate) -> float: ...

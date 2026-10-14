@@ -1,4 +1,4 @@
-"""Family 36: exact control versus sampled and approximated value learning.
+"""exact control versus sampled and approximated value learning.
 
 The base example needs no optional tensor libraries. Install [reinforcement]
 and pass --neural to train the Stable-Baselines3 actor-critic backend too.

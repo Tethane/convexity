@@ -1,4 +1,4 @@
-"""Family 17: scheduled cash flows and equivalent settlement value."""
+"""scheduled cash flows and equivalent settlement value."""
 
 from convexity.math.contracts import (
     Exercise,

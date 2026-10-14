@@ -37,20 +37,31 @@ def lags(values, lags):
 
 def fourier(n, *, start, period, order):
     from statsmodels.tsa.deterministic import Fourier
+
     values = Fourier(period, order).in_sample(np.arange(n)).to_numpy(copy=True)
     # Shift the phase without constructing or fitting any preceding rows.
     for harmonic in range(1, order + 1):
         angle = 2 * np.pi * harmonic * (start % period) / period
-        sine, cosine = values[:, 2 * harmonic - 2:2 * harmonic].T.copy()
+        sine, cosine = values[:, 2 * harmonic - 2 : 2 * harmonic].T.copy()
         values[:, 2 * harmonic - 2] = sine * np.cos(angle) + cosine * np.sin(angle)
         values[:, 2 * harmonic - 1] = cosine * np.cos(angle) - sine * np.sin(angle)
-    columns = tuple(f"{kind}_{j}" for j in range(1, order + 1) for kind in ("sin", "cos"))
+    columns = tuple(
+        f"{kind}_{j}" for j in range(1, order + 1) for kind in ("sin", "cos")
+    )
     return FeatureMatrix(values, np.arange(start, start + n), columns)
 
 
 def seasonal(n, *, start, period, drop_first):
     from statsmodels.tsa.deterministic import Seasonality
-    values = Seasonality(period, initial_period=start % period + 1).in_sample(np.arange(n)).to_numpy()
+
+    values = (
+        Seasonality(period, initial_period=start % period + 1)
+        .in_sample(np.arange(n))
+        .to_numpy()
+    )
     first = 1 if drop_first else 0
-    return FeatureMatrix(values[:, first:], np.arange(start, start + n),
-                         tuple(f"season_{j}" for j in range(first, period)))
+    return FeatureMatrix(
+        values[:, first:],
+        np.arange(start, start + n),
+        tuple(f"season_{j}" for j in range(first, period)),
+    )

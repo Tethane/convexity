@@ -19,8 +19,14 @@ def regularized_linear(problem, *, alpha, l1_ratio, tolerance, maxiter):
     elif l1_ratio == 1:
         model = Lasso(alpha=alpha, fit_intercept=False, tol=tolerance, max_iter=maxiter)
     else:
-        model = ElasticNet(alpha=alpha, l1_ratio=l1_ratio, fit_intercept=False,
-                           tol=tolerance, max_iter=maxiter, selection="cyclic")
+        model = ElasticNet(
+            alpha=alpha,
+            l1_ratio=l1_ratio,
+            fit_intercept=False,
+            tol=tolerance,
+            max_iter=maxiter,
+            selection="cyclic",
+        )
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always", ConvergenceWarning)
         model.fit(problem.design, problem.response)
@@ -30,13 +36,23 @@ def regularized_linear(problem, *, alpha, l1_ratio, tolerance, maxiter):
             warnings.warn(str(warning.message), warning.category, stacklevel=2)
     theta = model.coef_
     residuals = np.asarray(problem.response) - np.asarray(problem.design) @ theta
-    objective = (float(residuals @ residuals) / (2 * n)
-                 + alpha * l1_ratio * float(np.abs(theta).sum())
-                 + alpha * (1 - l1_ratio) * float(theta @ theta) / 2)
-    return Estimate(theta, names=problem.names, objective=objective, residuals=residuals, nobs=n,
-                    diagnostics=Diagnostics(converged=not failures,
-                                            message="; ".join(str(w.message) for w in failures),
-                                            backend=f"sklearn.{type(model).__name__}",
-                                            iterations=getattr(model, "n_iter_", None),
-                                            rank=int(np.linalg.matrix_rank(problem.design)),
-                                            uncertainty_note="Penalized coefficients have no automatic frequentist covariance; use explicit resampling."))
+    objective = (
+        float(residuals @ residuals) / (2 * n)
+        + alpha * l1_ratio * float(np.abs(theta).sum())
+        + alpha * (1 - l1_ratio) * float(theta @ theta) / 2
+    )
+    return Estimate(
+        theta,
+        names=problem.names,
+        objective=objective,
+        residuals=residuals,
+        nobs=n,
+        diagnostics=Diagnostics(
+            converged=not failures,
+            message="; ".join(str(w.message) for w in failures),
+            backend=f"sklearn.{type(model).__name__}",
+            iterations=getattr(model, "n_iter_", None),
+            rank=int(np.linalg.matrix_rank(problem.design)),
+            uncertainty_note="Penalized coefficients have no automatic frequentist covariance; use explicit resampling.",
+        ),
+    )

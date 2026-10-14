@@ -4,6 +4,7 @@ The journal is deliberately conservative: a crash during a callback leaves an
 uncertain run requiring reconciliation. It never claims exactly-once external
 side effects. Use the run key in durable order IDs before submitting orders.
 """
+
 from collections.abc import Awaitable, Callable, Iterable, Iterator
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -39,8 +40,16 @@ class DurableSchedule:
     deliver every due timer, irrespective of polling latency. Supply a distinct
     namespace for labeled one-shot runs. A namespace's schedule is immutable.
     """
-    def __init__(self, path: str | Path, namespace: str, timers: Iterable[Timer], *,
-                 started_at: datetime, policy: Literal["skip", "catch_up"] = "skip"):
+
+    def __init__(
+        self,
+        path: str | Path,
+        namespace: str,
+        timers: Iterable[Timer],
+        *,
+        started_at: datetime,
+        policy: Literal["skip", "catch_up"] = "skip",
+    ):
         aware(started_at)
         if not namespace or policy not in ("skip", "catch_up"):
             raise ValueError("Supply a namespace and skip/catch_up policy.")
@@ -59,13 +68,23 @@ class DurableSchedule:
             policy TEXT NOT NULL, status TEXT NOT NULL, delivered TEXT,
             detail TEXT NOT NULL DEFAULT '', PRIMARY KEY(namespace,name,due))""")
         with self._db:
-            existing = self._db.execute("SELECT name,due,policy FROM schedule_runs WHERE namespace=?", (namespace,)).fetchall()
+            existing = self._db.execute(
+                "SELECT name,due,policy FROM schedule_runs WHERE namespace=?",
+                (namespace,),
+            ).fetchall()
             spec = {(t.name, t.time.isoformat(), policy) for t in self.timers}
-            if existing and {(r["name"], r["due"], r["policy"]) for r in existing} != spec:
-                raise ValueError("Schedule namespace already has a different specification.")
+            if (
+                existing
+                and {(r["name"], r["due"], r["policy"]) for r in existing} != spec
+            ):
+                raise ValueError(
+                    "Schedule namespace already has a different specification."
+                )
             for timer in self.timers:
-                self._db.execute("INSERT OR IGNORE INTO schedule_runs(namespace,name,due,policy,status) VALUES(?,?,?,?,?)",
-                                 (namespace, timer.name, timer.time.isoformat(), policy, "pending"))
+                self._db.execute(
+                    "INSERT OR IGNORE INTO schedule_runs(namespace,name,due,policy,status) VALUES(?,?,?,?,?)",
+                    (namespace, timer.name, timer.time.isoformat(), policy, "pending"),
+                )
 
     def __enter__(self):
         return self
@@ -77,8 +96,13 @@ class DurableSchedule:
         self._db.close()
 
     def status(self) -> tuple[dict, ...]:
-        return tuple(dict(r) for r in self._db.execute(
-            "SELECT * FROM schedule_runs WHERE namespace=? ORDER BY due,name", (self.namespace,)))
+        return tuple(
+            dict(r)
+            for r in self._db.execute(
+                "SELECT * FROM schedule_runs WHERE namespace=? ORDER BY due,name",
+                (self.namespace,),
+            )
+        )
 
     def _due(self, now: datetime, limit: int | None = None) -> Iterator[ScheduledRun]:
         if limit is not None and (type(limit) is not int or limit <= 0):
@@ -90,44 +114,69 @@ class DurableSchedule:
             raise ValueError("Schedule clock cannot move backward.")
         self._last_poll = now
         if any(r["status"] == "uncertain" for r in self.status()):
-            raise RuntimeError("An interrupted schedule needs reconciliation before delivery resumes.")
+            raise RuntimeError(
+                "An interrupted schedule needs reconciliation before delivery resumes."
+            )
         for timer in self.timers:
             if timer.time > now:
                 break
             identity = (self.namespace, timer.name, timer.time.isoformat())
             with self._db:
                 self._db.execute("BEGIN IMMEDIATE")
-                uncertain = self._db.execute("SELECT 1 FROM schedule_runs WHERE namespace=? AND status='uncertain'", (self.namespace,)).fetchone()
+                uncertain = self._db.execute(
+                    "SELECT 1 FROM schedule_runs WHERE namespace=? AND status='uncertain'",
+                    (self.namespace,),
+                ).fetchone()
                 if uncertain:
-                    raise RuntimeError("An interrupted schedule needs reconciliation before delivery resumes.")
-                row = self._db.execute("SELECT status FROM schedule_runs WHERE namespace=? AND name=? AND due=?", identity).fetchone()
+                    raise RuntimeError(
+                        "An interrupted schedule needs reconciliation before delivery resumes."
+                    )
+                row = self._db.execute(
+                    "SELECT status FROM schedule_runs WHERE namespace=? AND name=? AND due=?",
+                    identity,
+                ).fetchone()
                 if row["status"] != "pending":
                     continue
                 missed = timer.time < self.started_at and self.policy == "skip"
-                self._db.execute("UPDATE schedule_runs SET status=?,delivered=? WHERE namespace=? AND name=? AND due=?",
-                                 ("skipped" if missed else "uncertain", now.isoformat(), *identity))
+                self._db.execute(
+                    "UPDATE schedule_runs SET status=?,delivered=? WHERE namespace=? AND name=? AND due=?",
+                    ("skipped" if missed else "uncertain", now.isoformat(), *identity),
+                )
             processed += 1
             if missed:
                 if limit is not None and processed >= limit:
                     return
                 continue
             # Persist claim before invoking. Exceptions/crashes retain uncertainty.
-            key = hashlib.sha256(json.dumps(identity, separators=(",", ":")).encode()).hexdigest()
+            key = hashlib.sha256(
+                json.dumps(identity, separators=(",", ":")).encode()
+            ).hexdigest()
             yield ScheduledRun(key, timer, now, self.policy)
             if limit is not None and processed >= limit:
                 return
 
     def _complete(self, run: ScheduledRun) -> None:
         with self._db:
-            self._db.execute("UPDATE schedule_runs SET status='completed' WHERE namespace=? AND name=? AND due=?",
-                             (self.namespace, run.timer.name, run.timer.time.isoformat()))
+            self._db.execute(
+                "UPDATE schedule_runs SET status='completed' WHERE namespace=? AND name=? AND due=?",
+                (self.namespace, run.timer.name, run.timer.time.isoformat()),
+            )
 
     def _failed(self, run: ScheduledRun, error: BaseException) -> None:
         with self._db:
-            self._db.execute("UPDATE schedule_runs SET detail=? WHERE namespace=? AND name=? AND due=?",
-                             (f"{type(error).__name__}: {error}", self.namespace, run.timer.name, run.timer.time.isoformat()))
+            self._db.execute(
+                "UPDATE schedule_runs SET detail=? WHERE namespace=? AND name=? AND due=?",
+                (
+                    f"{type(error).__name__}: {error}",
+                    self.namespace,
+                    run.timer.name,
+                    run.timer.time.isoformat(),
+                ),
+            )
 
-    def poll(self, now: datetime, callback: Callable[[ScheduledRun], None | DeliveryResult]) -> tuple[ScheduledRun, ...]:
+    def poll(
+        self, now: datetime, callback: Callable[[ScheduledRun], None | DeliveryResult]
+    ) -> tuple[ScheduledRun, ...]:
         delivered = []
         for run in self._due(now):
             try:
@@ -141,8 +190,13 @@ class DurableSchedule:
             delivered.append(run)
         return tuple(delivered)
 
-    async def poll_async(self, now: datetime, callback: Callable[[ScheduledRun], Awaitable[None | DeliveryResult]],
-                         *, limit: int | None = None) -> tuple[ScheduledRun, ...]:
+    async def poll_async(
+        self,
+        now: datetime,
+        callback: Callable[[ScheduledRun], Awaitable[None | DeliveryResult]],
+        *,
+        limit: int | None = None,
+    ) -> tuple[ScheduledRun, ...]:
         """Await delivery; limit counts pending rows processed, including missed skips."""
         delivered = []
         for run in self._due(now, limit):
@@ -162,8 +216,16 @@ class DurableSchedule:
         if not detail.strip():
             raise ValueError("Reconciliation evidence is required.")
         with self._db:
-            cursor = self._db.execute("""UPDATE schedule_runs SET status=?,detail=?
+            cursor = self._db.execute(
+                """UPDATE schedule_runs SET status=?,detail=?
                 WHERE namespace=? AND name=? AND due=? AND status='uncertain'""",
-                ("completed" if completed else "skipped", detail, self.namespace, timer.name, timer.time.isoformat()))
+                (
+                    "completed" if completed else "skipped",
+                    detail,
+                    self.namespace,
+                    timer.name,
+                    timer.time.isoformat(),
+                ),
+            )
             if cursor.rowcount != 1:
                 raise ValueError("Only an uncertain scheduled run can be reconciled.")

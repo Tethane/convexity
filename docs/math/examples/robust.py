@@ -1,4 +1,4 @@
-"""Family 30: robust mean ambiguity, CVaR and finite-support KL ambiguity."""
+"""robust mean ambiguity, CVaR and finite-support KL ambiguity."""
 
 import numpy as np
 from convexity.math import robust

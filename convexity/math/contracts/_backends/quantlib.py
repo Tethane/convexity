@@ -59,7 +59,7 @@ def schedule(
     )
 
 
-def year_fraction(start, end, convention: str | ql.DayCounter="actual365"):
+def year_fraction(start, end, convention: str | ql.DayCounter = "actual365"):
     return day_count(convention).yearFraction(qdate(start), qdate(end))
 
 

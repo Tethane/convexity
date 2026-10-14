@@ -1,4 +1,4 @@
-"""Family 26: reduced-form Q value and a distinct structural default model."""
+"""reduced-form Q value and a distinct structural default model."""
 
 from convexity.math.curves import flat_curve
 from convexity.math.credit import (

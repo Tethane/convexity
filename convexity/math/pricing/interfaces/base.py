@@ -84,6 +84,7 @@ class PricingResult:
 
 class PricingEngine(Protocol):
     """Price a PricingProblem into an owned PricingResult; custom engines need no native provider inheritance."""
+
     def price(self, problem: PricingProblem) -> PricingResult: ...
 
 

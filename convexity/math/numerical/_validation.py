@@ -11,8 +11,15 @@ from scipy.sparse import issparse
 from scipy.sparse.linalg import LinearOperator
 
 
-def array(value: ArrayLike, name: str, *, ndim: int | None = None,
-          real: bool = False, finite: bool = True, allow_empty: bool = False) -> NDArray[Any]:
+def array(
+    value: ArrayLike,
+    name: str,
+    *,
+    ndim: int | None = None,
+    real: bool = False,
+    finite: bool = True,
+    allow_empty: bool = False,
+) -> NDArray[Any]:
     raw = np.asarray(value)
     if raw.dtype.kind not in "iufc":
         raise ValueError(f"{name} must contain numeric values")
@@ -21,7 +28,9 @@ def array(value: ArrayLike, name: str, *, ndim: int | None = None,
     result = np.array(raw, dtype=np.complex128 if np.iscomplexobj(raw) else np.float64)
     if ndim is not None and result.ndim != ndim:
         raise ValueError(f"{name} must have {ndim} dimensions; got {result.shape}")
-    if (not allow_empty and not result.size) or (finite and not np.all(np.isfinite(result))):
+    if (not allow_empty and not result.size) or (
+        finite and not np.all(np.isfinite(result))
+    ):
         raise ValueError(f"{name} must be nonempty and finite")
     result.setflags(write=False)
     return result
@@ -36,7 +45,9 @@ def square(value: ArrayLike, name: str) -> NDArray[Any]:
 
 def hermitian(value: NDArray[Any], name: str) -> None:
     scale = float(np.max(np.abs(value)))
-    if scale and not np.allclose(value / scale, value.conj().T / scale, rtol=1e-12, atol=1e-14):
+    if scale and not np.allclose(
+        value / scale, value.conj().T / scale, rtol=1e-12, atol=1e-14
+    ):
         raise ValueError(f"{name} must be Hermitian (symmetric for real inputs)")
 
 
@@ -51,7 +62,11 @@ def matrix(value: Any, name: str) -> Any:
     if not issparse(value):
         return square(value, name)
     result = value.tocsr(copy=True)
-    if len(result.shape) != 2 or result.shape[0] != result.shape[1] or not result.shape[0]:
+    if (
+        len(result.shape) != 2
+        or result.shape[0] != result.shape[1]
+        or not result.shape[0]
+    ):
         raise ValueError(f"{name} must be a nonempty square matrix")
     if result.dtype.kind not in "iufc" or not np.all(np.isfinite(result.data)):
         raise ValueError(f"{name} must contain finite numeric values")

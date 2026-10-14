@@ -1,4 +1,4 @@
-"""Family 25: curve-fitted Q rates and separate stochastic CPI laws."""
+"""curve-fitted Q rates and separate stochastic CPI laws."""
 
 from convexity.math.curves import flat_curve
 from convexity.math.rates import ShortRateModel, InflationDynamics

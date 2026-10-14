@@ -21,7 +21,11 @@ def samples(value, *, minimum=1):
 
 def coordinates(value, size, name="coordinates"):
     result = array(value, name, empty=size == 0)
-    if result.ndim < 1 or result.shape[-1] != size or any(n == 0 for n in result.shape[:-1]):
+    if (
+        result.ndim < 1
+        or result.shape[-1] != size
+        or any(n == 0 for n in result.shape[:-1])
+    ):
         raise ValueError(f"{name} must have shape (..., {size})")
     return result
 
@@ -35,7 +39,10 @@ def series(value):
 
 def names(value, size):
     result = tuple(value)
-    if (len(result) != size or any(not isinstance(x, str) or not x for x in result)
-            or len(set(result)) != size):
+    if (
+        len(result) != size
+        or any(not isinstance(x, str) or not x for x in result)
+        or len(set(result)) != size
+    ):
         raise ValueError("columns must contain one unique nonempty name per column")
     return result

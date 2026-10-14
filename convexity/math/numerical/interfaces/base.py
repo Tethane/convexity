@@ -91,6 +91,7 @@ class ArrayResult:
 
 class Problem(Protocol):
     """Structural numerical problem with validate_result(result); custom tools must satisfy the declared result contract."""
+
     def validate_result(self, result: object) -> None: ...
 
 

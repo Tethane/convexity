@@ -28,6 +28,7 @@ class MemoryKernel(Protocol):
 
 class GaussianDriver(Protocol):
     """Gaussian driving-noise extension with declared covariance and reproducible sampling behavior."""
+
     def covariance(self, times: ArrayLike) -> FloatArray: ...
     def sample(
         self, times: ArrayLike, *, draws: int = 1, rng: np.random.Generator

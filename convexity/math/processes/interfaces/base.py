@@ -15,6 +15,7 @@ from .results import ProcessPaths, Transition
 
 class StochasticProcess(Protocol):
     """Conditional-transition interface with declared event_shape; the returned Transition states available sampling and law capabilities."""
+
     @property
     def event_shape(self) -> tuple[int, ...]: ...
 
@@ -31,6 +32,7 @@ class StochasticProcess(Protocol):
 
 class ItoProcess(StochasticProcess, Protocol):
     """Ito drift/diffusion extension; state, time and driving-noise coordinates follow the process contract."""
+
     @property
     def noise_dimension(self) -> int: ...
 

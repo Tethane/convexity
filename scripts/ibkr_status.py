@@ -1,4 +1,5 @@
 """Show verified paper account, orders, executions, ownership and faults."""
+
 import argparse
 import asyncio
 import logging
@@ -21,9 +22,13 @@ def main() -> int:
         logging.getLogger(name).disabled = True
     try:
         if not args.journal.exists():
-            raise ValueError("Journal does not exist; pass the actual trading journal path.")
+            raise ValueError(
+                "Journal does not exist; pass the actual trading journal path."
+            )
         with OrderJournal(args.journal) as journal:
-            status = asyncio.run(read_paper_status(PaperAccountConfig.from_env(), journal))
+            status = asyncio.run(
+                read_paper_status(PaperAccountConfig.from_env(), journal)
+            )
         print(status.format())
         return 2 if status.faults else 0
     except (OSError, ValueError, PaperAccountError) as exc:

@@ -1,4 +1,4 @@
-"""Family 35: proper scores, residual diagnostics and block uncertainty."""
+"""proper scores, residual diagnostics and block uncertainty."""
 
 import numpy as np
 from convexity.math import diagnostics

@@ -93,4 +93,5 @@ class BootstrapResult:
 
 class Score(Protocol):
     """Evaluate predictions against observations using the declared statistical scoring convention."""
+
     def __call__(self, prediction: ArrayLike, actual: ArrayLike) -> float: ...

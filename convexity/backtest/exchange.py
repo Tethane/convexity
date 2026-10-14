@@ -1,4 +1,5 @@
 """Deterministic stock exchange driven by completed, aligned OHLCV bars."""
+
 from dataclasses import dataclass, replace
 from datetime import datetime
 from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR
@@ -32,18 +33,39 @@ class ExecutionModel:
         if name == "frictionless":
             return cls()
         if name == "standard":
-            return cls(spread_bps=Decimal(2), slippage_bps=Decimal(1), commission_per_share=Decimal("0.005"),
-                       minimum_commission=Decimal(1), volume_participation=Decimal("0.1"),
-                       annual_borrow_rate=Decimal("0.03"))
+            return cls(
+                spread_bps=Decimal(2),
+                slippage_bps=Decimal(1),
+                commission_per_share=Decimal("0.005"),
+                minimum_commission=Decimal(1),
+                volume_participation=Decimal("0.1"),
+                annual_borrow_rate=Decimal("0.03"),
+            )
         if name == "conservative":
-            return cls(spread_bps=Decimal(5), slippage_bps=Decimal(3), commission_per_share=Decimal("0.005"),
-                       minimum_commission=Decimal(1), volume_participation=Decimal("0.01"),
-                       submission_delay_bars=1, cancel_delay_bars=1,
-                       limit_rule="penetration", annual_borrow_rate=Decimal("0.05"))
-        raise ValueError("Execution preset must be standard, frictionless, or conservative.")
+            return cls(
+                spread_bps=Decimal(5),
+                slippage_bps=Decimal(3),
+                commission_per_share=Decimal("0.005"),
+                minimum_commission=Decimal(1),
+                volume_participation=Decimal("0.01"),
+                submission_delay_bars=1,
+                cancel_delay_bars=1,
+                limit_rule="penetration",
+                annual_borrow_rate=Decimal("0.05"),
+            )
+        raise ValueError(
+            "Execution preset must be standard, frictionless, or conservative."
+        )
 
     def __post_init__(self):
-        for name in ("spread_bps", "slippage_bps", "commission_per_share", "minimum_commission", "volume_participation", "annual_borrow_rate"):
+        for name in (
+            "spread_bps",
+            "slippage_bps",
+            "commission_per_share",
+            "minimum_commission",
+            "volume_participation",
+            "annual_borrow_rate",
+        ):
             object.__setattr__(self, name, decimal(getattr(self, name)))
             if getattr(self, name) < 0:
                 raise ValueError(f"{name} cannot be negative.")
@@ -53,7 +75,10 @@ class ExecutionModel:
             raise ValueError("Execution friction must be less than 100% of price.")
         if self.limit_rule not in ("touch", "penetration"):
             raise ValueError("limit_rule must be touch or penetration.")
-        if any(type(v) is not int or v < 0 for v in (self.submission_delay_bars, self.cancel_delay_bars)):
+        if any(
+            type(v) is not int or v < 0
+            for v in (self.submission_delay_bars, self.cancel_delay_bars)
+        ):
             raise ValueError("Delays must be nonnegative whole bars.")
         if type(self.allow_short) is not bool:
             raise ValueError("allow_short must be a bool.")
@@ -71,7 +96,9 @@ class _Working:
 class SimulatedExchange:
     capabilities = RESEARCH_CAPABILITIES
 
-    def __init__(self, instruments: Mapping[str, Instrument], model: ExecutionModel | None = None):
+    def __init__(
+        self, instruments: Mapping[str, Instrument], model: ExecutionModel | None = None
+    ):
         self.instruments = dict(instruments)
         self.model = model or ExecutionModel()
         self.allow_short = self.model.allow_short
@@ -82,20 +109,33 @@ class SimulatedExchange:
 
     def fee(self, quantity: int, already_filled: int = 0) -> Decimal:
         def total(q):
-            return max(self.model.minimum_commission, q * self.model.commission_per_share) if q else ZERO
+            return (
+                max(self.model.minimum_commission, q * self.model.commission_per_share)
+                if q
+                else ZERO
+            )
+
         return total(quantity + already_filled) - total(already_filled)
 
     def submit(self, order: Order) -> list[OrderUpdate]:
         if order.order_id in self._seen_ids:
             raise ValueError("Exchange order identity already exists.")
         self._seen_ids.add(order.order_id)
-        self._working[order.order_id] = _Working(order, self.model.submission_delay_bars)
+        self._working[order.order_id] = _Working(
+            order, self.model.submission_delay_bars
+        )
         return [OrderUpdate(order.accepted_at, order)]
 
     def replace(self, order: Order, time: datetime) -> list[OrderUpdate]:
         working = self._working.get(order.order_id)
-        if working is None or working.order.terminal or working.cancel_delay is not None:
-            raise ValueError("Replace requires a working order without a pending cancel.")
+        if (
+            working is None
+            or working.order.terminal
+            or working.cancel_delay is not None
+        ):
+            raise ValueError(
+                "Replace requires a working order without a pending cancel."
+            )
         working.order = order
         working.delay = self.model.submission_delay_bars
         working.eligible_at = time
@@ -107,8 +147,12 @@ class SimulatedExchange:
         events = []
         for child in tuple(self._working.values()):
             if child.order.parent_order_id == parent_id:
-                child.order = replace(child.order, status="canceled", cancel_pending=False,
-                                      reason="Parent terminated before full execution; partial exposure is not protected.")
+                child.order = replace(
+                    child.order,
+                    status="canceled",
+                    cancel_pending=False,
+                    reason="Parent terminated before full execution; partial exposure is not protected.",
+                )
                 self._working.pop(child.order.order_id, None)
                 events.append(OrderUpdate(time, child.order))
         return events
@@ -118,9 +162,14 @@ class SimulatedExchange:
         if working.cancel_delay is not None:
             return []
         if self.model.cancel_delay_bars == 0:
-            working.order = replace(working.order, status="canceled", cancel_pending=False)
+            working.order = replace(
+                working.order, status="canceled", cancel_pending=False
+            )
             del self._working[order_id]
-            return [OrderUpdate(time, working.order), *self._cancel_children(order_id, time)]
+            return [
+                OrderUpdate(time, working.order),
+                *self._cancel_children(order_id, time),
+            ]
         working.cancel_delay = self.model.cancel_delay_bars
         working.order = replace(working.order, cancel_pending=True)
         return [OrderUpdate(time, working.order)]
@@ -128,7 +177,9 @@ class SimulatedExchange:
     def _price(self, raw: Decimal, side: str, tick: Decimal) -> Decimal:
         adjustment = (self.model.spread_bps / 2 + self.model.slippage_bps) / 10_000
         value = raw * (1 + adjustment if side == "BUY" else 1 - adjustment)
-        return (value / tick).to_integral_value(rounding=ROUND_CEILING if side == "BUY" else ROUND_FLOOR) * tick
+        return (value / tick).to_integral_value(
+            rounding=ROUND_CEILING if side == "BUY" else ROUND_FLOOR
+        ) * tick
 
     def process(self, bars: Bars, runtime: Any) -> None:
         # OHLC does not reveal which prices occurred before an intrabar expiry.
@@ -136,33 +187,57 @@ class SimulatedExchange:
         for working in self._working.values():
             order = working.order
             bar = bars.bars.get(order.request.symbol)
-            if (not order.terminal and bar is not None and order.expires_at is not None
-                    and bar.start < order.expires_at < bar.end):
-                raise ValueError("A bar crosses order expiry; supply bars ending at the session close.")
-        available = {s: int(bar.volume * self.model.volume_participation) for s, bar in bars.bars.items()}
+            if (
+                not order.terminal
+                and bar is not None
+                and order.expires_at is not None
+                and bar.start < order.expires_at < bar.end
+            ):
+                raise ValueError(
+                    "A bar crosses order expiry; supply bars ending at the session close."
+                )
+        available = {
+            s: int(bar.volume * self.model.volume_participation)
+            for s, bar in bars.bars.items()
+        }
         deferred_brackets: set[str] = set()
         bracket_priority = {}
         for working in self._working.values():
             order = working.order
             if order.parent_order_id is not None:
-                bracket_priority[order.parent_order_id] = min(bracket_priority.get(order.parent_order_id, order.sequence), order.sequence)
+                bracket_priority[order.parent_order_id] = min(
+                    bracket_priority.get(order.parent_order_id, order.sequence),
+                    order.sequence,
+                )
+
         def priority(working):
             order = working.order
             if order.parent_order_id is not None:
-                return (bracket_priority[order.parent_order_id], 0 if order.request.order_type in ("stop", "stop_limit") else 1, order.sequence)
+                return (
+                    bracket_priority[order.parent_order_id],
+                    0 if order.request.order_type in ("stop", "stop_limit") else 1,
+                    order.sequence,
+                )
             return (order.sequence, 0, order.sequence)
+
         for working in sorted(self._working.values(), key=priority):
             order = working.order
             if order.terminal or order.parent_order_id in deferred_brackets:
                 continue
             bar = bars.bars.get(order.request.symbol)
-            if bar is None or bar.start < order.accepted_at or (working.eligible_at is not None and bar.start < working.eligible_at):
+            if (
+                bar is None
+                or bar.start < order.accepted_at
+                or (working.eligible_at is not None and bar.start < working.eligible_at)
+            ):
                 continue
             if order.expires_at is not None and bar.start >= order.expires_at:
                 continue
             if working.cancel_delay is not None:
                 if working.cancel_delay == 0:
-                    working.order = replace(order, status="canceled", cancel_pending=False)
+                    working.order = replace(
+                        order, status="canceled", cancel_pending=False
+                    )
                     del self._working[order.order_id]
                     runtime.apply(OrderUpdate(bars.time, working.order))
                     for child_event in self._cancel_children(order.order_id, bars.time):
@@ -182,7 +257,9 @@ class SimulatedExchange:
             if request.order_type in ("stop", "stop_limit") and not working.triggered:
                 stop = request.stop_price
                 assert stop is not None
-                opening_trigger = bar.open >= stop if request.side == "BUY" else bar.open <= stop
+                opening_trigger = (
+                    bar.open >= stop if request.side == "BUY" else bar.open <= stop
+                )
                 crossed = bar.high >= stop if request.side == "BUY" else bar.low <= stop
                 if not crossed:
                     continue
@@ -198,12 +275,17 @@ class SimulatedExchange:
                     price = self._price(stop, request.side, tick)
                     occurred_at = bar.end
             if request.order_type in ("limit", "stop_limit"):
-
                 limit = request.limit_price
                 assert limit is not None
-                extreme = self._price(bar.low if request.side == "BUY" else bar.high, request.side, tick)
-                touched = extreme <= limit if request.side == "BUY" else extreme >= limit
-                penetrated = extreme < limit if request.side == "BUY" else extreme > limit
+                extreme = self._price(
+                    bar.low if request.side == "BUY" else bar.high, request.side, tick
+                )
+                touched = (
+                    extreme <= limit if request.side == "BUY" else extreme >= limit
+                )
+                penetrated = (
+                    extreme < limit if request.side == "BUY" else extreme > limit
+                )
                 favorable = price <= limit if request.side == "BUY" else price >= limit
                 # Immediate orders have one opportunity, at the opening quote
                 # proxy. A later intrabar crossing cannot rescue an IOC/FOK.
@@ -228,9 +310,15 @@ class SimulatedExchange:
                     self._cancel_remainder(working, bars.time, runtime)
                 continue
             fee = self.fee(quantity, order.filled_quantity)
-            if price <= 0 or not runtime.fill_allowed(order, quantity, price, fee, occurred_at):
-                working.order = replace(order, status="rejected", cancel_pending=False,
-                                        reason="Execution price/gap exceeds available capacity.")
+            if price <= 0 or not runtime.fill_allowed(
+                order, quantity, price, fee, occurred_at
+            ):
+                working.order = replace(
+                    order,
+                    status="rejected",
+                    cancel_pending=False,
+                    reason="Execution price/gap exceeds available capacity.",
+                )
                 del self._working[order.order_id]
                 runtime.apply(OrderUpdate(bars.time, working.order))
                 for child_event in self._cancel_children(order.order_id, bars.time):
@@ -238,14 +326,27 @@ class SimulatedExchange:
                 continue
             available[request.symbol] -= quantity
             self._execution_sequence += 1
-            fill = Fill(f"execution-{self._execution_sequence:06d}", order.order_id,
-                        order.strategy_id, request.symbol, request.side, quantity,
-                        price, fee, occurred_at, bar.end, self.instruments[request.symbol].currency)
+            fill = Fill(
+                f"execution-{self._execution_sequence:06d}",
+                order.order_id,
+                order.strategy_id,
+                request.symbol,
+                request.side,
+                quantity,
+                price,
+                fee,
+                occurred_at,
+                bar.end,
+                self.instruments[request.symbol].currency,
+            )
             runtime.apply(FillEvent(bar.end, fill))
             filled = order.filled_quantity + quantity
-            working.order = replace(order, filled_quantity=filled,
-                                    status="filled" if filled == request.quantity else "partially_filled",
-                                    cancel_pending=order.cancel_pending and filled < request.quantity)
+            working.order = replace(
+                order,
+                filled_quantity=filled,
+                status="filled" if filled == request.quantity else "partially_filled",
+                cancel_pending=order.cancel_pending and filled < request.quantity,
+            )
             if working.order.terminal:
                 del self._working[order.order_id]
             runtime.apply(OrderUpdate(bar.end, working.order))
@@ -253,10 +354,17 @@ class SimulatedExchange:
             # winning residual remains live; peer cancels ignore cancel latency.
             if order.group_id is not None:
                 for peer in tuple(self._working.values()):
-                    if (peer.order.order_id != order.order_id and peer.order.group_id == order.group_id
-                            and peer.order.parent_order_id == order.parent_order_id):
-                        peer.order = replace(peer.order, status="canceled", cancel_pending=False,
-                                             reason="OCO peer executed.")
+                    if (
+                        peer.order.order_id != order.order_id
+                        and peer.order.group_id == order.group_id
+                        and peer.order.parent_order_id == order.parent_order_id
+                    ):
+                        peer.order = replace(
+                            peer.order,
+                            status="canceled",
+                            cancel_pending=False,
+                            reason="OCO peer executed.",
+                        )
                         self._working.pop(peer.order.order_id, None)
                         runtime.apply(OrderUpdate(bar.end, peer.order))
             if working.order.status == "filled":
@@ -268,10 +376,16 @@ class SimulatedExchange:
             if immediate and not working.order.terminal:
                 self._cancel_remainder(working, bars.time, runtime)
 
-    def _cancel_remainder(self, working: _Working, time: datetime, runtime: Any) -> None:
+    def _cancel_remainder(
+        self, working: _Working, time: datetime, runtime: Any
+    ) -> None:
         """IOC/FOK cancellation is immediate, independent of cancel latency."""
-        working.order = replace(working.order, status="canceled", cancel_pending=False,
-                                reason=f"{working.order.request.time_in_force} remainder canceled.")
+        working.order = replace(
+            working.order,
+            status="canceled",
+            cancel_pending=False,
+            reason=f"{working.order.request.time_in_force} remainder canceled.",
+        )
         self._working.pop(working.order.order_id, None)
         runtime.apply(OrderUpdate(time, working.order))
         for child_event in self._cancel_children(working.order.order_id, time):
@@ -281,7 +395,11 @@ class SimulatedExchange:
         events = []
         for working in tuple(self._working.values()):
             order = working.order
-            if not order.terminal and order.expires_at is not None and time >= order.expires_at:
+            if (
+                not order.terminal
+                and order.expires_at is not None
+                and time >= order.expires_at
+            ):
                 working.order = replace(order, status="expired", cancel_pending=False)
                 del self._working[order.order_id]
                 events.append(OrderUpdate(time, working.order))

@@ -1,487 +1,174 @@
-# Event-driven research
+# Backtesting
 
-A strategy owns its identity, trading permissions, subscriptions, and warmup.
-`Research` defines an inclusive range of session dates and connects the runtime,
-historical feeds, and simulated exchange. The strategy uses the same commands,
-context, and event callbacks in research and paper execution.
-
-Use this guide to run strategies against historical events. For exploratory
-DataFrames, see [historical data](data.md); for models and estimators, see
-[Convexity math](math/README.md). Order amendments, stops, groups, and dynamic
-subscriptions are covered in the [order lifecycle guide](order-lifecycle.md).
+`Research` acquires history and replays a strategy through the stock simulator.
+Session dates are inclusive. `Backtest` accepts caller-supplied data directly.
+For exploratory DataFrames, use [the data API](data.md).
 
 ## Setup and first run
 
-From the repository root, install the research dependencies with Python 3.14+:
-
 ```sh
 python -m pip install -e '.[ibkr,calendars]'
-```
-
-Research defaults to Alpaca consolidated SIP history, with a read-only IBKR
-fallback. A paper Alpaca account is sufficient. The free Basic plan supports
-historical SIP queries ending at least 15 minutes ago (200 API calls/minute;
-history since 2016). This covers completed-session backtests without buying a
-real-time subscription. See [Alpaca's data plans](https://docs.alpaca.markets/us/docs/about-market-data-api)
-and [SIP access FAQ](https://docs.alpaca.markets/us/docs/market-data-faq).
-
-Generate or regenerate your paper API key pair in the
-[Alpaca dashboard](https://app.alpaca.markets/). From this repository, run:
-
-```sh
 python scripts/configure_alpaca.py
 ```
 
-Paste the key and secret at the two hidden prompts. The script writes
-`~/.config/convexity/alpaca.json` (or `$XDG_CONFIG_HOME/convexity/alpaca.json`)
-with file mode `600` and directory mode `700`. It never prints the keys or puts
-them in shell history. Keep `XDG_CONFIG_HOME` outside the repository. This is a
-local plaintext credential file protected by filesystem permissions, not an
-encrypted vault. Do not paste keys into chat, notebooks, source files, or command
-arguments. Regenerating keys invalidates the old pair. Research loads the file
-when an uncached Alpaca request needs it, so there is no shell export to repeat.
-Restart an existing notebook kernel once to load the updated library code.
-
-Alternatively, provide **both** `APCA_API_KEY_ID` and `APCA_API_SECRET_KEY` in the
-process environment; they override the file. Credentials are not included in
-provider representations, cache entries, exported manifests or error messages.
-The integration calls only the market data endpoint, never Alpaca trading APIs.
-It uses the Python standard library; no Alpaca SDK installation is required.
-
-For IBKR fallback, TWS or IB Gateway must be available for data not already
-cached, with the required data permissions. With no host/port configured, discovery tries Gateway paper (4002),
-TWS paper (7497), Gateway live (4001), then TWS live (7496), always read-only.
-For each port it tries localhost and, under WSL, the Windows host detected from
-the default route. Explicit `IBKR_HOST` and `IBKR_PORT` pin their respective
-settings and disable fallback for that setting. Client ID defaults to `72`;
-override it with `IBKR_CLIENT_ID`. `IBKR_TIMEOUT` (default 15 seconds) bounds
-all connection attempts together. Errors list attempted endpoints.
-The standalone `cx.data.IBKR` adapter uses the same host/port discovery.
-Research does not require a paper account configuration or submit broker orders.
+The configuration script saves Alpaca keys outside the repository in
+`~/.config/convexity/alpaca.json` (or under `XDG_CONFIG_HOME`), with owner-only
+permissions. Both `APCA_API_KEY_ID` and `APCA_API_SECRET_KEY` in the environment
+override that file. Research calls market-data APIs only.
 
 ```python
-from datetime import date
 import convexity as cx
 
 class BuyAndHold(cx.Strategy):
-    metadata = cx.StrategyMetadata("buy-hold", version="1")
+    metadata = cx.StrategyMetadata("buy-hold")
     contract = cx.StrategyContract(instruments=("SPY",))
 
     def on_start(self, context):
-        return cx.SubmitOrder.market("SPY", "BUY", 10, time_in_force="DAY",
-                                     client_order_id="entry")
+        return cx.SubmitOrder.market(
+            "SPY", "BUY", 10, client_order_id="entry",
+        )
 
-result = cx.Research(date(2025, 1, 2), date(2025, 2, 7)).run(BuyAndHold)
-print(result.metrics, result.positions, result.open_orders)
+research = cx.Research("2025-01-02", "2025-02-07")
+result = research.run(BuyAndHold, initial_cash=100_000, output="out/buy-hold")
 ```
 
-There is no bar subscription in this strategy. Its startup order enters the
-exchange queue; returning it does not mean it filled. The simulator acquires
-execution prices itself. An observed price from the prior session supports
-startup risk checks without requiring strategy warmup or exposing future prices.
+In a notebook, use `await research.run_async(...)`. Each run creates fresh
+strategy instances; pass a sequence of factories for several strategies sharing
+an account. Names must be unique. Use separate Research instances for concurrent
+runs. A prior-session observation supports startup sizing without exposing the
+first execution bar. Returning an order does not mean it filled.
 
-Submitting QQQ from this strategy violates its SPY contract. The runtime validates
-all commands from a callback before routing any of them. Research raises
-`BacktestFailure` with the partial result and contract diagnostic; direct runtime
-commands raise `ContractViolation`. Observing an instrument does not grant
-permission to trade it.
+## Data and cache
 
-## Run configuration
+The default provider requests Alpaca SIP, split-adjusted minute history and
+aggregates regular-session bars. If acquisition fails, it warns and retries the
+whole requested panel through read-only IBKR. `provider=cx.AlpacaHistoricalData()`
+or `provider=cx.IBKRHistoricalData(...)` requires a specific source. Inspect
+`result.config["data_source"]` and research metadata for actual feed and fallback.
 
-`Research(start, end)` uses Python `datetime.date` objects. ISO date strings remain accepted at the boundary for compatibility and are normalized immediately. Both
-dates are inclusive exchange-session dates; weekends and holidays contribute no
-sessions. A range containing no sessions fails explicitly.
+IBKR discovery tries Gateway/TWS ports 4002, 7497, 4001, 7496 on localhost and,
+under WSL, its Windows host. `IBKR_HOST`, `IBKR_PORT`, `IBKR_CLIENT_ID` (default
+72), and `IBKR_TIMEOUT` (default 15 seconds) override discovery. Connection
+refusal means the socket API is unavailable; changing strategy code will not
+fix it. A paper-account configuration is unnecessary for historical reads.
 
-Each run creates fresh instances from the supplied class or factory. For multiple
-strategies, pass a sequence of factories. Names come from `StrategyMetadata` and
-must be unique. Parameterized strategies may set metadata and contract in
-`__init__`.
+Validated observations persist in `.convexity/history.sqlite3`. Covered ranges
+replay offline; expanded requests fetch missing sessions. Prior-session and
+execution feeds must also be cached. `cache=...` changes the path, `cache=None`
+disables the outer SQLite cache, and `refresh=True` reacquires requested history.
+An explicit `FallbackHistoricalProvider` owns its inner caches; configure it
+there. Provider identity, calendar, resolution, and price basis separate feeds.
+
+Missing intervals fail rather than being filled with invented observations.
+Minute replay needs dense history and can be slow even when cached. A 15:50
+timer requires minute execution data throughout the period. Native daily bars
+have different availability and volume semantics; see [daily prefetch](data-prefetch.md).
+Standalone `data.history` has no persistent cache and uses an exclusive end date.
+
+## Replaying a DataFrame
+
+Use `DataFrameHistoricalProvider` to analyze and backtest the same daily snapshot:
 
 ```python
-from datetime import date
-research = cx.Research(date(2025, 1, 2), date(2025, 2, 7))
-result = research.run(
-    BuyAndHold,
-    execution="conservative",
-    initial_cash=100_000,
-    output="out/buy-hold",
+from convexity.backtest import DataFrameHistoricalProvider
+
+prices = cx.data.history(
+    "SPY", provider="yahoo", auto_adjust=False,
+    start="2024-12-01", end="2025-02-08", interval="1d",
+)
+provider = DataFrameHistoricalProvider(
+    prices, price_basis="split_adjusted_price_return",
+)
+result = await cx.Research("2025-01-02", "2025-02-07").run_async(
+    BuyAndHold, provider=provider, cache=None,
 )
 ```
 
-Infrastructure options belong to `run` or `run_async`:
+Include prior-session data and the strategy's full warmup in the frame. The
+provider copies the snapshot, retains provenance, and validates daily coverage
+against its declared calendar (XNYS by default). It does not download missing
+rows or refresh itself; acquire a new frame to update the snapshot.
 
-| Option | Default | Purpose |
-| --- | --- | --- |
-| `provider` | Alpaca SIP, then read-only IBKR | A `HistoricalProvider` implementation |
-| `cache` | `.convexity/history.sqlite3` | Persistent validated history; `None` disables the outer cache |
-| `execution` | `"standard"` | A named preset or `ExecutionModel` |
-| `initial_cash` | `100_000` | Starting simulated account cash |
-| `limits` | Default `RiskLimits` | Account and strategy risk constraints |
-| `output` | `None` | Directory for result and replay exports |
-| `refresh` | `False` | Reacquire requested history |
-| `metadata` | `None` | Additional run metadata |
+Native daily bars are observed at the following session's open. Static Research
+supports these delayed observations: an order decided from yesterday's bar can
+execute at today's open under the zero-latency model. This does not make today's
+close available at the decision. Fill callbacks and account views also withhold
+unpublished closing marks; reported equity still uses actual closing valuations.
+Daily OHLC execution remains an approximation;
+it cannot resolve intraday price order or regular-session liquidity from a native
+bar's full-day volume. `auto_adjust=False` keeps the Yahoo split-adjusted OHLC
+basis explicit; these results omit dividends and are not total returns.
 
-In a notebook or another running event loop, use the asynchronous entry point:
+## Execution assumptions
 
-```python
-result = await research.run_async(BuyAndHold, output="out/buy-hold")
-```
+Pass `execution="standard"`, `"frictionless"`, `"conservative"`, or an
+`ExecutionModel`. Set account constraints with `RiskLimits`.
 
-`run()` cannot run inside an existing event loop. A single `Research` instance
-also rejects concurrent runs; use separate instances for concurrent experiments.
+| Preset | Spread / slippage | Participation | Other costs and timing |
+| --- | --- | --- | --- |
+| standard | 2 / 1 bp | 10% | $0.005/share, $1/order minimum; 3% annual short borrow |
+| conservative | 5 / 3 bp | 1% | Same commission; 5% borrow; one-interval submit/cancel delays; strict limit penetration |
 
-### Connection refused (including WSL)
+These assumptions are not calibrated market-impact estimates. OHLCV replay
+cannot reconstruct an intrabar tape or queue position. Orders cannot fill from
+the bar that generated them. Eligible opening fills become visible at the bar's
+end; limit crossings use the end timestamp. Fills update accounts before
+callbacks; bars precede equal-time timers. FIFO orders share available volume.
+There is no automatic liquidation at the end of a run.
 
-`HistoryError` containing `ConnectionRefusedError` means the configured IBKR
-socket endpoint refused the connection. Start and log into TWS or IB Gateway,
-enable API socket access, and match its configured host and port. Changing the
-strategy or switching between `run` and `run_async` does not fix this connection.
+Named order constructors default to DAY. GTC orders may remain open at the end.
+IOC fills what it can at the first eligible opening opportunity and cancels the
+rest; FOK requires the whole quantity there. Stops and groups require DAY/GTC.
+See [order lifecycle](order-lifecycle.md) for stop, bracket, and amendment rules.
 
-When Python runs in WSL and Gateway runs on Windows, `127.0.0.1` may not reach
-Windows. Discovery now includes the WSL default-route host automatically,
-following [Microsoft's WSL networking guidance](https://learn.microsoft.com/windows/wsl/networking).
-For custom networking or ports, check `ip route` and pass the connection
-explicitly in a notebook:
+Default history is split-adjusted price data: it omits dividend cash flows and
+uses adjusted share units. It is not a total-return benchmark. Explicit
+[corporate actions](corporate-actions.md) require unadjusted input and sourced
+events. Refresh the full study history after adjustment revisions to avoid
+mixing price scales across acquisition dates.
 
-```python
-from datetime import date
-provider = cx.IBKRHistoricalData(cx.HistoricalConnectionConfig(
-    host="172.31.96.1",  # Replace with your reachable Gateway host.
-    port=4002,          # Match Gateway's configured API socket port.
-    client_id=72,
-))
-result = await cx.Research(date(2025, 1, 2), date(2025, 2, 7)).run_async(
-    BuyAndHold, provider=provider,
-)
-print(result.metrics, result.positions, result.open_orders)
-```
-
-Alternatively set `IBKR_HOST` and `IBKR_PORT` in the Python process environment
-before constructing the default provider. Shell exports made after a notebook
-kernel starts do not update that kernel's environment. Research downloads real
-history and simulates orders locally; unavailable history has no synthetic fallback.
-
-## Clock events
-
-```python
-from datetime import date, time
-
-class Overnight(cx.Strategy):
-    metadata = cx.StrategyMetadata("overnight")
-    contract = cx.StrategyContract(
-        instruments=("SPY",),
-        subscriptions=(
-            cx.EventSubscription(cx.Timer, schedule=cx.ClockSchedule("enter", at=time(15, 50))),
-            cx.EventSubscription(cx.Timer, schedule=cx.ClockSchedule("exit", at=time(9, 30))),
-            cx.EventSubscription(cx.OrderUpdate),
-            cx.EventSubscription(cx.FillEvent),
-        ),
-    )
-
-    def on_timer(self, event, context):
-        if event.name == "enter" and not context.position("SPY") and not context.pending("SPY"):
-            return cx.SubmitOrder.market("SPY", "BUY", 10)
-        if event.name == "exit" and context.position("SPY") > 0:
-            return cx.SubmitOrder.market("SPY", "SELL", context.position("SPY"))
-
-    def on_partial(self, event, context):
-        # event.order describes the partially filled order. Context already
-        # reflects executions. This strategy leaves the remainder working.
-        pass
-
-    def on_fill(self, event, context):
-        # event.fill contains execution quantity, price, fee and timestamps.
-        pass
-
-result = cx.Research(date(2025, 1, 2), date(2025, 2, 7)).run(Overnight)
-```
-
-`ClockSchedule` uses typed `datetime.time` values and defaults to
-`America/New_York` and the `XNYS` exchange calendar. Events occur only within
-actual sessions: holidays are absent, DST is
-respected, and 15:50 is skipped on a session closing at 13:00. The simulator
-selects a sufficiently fine execution feed for these events. This strategy does
-not receive bar callbacks. For exchange-relative daily/monthly schedules, include
-`EventSubscription(Timer, schedule=SessionSchedule(...))` in the strategy's subscriptions.
-
-The schedule declares when to produce `Timer` events; `EventSubscription` declares
-which events the strategy receives. The historical runner generates a timer for
-every eligible exchange session and delivers it through `Runtime.advance` to
-`on_timer`. The simulated exchange handles order fills; it does not run a real
-wall clock. Paper trading materializes the same declarations through its durable
-scheduler. `ClockSubscription` remains a compatibility spelling for older code;
-new strategies should use `EventSubscription(Timer, schedule=ClockSchedule(...))`.
-
-A clock callback firing does not guarantee a new order. In particular,
-`client_order_id="entry"` identifies **one order for the whole run**, even after
-it fills. Repeating it either deduplicates the same intent or rejects changed
-parameters. For recurring entries, omit the ID or use an event-specific ID such
-as `f"entry:{event.time.isoformat()}"`. This preserves idempotent retries while
-allowing the next session to submit a new order. Subscribe to `Rejection` and
-inspect `result.events` when a strategy unexpectedly stops trading.
-
-The complete [overnight hold example](../examples/overnight_hold.py) uses typed
-dates/times, recurring timer event subscriptions and unique per-decision order
-IDs. It stops visibly on order rejection. The final overnight position remains
-open unless an exit occurs within the requested backtest interval.
-
-```python
-from collections import Counter
-from datetime import date
-import convexity as cx
-from examples.overnight_hold import OvernightHold
-
-result = await cx.Research(date(2025, 1, 2), date(2026, 10, 12)).run_async(
-    OvernightHold, initial_cash=100_000, base_currency="USD",
-)
-print(Counter(event.name for event in result.events if isinstance(event, cx.Timer)))
-print("fills:", len(result.fills))
-```
-
-## Bars, warmup, and callbacks
-
-To observe bars, declare `BarSubscription(("SPY",), bar_size="1 day")` in
-`contract.subscriptions`. Set `contract.warmup_sessions=5` if the strategy needs
-five prior sessions in `context.history` at startup. Warmup does not invoke
-trading callbacks or create simulated executions. Only completed observations
-are exposed. The runtime scopes market events and history to subscriptions;
-trading permissions remain the `instruments` declaration.
-
-| Subscription | Callback (fallback: `on_event`) |
-| --- | --- |
-| `BarSubscription` | `on_bar(event, context)` |
-| `EventSubscription(Timer, schedule=...)` | `on_timer(event, context)` |
-| `EventSubscription(FillEvent)` | `on_fill(event, context)` |
-| `EventSubscription(OrderUpdate)` | `on_partial` for partial status, falling back to `on_order` |
-| `EventSubscription(Rejection)` | `on_rejection(event, context)` |
-| Subscription lifecycle (automatically delivered to the owner) | `on_subscription(event, context)` |
-
-A specific callback takes precedence over `on_event`; each event is delivered
-once. `on_start` runs after declared warmup and `on_stop` runs at shutdown.
-Callbacks return one command, an iterable of commands, or `None`. Context is an
-immutable snapshot of observed history, marks, attributed positions, pending
-orders, cash, and equity. Exchange events are delivered to the owning strategy.
-
-To activate or deactivate subscriptions during a run, declare the permitted pool
-in `contract.available_subscriptions` and use `context.subscribe()` /
-`context.unsubscribe()`. Changes take effect after the callback completes and
-produce `SubscriptionUpdate` events. See the
-[subscription lifecycle](order-lifecycle.md#dynamic-subscriptions) for identities,
-history visibility, and reconnection behavior.
-
-## Explicit order intent and execution
-
-```python
-cx.SubmitOrder.market("SPY", "BUY", 10, time_in_force="DAY")
-cx.SubmitOrder.limit("SPY", "BUY", 10, limit_price="500.00", time_in_force="GTC")
-cx.SubmitOrder.limit("SPY", "BUY", 10, limit_price="500.00", time_in_force="IOC")
-cx.CancelOrder(order_id="buy-hold:entry")
-```
-
-The named constructors default to `DAY`. The lower-level
-`SubmitOrder(symbol, side, quantity, ...)` remains market/GTC for compatibility;
-prefer the named constructors so intent is visible.
-
-| Time in force | Simulated behavior |
-| --- | --- |
-| DAY | Rest until filled, canceled, rejected, or the session close |
-| GTC | Rest across sessions; remain inspectable when research ends |
-| IOC | At the first eligible execution opportunity, fill available quantity and cancel the remainder |
-| FOK | At that opportunity, fill the whole quantity or cancel without any fill |
-
-Market, limit, stop, and stop-limit orders are supported. Stops and grouped
-orders require DAY/GTC. Invalid combinations and unsupported order types fail
-explicitly. Immediate limit orders must be executable at the
-opening price proxy; a later intrabar crossing cannot rescue them. Paper execution
-currently rejects IOC/FOK explicitly because its adapter cannot preserve these
-semantics. Paper market commands use the adapter's documented protective limit
-collar; inspect broker updates for the actual submitted intent.
-
-Use `execution="standard"` (default), `"frictionless"`, or `"conservative"` in
-`run`. The standard preset uses a 2 bp spread, 1 bp adverse slippage, $0.005/share
-commission with $1/order minimum, 10% volume participation and 3% annual borrow.
-Conservative uses 5/3 bp spread/slippage, 1% participation, one execution-interval
-submission/cancel delays, strict limit penetration and 5% borrow. These are
-model assumptions, not calibrated exchange guarantees. Advanced callers can
-supply `ExecutionModel(...)` and `RiskLimits(...)`.
-
-The current exchange backend uses completed stock OHLCV observations as its
-liquidity/price model. Strategies are event-driven; the model does not reconstruct
-L2 queue positions or an intrabar tape. FIFO order acceptance shares volume
-across strategies, permitting partial fills and cancellation races. Orders
-cannot fill from the bar that generated them. Fills at an eligible bar's open
-become available at its end; intrabar limit crossings are timestamped at the end.
-Fills update accounting before callbacks, and bars precede equal-time timers.
-There is no automatic end-of-run liquidation.
-
-For amendments, filtered cancellation, and bracket/OCO behavior in simulation
-and paper execution, see [order and subscription lifecycle](order-lifecycle.md).
-
-## Historical data and persistent cache
-
-Use `provider=cx.AlpacaHistoricalData()` to require Alpaca and fail immediately
-instead of falling back, or `provider=cx.IBKRHistoricalData(...)` to force IBKR.
-The default selector warns when Alpaca fails, then retries the entire requested
-universe/date range using IBKR. It does not splice the two feeds together.
-Fallback selection and reason are recorded in
-`result.config["metadata"]["research"]["history"]["fallback"]`. The actual feed
-is always in `result.config["data_source"]`. Each provider has its own cache
-namespace, including existing IBKR caches. Later runs try Alpaca again.
-
-Alpaca uses explicit `feed=sip`, `adjustment=split`, and `asof=-` (fixed symbols),
-10,000-row pages, and every `next_page_token`, including partially filled pages.
-It filters minute bars against the exchange calendar, including holidays, DST,
-and early closes, then aggregates larger bars locally. Native daily bars are
-not substituted for regular-session minute aggregates. Seconds-based requests
-that cannot be built from minutes fall back to IBKR. Missing regular-session
-minutes fail validation; no prices are invented. This is best suited to liquid
-US stocks/ETFs such as SPY, not guaranteed dense data for every stock.
-
-Alpaca requests have a 15-second network timeout and a 120-second total
-acquisition deadline, with bounded retries for rate limits/server errors.
-Configure these through `cx.AlpacaHistoricalData(request_timeout=...,
-total_timeout=...)`, and use `cx.FallbackHistoricalProvider(primary=...,
-fallback=..., cache=...)` for custom routing. The selector owns its inner caches;
-when passing one explicitly, configure its `cache` argument directly.
-`cache=None` disables SQLite; IBKR still has its own exact-request snapshot cache.
-There is no synthetic fallback when acquisition fails.
-
-Validated observations are stored in `.convexity/history.sqlite3`. Repeating a
-covered request reads SQLite without downloading history. Expanding the date
-range or instrument set fetches missing sessions and inserts them into the same
-database. Provider identity, calendar, resolution, and price basis separate
-incompatible datasets. Use `cache=...` to choose the database and `refresh=True`
-to deliberately reacquire requested data. Custom `HistoricalProvider` adapters
-are wrapped by the same cache; give them a stable `cache_identity`.
-Covered requests can replay offline, including subsets of previously acquired
-history. Execution feeds and required prior-session data must also be cached.
-
-A 15:50 timer requires minute execution data across the whole period, not just
-two observations per day. The default replay retains per-minute valuation and
-fill checks. Download time and local replay time are separate: changing data
-providers speeds acquisition, while cached runs still parse, validate and replay
-the observations. Alpaca network speed must be measured with your keys; a cold
-multi-year request is not guaranteed to finish in a few seconds.
-
-This cache belongs to `Research`. The standalone `convexity.data.history()` API
-returns DataFrames and does not share it. Its `end` boundary is exclusive,
-whereas `Research` includes the end session. A DataFrame provider is not a
-`HistoricalProvider`; see [historical data](data.md) for that API's contract.
-
-## Scope and interpretation
-
-Prices and coverage are validated before replay. Missing intervals fail rather
-than being forward-filled. Alpaca and IBKR datasets use split-adjusted price-return units;
-dividend cash flows, corporate-action accounting, historical universe membership,
-and L2 replay are outside this MVP. The simulator currently uses one exchange
-calendar per run and one bar resolution per symbol within each strategy.
-Different strategies may observe the same symbol at different resolutions.
-Research supports bar, clock, fill, order-update, rejection, and subscription
-lifecycle events; unsupported feed requests fail before acquisition. Inspect
-`cx.RESEARCH_CAPABILITIES` and `cx.PAPER_CAPABILITIES` for supported commands,
-events, and restrictions. The managed paper feed currently supports one-minute
-bars. Use matching observation cadence when comparing research and paper runs.
+The simulator supports stocks, one exchange calendar per run, and one resolution
+per symbol per strategy. Different strategies may use different resolutions.
+Historical [universes and portfolios](portfolio.md) support daily data and
+session-boundary schedules. Options simulation and L2/L3 feeds are unsupported.
 
 ## Currency ledgers and FX
 
-Both `Research.run_async(...)` and `Backtest(...)` accept `base_currency`
-(default `"USD"`), `initial_cash` as either a scalar in base currency or a
-currency/balance mapping, and a tuple of dated `FXRate` observations.
+`initial_cash` accepts a scalar in `base_currency` (default USD), or a currency
+mapping. Supply `fx_rates=(...)` for foreign balances. Each
+`FXRate(currency, base_currency, rate, time)` means one foreign unit is worth
+`rate` base units, known at the timezone-aware timestamp. Initial nonzero foreign
+balances need a rate at or before startup; future rates cannot fill that gap.
+Research does not acquire FX history automatically.
 
-For example, configuration with caller-supplied historical rates looks like:
+Cash remains in native currency. Funding a USD purchase with foreign collateral
+can create a USD loan; no FX trade, deposit interest, or currency-loan interest
+is simulated. Short-stock borrow is modeled. Supplied Backtest instruments can
+have other currencies; automatic Research acquisition remains US USD stocks.
+Equity includes FX revaluation; position costs retain instrument currency.
 
-```python
-from datetime import date
-from decimal import Decimal
-
-result = await cx.Research(date(2025, 1, 2), date(2025, 2, 7)).run_async(
-    MyStrategy,
-    base_currency="USD",
-    initial_cash={"USD": Decimal("50000"), "CAD": Decimal("20000")},
-    fx_rates=historical_fx_rates,  # tuple of cx.FXRate objects supplied by you
-)
-```
-
-Each `cx.FXRate(currency, base_currency, rate, time)` means one unit of
-`currency` is worth `rate` base units, **known at the timezone-aware time**.
-Supply an observation at or before replay startup for every nonzero foreign
-cash balance. Future rates cannot fill a missing initial conversion. Subsequent
-observations update valuation at replay steps; callbacks only see rates already
-available at their time. Opening-fill risk checks use FX known at the opening,
-rather than the later bar close. FX observations do not independently trigger
-strategy callbacks. These rates are explicit replay inputs; Research does not
-automatically download or invent FX history.
-
-Cash stays in its native ledger. Buying a USD stock debits USD; if funded by
-foreign-currency collateral this can create a negative USD balance (a currency
-loan). There is no implicit FX trade, FX spread/fee, deposit interest or currency
-loan interest. Short-stock borrow fees remain supported. Currency conversion
-changes reporting value, not currency ownership.
-
-Research's historical acquisition currently remains US USD stocks.
-For supplied data, `Backtest(instruments=(cx.Instrument("LABEL", currency="CAD"), ...))`
-supports instrument currencies explicitly. Simulated execution commissions are
-in each instrument's currency; fee and borrow-cost totals are translated into
-base currency when recorded. Position average costs and realized P&L retain
-instrument currency. Base-currency equity and returns include FX revaluation.
-
-`result.account` exposes the final account, including native cash and FX rates.
-`result.equity` records cash balances, margin, buying power, reservations and
-remaining sizing capacity over time. Account totals and result metrics use
-`result.config["base_currency"]`; exports retain currency metadata.
-See [strategy prices, sizing and margin semantics](strategies.md#current-prices-and-buying-quantities).
-
-## Inspect and save results
-
-`output` saves orders, fills, equity, cash flows, events, resolved contracts,
-execution assumptions, history provenance, and replay inputs. Failed strategy
-runs retain their inspectable result on `BacktestFailure.result`. Returns and
-maximum drawdown are fractions. A completed run can contain rejections or open
-orders; inspect those alongside metrics.
-
-```python
-print(result.metrics)
-print(result.positions)
-print(result.open_orders)
-result.export("out/review")  # Save the result after a run.
-```
-
-The result is a `BacktestResult` dataclass, not a pandas DataFrame or NumPy
-array. `metrics` is a dictionary of `Decimal` values; `equity` is a tuple
-of timestamped dictionaries; `orders` and `fills` are tuples of dataclasses.
-`positions` maps strategy names to symbol/position dictionaries.
-
-Convert the equity history to pandas for plotting or further analysis. Convert
-`Decimal` values to floats for plotting while retaining the original result for
-exact accounting:
+## Results
 
 ```python
 import pandas as pd
-import matplotlib.pyplot as plt
 
 equity = pd.DataFrame(result.equity).set_index("time")
 equity.index = pd.to_datetime(equity.index, utc=True)
-equity[["cash", "equity"]] = equity[["cash", "equity"]].astype(float)
-equity["equity"].plot(title="Portfolio equity", ylabel=result.config["base_currency"], grid=True)
-plt.tight_layout()
-plt.show()
+equity["equity"].astype(float).plot(ylabel="USD")
 
-values = equity["equity"].to_numpy()  # NumPy array, if needed.
+print(result.metrics)
+print(result.positions)
+print(result.open_orders)
+result.export("out/review")
 ```
 
-Use `output=...` on the research run to include acquired bars, sessions, and
-the history manifest alongside the result export. `result.export(...)` saves
-the result and its CSV tables, without copying the acquired history files.
+Metrics use Decimal values; returns and drawdowns are fractions. Convert to
+float for plots while keeping the original accounting records. Exports include
+fills, orders, cash flows, events, assumptions, provenance, and replay inputs.
+`BacktestFailure.result` retains partial results. A successful run can still
+contain rejections, partial fills, or open positions. Inspect those before
+interpreting its return.
 
-For a worked experiment, open the [research notebook](../examples/convexity_demo.ipynb)
-or [same-strategy script](../examples/strategy_workflow.py). The
-[math strategy example](../examples/backtest_math.py) uses observed returns to
-compute portfolio targets.
-
-## Migrating older calls
-
-Migrate old `Research(symbols=..., strategies={...}, bar_size=...,
-warmup_sessions=..., config=...)` calls by moving identity and data requirements
-into the strategy and passing factories to `run`. Infrastructure settings such
-as provider, cache, capital, execution preset, and output belong to `run`.
-`Backtest` remains the explicit local-data replay API.
+See [basic usage](../examples/basic_convexity.ipynb),
+[predictive trading](../examples/predictive_trading.ipynb), and
+[portfolio rebalancing](../examples/portfolio_rebalancing.ipynb) for comparisons.

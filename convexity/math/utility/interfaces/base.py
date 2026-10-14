@@ -11,5 +11,6 @@ from ..._typing import FloatArray
 
 class Utility(Protocol):
     """Wealth utility extension with explicit domain and preference parameters."""
+
     def __call__(self, wealth: ArrayLike) -> FloatArray: ...
     def inverse(self, utility: ArrayLike) -> FloatArray: ...

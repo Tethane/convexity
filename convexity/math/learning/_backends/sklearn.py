@@ -16,15 +16,24 @@ def fit_estimator(model, x, y, w):
 
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always", ConvergenceWarning)
-        model.fit(np.array(x), np.array(y), sample_weight=None if w is None else np.array(w))
-    failures = [warning for warning in caught if issubclass(warning.category, ConvergenceWarning)]
+        model.fit(
+            np.array(x), np.array(y), sample_weight=None if w is None else np.array(w)
+        )
+    failures = [
+        warning
+        for warning in caught
+        if issubclass(warning.category, ConvergenceWarning)
+    ]
     for warning in caught:
         if not issubclass(warning.category, ConvergenceWarning):
             warnings.warn(str(warning.message), warning.category, stacklevel=2)
     iterations = getattr(model, "n_iter_", None)
-    return Diagnostics(backend=f"sklearn.{type(model).__name__}", converged=not failures,
-                       message="; ".join(str(w.message) for w in failures),
-                       iterations=None if iterations is None else int(np.max(iterations)))
+    return Diagnostics(
+        backend=f"sklearn.{type(model).__name__}",
+        converged=not failures,
+        message="; ".join(str(w.message) for w in failures),
+        iterations=None if iterations is None else int(np.max(iterations)),
+    )
 
 
 @dataclass(frozen=True)
@@ -35,7 +44,9 @@ class LinearAdapter:
     capabilities: frozenset[str] = frozenset({"mean"})
 
     def __post_init__(self):
-        object.__setattr__(self, "coefficients", v.array(self.coefficients, "coefficients"))
+        object.__setattr__(
+            self, "coefficients", v.array(self.coefficients, "coefficients")
+        )
         object.__setattr__(self, "intercept", v.array(self.intercept, "intercept"))
 
     @property
@@ -59,7 +70,9 @@ class EstimatorAdapter:
     def evaluate(self, operation, features, *, offset=None):
         if operation == "probability":
             return self._estimator.predict_proba(features)
-        return np.asarray(self._estimator.predict(features)).reshape((len(features),) + self.output_shape)
+        return np.asarray(self._estimator.predict(features)).reshape(
+            (len(features),) + self.output_shape
+        )
 
 
 def linear(spec, x, y, w):
@@ -76,10 +89,17 @@ def linear(spec, x, y, w):
     elif penalty == "ridge":
         model = Ridge(alpha=len(x) * spec.alpha, solver="svd", **options)
     elif penalty == "lasso":
-        model = Lasso(alpha=spec.alpha, tol=spec.tolerance, max_iter=spec.maxiter, **options)
+        model = Lasso(
+            alpha=spec.alpha, tol=spec.tolerance, max_iter=spec.maxiter, **options
+        )
     else:
-        model = ElasticNet(alpha=spec.alpha, l1_ratio=spec.l1_ratio, tol=spec.tolerance,
-                           max_iter=spec.maxiter, **options)
+        model = ElasticNet(
+            alpha=spec.alpha,
+            l1_ratio=spec.l1_ratio,
+            tol=spec.tolerance,
+            max_iter=spec.maxiter,
+            **options,
+        )
     diagnostics = fit_estimator(model, x, y, normalized)
     coefficients = np.asarray(model.coef_).T
     # Some estimators collapse a one-column target; keep the supplied target rank.
@@ -93,12 +113,23 @@ def logistic(spec, x, y, w):
     from sklearn.linear_model import LogisticRegression
 
     # The default L2 penalty is supported at both the dependency floor and current release.
-    model = LogisticRegression(C=spec.C, fit_intercept=spec.fit_intercept,
-                               solver="lbfgs", tol=spec.tolerance, max_iter=spec.maxiter)
+    model = LogisticRegression(
+        C=spec.C,
+        fit_intercept=spec.fit_intercept,
+        solver="lbfgs",
+        tol=spec.tolerance,
+        max_iter=spec.maxiter,
+    )
     diagnostics = fit_estimator(model, x, y, w)
     adapter = EstimatorAdapter(model, x.shape[1], (), frozenset({"probability"}))
-    return FittedModel(adapter, diagnostics, len(x), np.asarray(model.coef_).T,
-                       model.intercept_, classes=model.classes_)
+    return FittedModel(
+        adapter,
+        diagnostics,
+        len(x),
+        np.asarray(model.coef_).T,
+        model.intercept_,
+        classes=model.classes_,
+    )
 
 
 def quantile(spec, x, y, w):
@@ -106,25 +137,37 @@ def quantile(spec, x, y, w):
 
     models, reports = [], []
     for level in spec.quantiles:
-        model = QuantileRegressor(quantile=level, alpha=spec.alpha,
-                                   fit_intercept=spec.fit_intercept, solver="highs")
+        model = QuantileRegressor(
+            quantile=level,
+            alpha=spec.alpha,
+            fit_intercept=spec.fit_intercept,
+            solver="highs",
+        )
         reports.append(fit_estimator(model, x, y, w))
         models.append(model)
     coefficients = np.column_stack([m.coef_ for m in models])
     intercept = np.array([m.intercept_ for m in models])
-    diagnostics = Diagnostics("sklearn.QuantileRegressor", all(d.converged for d in reports),
-                              "; ".join(d.message for d in reports if d.message),
-                              max(d.iterations or 0 for d in reports))
+    diagnostics = Diagnostics(
+        "sklearn.QuantileRegressor",
+        all(d.converged for d in reports),
+        "; ".join(d.message for d in reports if d.message),
+        max(d.iterations or 0 for d in reports),
+    )
     adapter = LinearAdapter(coefficients, intercept, (), frozenset({"quantile"}))
-    return FittedModel(adapter, diagnostics, len(x), coefficients, intercept, quantiles=spec.quantiles)
+    return FittedModel(
+        adapter, diagnostics, len(x), coefficients, intercept, quantiles=spec.quantiles
+    )
 
 
 def trees(spec, x, y, w):
     from sklearn import ensemble, tree
 
     suffix = "Classifier" if spec.task == "classification" else "Regressor"
-    options = dict(max_depth=spec.max_depth, min_samples_leaf=spec.min_samples_leaf,
-                   random_state=spec.seed)
+    options = dict(
+        max_depth=spec.max_depth,
+        min_samples_leaf=spec.min_samples_leaf,
+        random_state=spec.seed,
+    )
     if spec.kind == "decision_tree":
         model = getattr(tree, "DecisionTree" + suffix)(**options)
     else:

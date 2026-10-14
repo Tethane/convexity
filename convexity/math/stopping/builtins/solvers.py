@@ -19,6 +19,7 @@ from .._backends import sklearn as _sklearn
 
 class ContinuationRegressor(Protocol):
     """Predict continuation values from state rows; one scalar value per row."""
+
     def predict(self, states: ArrayLike, /) -> ArrayLike: ...
 
 

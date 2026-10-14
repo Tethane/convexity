@@ -19,4 +19,5 @@ __all__ = [
 ]
 
 from .builtins.solvers import ContinuationRegressor
+
 __all__.append("ContinuationRegressor")

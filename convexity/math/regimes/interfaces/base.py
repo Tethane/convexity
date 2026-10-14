@@ -15,6 +15,7 @@ from .results import RegimeResult
 
 class RegimeInference(Protocol):
     """Infer latent-regime probabilities under the supplied model, retaining explicit regime order."""
+
     def filter(self, data: TimeSeries | ArrayLike) -> RegimeResult: ...
 
 

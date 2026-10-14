@@ -1,4 +1,4 @@
-"""Family 29: array QP, conic budget, integer LP and callback optimization."""
+"""array QP, conic budget, integer LP and callback optimization."""
 
 import numpy as np
 from convexity.math import optimization as opt

@@ -1,9 +1,10 @@
 """Gaussian algebra preserving coordinate units and affine-support density.
 
-    Full rank uses a Cholesky factor of correlation, never a covariance-wide
-    rank cutoff. Singular rank is assessed in dimensionless coordinates. The
-    density volume is measured in the original Euclidean support coordinates.
+Full rank uses a Cholesky factor of correlation, never a covariance-wide
+rank cutoff. Singular rank is assessed in dimensionless coordinates. The
+density volume is measured in the original Euclidean support coordinates.
 """
+
 import numpy as np
 from scipy.linalg import solve_triangular
 from .._covariance import psd
@@ -22,7 +23,7 @@ def factor(covariance):
         triangular = True
     except np.linalg.LinAlgError:
         ev, vectors = np.linalg.eigh(corr)
-        keep = ev > 100 * np.finfo(float).eps * len(corr) * max(1., ev[-1])
+        keep = ev > 100 * np.finfo(float).eps * len(corr) * max(1.0, ev[-1])
         root = vectors[:, keep] * np.sqrt(ev[keep])
         triangular = False
     loading = np.zeros((len(cov), root.shape[1]))
@@ -34,7 +35,7 @@ def square_root(covariance):
     """Return square L with L @ L.T = covariance, retaining coordinate scales."""
     loading, _, _, _, _ = factor(covariance)
     result = np.zeros((len(loading), len(loading)))
-    result[:, :loading.shape[1]] = loading
+    result[:, : loading.shape[1]] = loading
     return result
 
 
@@ -63,7 +64,10 @@ def sample(mean, covariance, size, rng):
     if isinstance(size, (int, np.integer)):
         size = (int(size),)
     loading, _, _, _, _ = factor(covariance)
-    return np.asarray(mean) + rng.standard_normal(tuple(size) + (loading.shape[1],)) @ loading.T
+    return (
+        np.asarray(mean)
+        + rng.standard_normal(tuple(size) + (loading.shape[1],)) @ loading.T
+    )
 
 
 def logpdf(values, mean, covariance):
@@ -76,7 +80,7 @@ def logpdf(values, mean, covariance):
     supported = np.isfinite(delta).all(axis=1) & np.all(delta[:, ~active] == 0, axis=1)
     result = np.full(len(delta), -np.inf)
     if rank == 0:
-        result[supported] = 0.
+        result[supported] = 0.0
         return result.reshape(shape)
     z = delta[supported][:, active] / scales[active]
     if triangular:
@@ -91,11 +95,11 @@ def logpdf(values, mean, covariance):
         white = coordinates / norms
         error = np.max(abs(z - coordinates @ axes.T), axis=1)
         tol = 1000 * np.finfo(float).eps * len(root)
-        on_support = error <= tol * np.maximum(1., np.max(abs(z), axis=1))
+        on_support = error <= tol * np.maximum(1.0, np.max(abs(z), axis=1))
         # QR gives the volume of the loading's parallelepiped, including the
         # correct Hausdorff Jacobian for a singular law under diagonal scaling.
-        _, qr = np.linalg.qr(loading, mode='reduced')
+        _, qr = np.linalg.qr(loading, mode="reduced")
         log_volume = np.log(abs(np.diag(qr))).sum()
-    density = -.5 * (rank * np.log(2*np.pi) + np.sum(white**2, axis=1)) - log_volume
+    density = -0.5 * (rank * np.log(2 * np.pi) + np.sum(white**2, axis=1)) - log_volume
     result[supported] = np.where(on_support, density, -np.inf)
     return result.reshape(shape)

@@ -54,4 +54,5 @@ Action = TypeVar("Action", covariant=True)
 
 class Agent(Protocol[State, Action]):
     """Map a state to an action; generic parameters retain the user-defined state and action types."""
+
     def action(self, state: State) -> Action: ...

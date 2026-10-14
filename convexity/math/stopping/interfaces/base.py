@@ -104,4 +104,5 @@ class StoppingResult:
 
 class StoppingSolver(Protocol):
     """Solve the supplied stopping problem and retain policy/value semantics in StoppingResult."""
+
     def solve(self, problem: StoppingProblem) -> StoppingResult: ...

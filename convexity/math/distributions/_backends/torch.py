@@ -7,7 +7,9 @@ def torch_module():
     except ModuleNotFoundError as exc:
         if exc.name != "torch":
             raise
-        raise ImportError("Tensor distributions require: pip install 'convexity[autodiff]'") from exc
+        raise ImportError(
+            "Tensor distributions require: pip install 'convexity[autodiff]'"
+        ) from exc
     return torch
 
 

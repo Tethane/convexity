@@ -24,8 +24,13 @@ def main():
     # describes possible ending prices and their probabilities.
     terminal = model.transition(spot, holding_days / 252).distribution()
     print(f"Model mean ending price: ${float(terminal.mean()):.2f}")
-    print("5%, 50%, 95% ending prices:", np.round(terminal.quantile([0.05, 0.50, 0.95]), 2))
-    print(f"Model probability of finishing below ${spot:.0f}: {float(terminal.cdf(spot)):.2%}")
+    print(
+        "5%, 50%, 95% ending prices:",
+        np.round(terminal.quantile([0.05, 0.50, 0.95]), 2),
+    )
+    print(
+        f"Model probability of finishing below ${spot:.0f}: {float(terminal.cdf(spot)):.2%}"
+    )
 
     # 2. Generate 20,000 equally likely scenarios. A fresh RNG with the same seed
     # reproduces the draws in the same software environment.

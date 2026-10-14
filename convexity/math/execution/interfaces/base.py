@@ -98,11 +98,13 @@ class LogisticFit:
 
 class CostModel(Protocol):
     """Evaluate modeled execution costs for the supplied trade/state coordinates."""
+
     def __call__(self, trade: ArrayLike) -> float: ...
 
 
 class FillLaw(Protocol):
     """Conditional execution-fill law; distinguish fill probability from price and cost expectations."""
+
     def sample(
         self, quantities: ArrayLike, *, draws: int, rng: np.random.Generator
     ) -> FloatArray: ...

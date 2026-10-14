@@ -70,6 +70,7 @@ class BondResult:
 
 class BondPricer(Protocol):
     """Value a supplied bond under explicit date, curve and pricing conventions."""
+
     def __call__(self, bond, curve) -> BondResult: ...
 
 

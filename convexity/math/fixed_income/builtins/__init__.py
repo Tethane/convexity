@@ -1,8 +1,8 @@
 """Concrete specifications and convenience functions for fixed_income.
 
 Ordinary workflows may import these names directly from convexity.math.fixed_income.
-See docs/math/reference/fixed_income.md for public signatures and mathematical conventions.
 """
+
 from .bonds import (
     zero_coupon,
     fixed_bond,

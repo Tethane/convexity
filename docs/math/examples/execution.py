@@ -1,4 +1,4 @@
-"""Family 33: liquidation schedules and generated binomial assignment data."""
+"""liquidation schedules and generated binomial assignment data."""
 
 import numpy as np
 from convexity.math import execution

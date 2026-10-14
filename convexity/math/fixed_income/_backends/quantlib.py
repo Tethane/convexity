@@ -43,7 +43,7 @@ def fixed_bond(
     *,
     face=100.0,
     settlement_days=0,
-    convention: str | ql.DayCounter="actual365",
+    convention: str | ql.DayCounter = "actual365",
     redemption=100.0,
 ):
     return ql.FixedRateBond(
@@ -65,7 +65,7 @@ def floating_bond(
     face=100.0,
     spread=0.0,
     settlement_days=0,
-    convention: str | ql.DayCounter="actual360",
+    convention: str | ql.DayCounter = "actual360",
     fixing_days=None,
 ):
     """Index carries forecast curve and historical fixings; missing fixings fail."""
@@ -92,7 +92,12 @@ def floating_bond(
 
 
 def amortizing_bond(
-    schedule, notionals, coupon, *, settlement_days=0, convention: str | ql.DayCounter="actual365"
+    schedule,
+    notionals,
+    coupon,
+    *,
+    settlement_days=0,
+    convention: str | ql.DayCounter = "actual365",
 ):
     n = array(notionals, "notionals", ndim=1)
     if len(n) != len(schedule) - 1 or np.any(n <= 0) or np.any(np.diff(n) > 0):
@@ -119,7 +124,7 @@ def inflation_bond(
     observation_lag_months=3,
     face=100.0,
     settlement_days=0,
-    convention: str | ql.DayCounter="actual365",
+    convention: str | ql.DayCounter = "actual365",
     growth_only=False,
     interpolation=None,
 ):
@@ -150,7 +155,7 @@ def callable_bond(
     *,
     face=100.0,
     settlement_days=0,
-    convention: str | ql.DayCounter="actual365",
+    convention: str | ql.DayCounter = "actual365",
 ):
     """callabilities: (date, clean price per 100, 'call' or 'put')."""
     calls = []
@@ -192,7 +197,7 @@ def yield_from_price(
     clean_price,
     settlement_date,
     *,
-    convention: str | ql.DayCounter="actual365",
+    convention: str | ql.DayCounter = "actual365",
     frequency=None,
     compounding=None,
     valuation_date=None,
@@ -222,7 +227,7 @@ def price_from_yield(
     yield_rate,
     settlement_date,
     *,
-    convention: str | ql.DayCounter="actual365",
+    convention: str | ql.DayCounter = "actual365",
     frequency=None,
     compounding=None,
     valuation_date=None,
@@ -250,7 +255,7 @@ def bond_analytics(
     curve,
     *,
     settlement_date=None,
-    convention: str | ql.DayCounter="actual365",
+    convention: str | ql.DayCounter = "actual365",
     frequency=None,
     engine=None,
     compute_yield=True,

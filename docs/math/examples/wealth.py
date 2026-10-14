@@ -1,4 +1,4 @@
-"""Family 34: funded accounts, collateral and physical option delivery."""
+"""funded accounts, collateral and physical option delivery."""
 
 from convexity.math import wealth
 

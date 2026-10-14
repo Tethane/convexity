@@ -12,11 +12,17 @@ import numpy as np
 from numpy.typing import ArrayLike
 from ._typing import FloatArray
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
-def array(value: object, name: str, *, ndim: int | None = None,
-          finite: bool = True, empty: bool = False) -> FloatArray:
+def array(
+    value: object,
+    name: str,
+    *,
+    ndim: int | None = None,
+    finite: bool = True,
+    empty: bool = False,
+) -> FloatArray:
     raw = np.asarray(value)
     if raw.dtype.kind not in "iuf":
         raise ValueError(f"{name} must contain real numeric values")
@@ -30,7 +36,11 @@ def array(value: object, name: str, *, ndim: int | None = None,
 
 
 def integer(value: object, name: str, minimum: int = 0) -> int:
-    if isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral) or value < minimum:
+    if (
+        isinstance(value, (bool, np.bool_))
+        or not isinstance(value, Integral)
+        or value < minimum
+    ):
         raise ValueError(f"{name} must be an integer >= {minimum}")
     return int(value)
 
@@ -53,8 +63,9 @@ def generator(rng: object) -> np.random.Generator:
     return rng
 
 
-def scalar(value: object, name: str, *, minimum: float | None = None,
-           strict: bool = False) -> float:
+def scalar(
+    value: object, name: str, *, minimum: float | None = None, strict: bool = False
+) -> float:
     result = float(array(value, name, ndim=0))
     if minimum is not None and (result <= minimum if strict else result < minimum):
         raise ValueError(f"{name} must be {'>' if strict else '>='} {minimum}")

@@ -10,17 +10,19 @@ from convexity.math import numerical as nm
 @pytest.mark.parametrize("complex_values", [False, True])
 @pytest.mark.parametrize("multiple_rhs", [False, True])
 def test_dense_solve_recovers_known_solution(complex_values, multiple_rhs):
-    a = np.array([[3., 1.], [1., 2.]])
+    a = np.array([[3.0, 1.0], [1.0, 2.0]])
     if complex_values:
-        a = a + 1j * np.array([[0., 1.], [-1., 0.]])
-    x = np.array([[1., 2.], [-2., 3.]]) if multiple_rhs else np.array([1., -2.])
+        a = a + 1j * np.array([[0.0, 1.0], [-1.0, 0.0]])
+    x = np.array([[1.0, 2.0], [-2.0, 3.0]]) if multiple_rhs else np.array([1.0, -2.0])
     result = nm.solve(a, a @ x)
     assert_allclose(result.value, x, atol=1e-14)
     assert result.diagnostics.residual_norm is not None
     assert result.diagnostics.residual_norm < 1e-13
 
 
-@pytest.mark.parametrize("a", [np.array([[0., -1.], [1., 0.]]), np.array([[2, 1j], [-1j, 3]])])
+@pytest.mark.parametrize(
+    "a", [np.array([[0.0, -1.0], [1.0, 0.0]]), np.array([[2, 1j], [-1j, 3]])]
+)
 @pytest.mark.parametrize("hermitian", [False, True])
 def test_eigenpairs(a, hermitian):
     if hermitian and not np.allclose(a, a.conj().T):
@@ -43,12 +45,14 @@ def test_svd_reconstruction_and_orthogonality(shape, full):
     k = min(shape)
     assert_allclose((result.u[:, :k] * result.s) @ result.vh[:k], a, atol=1e-13)
     assert_allclose(result.u.conj().T @ result.u, np.eye(result.u.shape[1]), atol=1e-13)
-    assert_allclose(result.vh @ result.vh.conj().T, np.eye(result.vh.shape[0]), atol=1e-13)
+    assert_allclose(
+        result.vh @ result.vh.conj().T, np.eye(result.vh.shape[0]), atol=1e-13
+    )
     assert np.all(np.diff(result.s) <= 0)
 
 
 def test_matrix_exponential_rotation_and_inverse():
-    theta = .7
+    theta = 0.7
     a = np.array([[0, -theta], [theta, 0]])
     expected = [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]
     assert_allclose(nm.expm(a).value, expected, atol=1e-14)
@@ -58,8 +62,11 @@ def test_matrix_exponential_rotation_and_inverse():
 
 @pytest.mark.parametrize("method", ["direct", "cg", "gmres"])
 def test_sparse_solvers_do_not_densify(method, monkeypatch):
-    a = sparse.diags_array([-np.ones(19), 3*np.ones(20), -np.ones(19)],
-                           offsets=cast(Any, [-1, 0, 1]), format="csr")
+    a = sparse.diags_array(
+        [-np.ones(19), 3 * np.ones(20), -np.ones(19)],
+        offsets=cast(Any, [-1, 0, 1]),
+        format="csr",
+    )
     expected = np.arange(20, dtype=float)
 
     def forbid_dense(*args, **kwargs):
@@ -100,8 +107,16 @@ def test_sparse_nonconvergence_is_visible():
     assert result.diagnostics.residual_norm > 1
 
 
-@pytest.mark.parametrize("a,b", [([[1, 2, 3]], [1]), ([[1, 0], [0, 1]], [1]),
-                                  ([[np.nan]], [1]), ([[1]], [np.inf]), ([], [])])
+@pytest.mark.parametrize(
+    "a,b",
+    [
+        ([[1, 2, 3]], [1]),
+        ([[1, 0], [0, 1]], [1]),
+        ([[np.nan]], [1]),
+        ([[1]], [np.inf]),
+        ([], []),
+    ],
+)
 def test_invalid_linear_systems(a, b):
     with pytest.raises(ValueError):
         nm.solve(a, b)
@@ -110,11 +125,19 @@ def test_invalid_linear_systems(a, b):
 @pytest.mark.parametrize("make", [np.asarray, nm.sparse_matrix])
 def test_singular_solve_raises(make):
     with pytest.raises(np.linalg.LinAlgError):
-        nm.solve(make([[1., 1.], [1., 1.]]), [1., 2.])
+        nm.solve(make([[1.0, 1.0], [1.0, 1.0]]), [1.0, 2.0])
 
 
 def test_sparse_method_requirements():
     with pytest.raises(ValueError, match="shape"):
-        nm.solve(nm.sparse_matrix(np.eye(2)), np.ones((2, 1)), tool=nm.SparseSolve(method="cg"))
+        nm.solve(
+            nm.sparse_matrix(np.eye(2)),
+            np.ones((2, 1)),
+            tool=nm.SparseSolve(method="cg"),
+        )
     with pytest.raises(ValueError, match="Hermitian"):
-        nm.solve(nm.sparse_matrix([[2., 1.], [0., 2.]]), [1, 1], tool=nm.SparseSolve(method="cg"))
+        nm.solve(
+            nm.sparse_matrix([[2.0, 1.0], [0.0, 2.0]]),
+            [1, 1],
+            tool=nm.SparseSolve(method="cg"),
+        )

@@ -252,11 +252,13 @@ class SolveResult:
 
 class Solver[ProblemT = object](Protocol):
     """Solve a built-in or custom optimization problem, retaining its type and returning SolveResult."""
+
     def solve(self, problem: ProblemT) -> SolveResult: ...
 
 
 class OptimizationError(RuntimeError):
     """Raised when optimization cannot supply an acceptable solution; inspect retained status and diagnostics."""
+
     def __init__(self, result: SolveResult) -> None:
         self.result = result
         super().__init__(f"{result.solver}: {result.status}: {result.message}")

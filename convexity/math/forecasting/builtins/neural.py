@@ -59,6 +59,10 @@ class TorchForecaster:
     batch contains history, mask, past_known, past_observed, future_known, static.
     Output shape is (batch,horizon,targets,channels). Custom heads supply loss
     and decoder callbacks; see the forecasting guide for their contracts.
+
+    Fitted models support update(..., mode="incremental") to advance the
+    observed context with fixed weights and scaling. Use "warm_start" to train
+    further, or "refit" to start a fresh fit.
     """
 
     module_factory: Callable[[SequenceSchema], Module] | None = None

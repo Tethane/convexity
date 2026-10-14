@@ -81,4 +81,5 @@ class Attribution:
 
 class WealthMap(Protocol):
     """Transform a supplied account state under explicitly modeled actions and market outcomes."""
+
     def __call__(self, outcome: ArrayLike) -> float: ...

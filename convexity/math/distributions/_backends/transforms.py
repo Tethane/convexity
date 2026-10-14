@@ -41,7 +41,9 @@ class TransformedAdapter:
     def evaluate(self, operation, *args, **kwargs) -> Any:
         t = self.transform
         if operation == "sample":
-            return self._apply(t.forward, self.base.sample(args[0], **kwargs), finite=True)
+            return self._apply(
+                t.forward, self.base.sample(args[0], **kwargs), finite=True
+            )
         if operation == "support":
             lower, upper = self.base.support()
             result = []
@@ -69,34 +71,49 @@ class TransformedAdapter:
             x = self._apply(t.inverse, y[inside], finite=True)
             if operation == "log_density":
                 result = np.full(y.shape, -np.inf)
-                result[inside] = self.base.log_density(x) - self._apply(t.log_abs_derivative, x, finite=True)
+                result[inside] = self.base.log_density(x) - self._apply(
+                    t.log_abs_derivative, x, finite=True
+                )
             else:
                 result = np.zeros(y.shape)
                 if operation == "cdf":
-                    result[y >= hi] = 1.
+                    result[y >= hi] = 1.0
                     method = self.base.cdf if t.increasing else self.base.survival
                 else:
-                    result[y <= lo] = 1.
+                    result[y <= lo] = 1.0
                     method = self.base.survival if t.increasing else self.base.cdf
                 result[inside] = method(x)
             return result
         if operation == "expect":
-            if {"lb", "ub", "conditional", "full_output", "complex_func"} & kwargs.keys():
-                raise ValueError("expect integrates a real callback over the full transformed law")
+            if {
+                "lb",
+                "ub",
+                "conditional",
+                "full_output",
+                "complex_func",
+            } & kwargs.keys():
+                raise ValueError(
+                    "expect integrates a real callback over the full transformed law"
+                )
+
             # Integrate in the image coordinate. Integrating exp(x)*normal.pdf(x)
             # through a base-law callback can overflow exp before weighting it.
             def integrand(y):
                 value = v.scalar(args[0](float(y)), "expectation callback")
                 return value * np.exp(self.evaluate("log_density", np.asarray(y)))
+
             lower, upper = self.evaluate("support")
             return integrate.quad(integrand, lower, upper, **kwargs)[0]
         if self.affine_parameters is not None:
             shift, scale = self.affine_parameters
             if operation == "mean":
-                return shift + scale*self.base.mean()
+                return shift + scale * self.base.mean()
             if operation == "variance":
-                return scale**2*self.base.variance()
+                return scale**2 * self.base.variance()
             if operation == "moment":
                 n = args[0]
-                return sum(comb(n, k)*shift**(n-k)*scale**k*self.base.moment(k) for k in range(n+1))
+                return sum(
+                    comb(n, k) * shift ** (n - k) * scale**k * self.base.moment(k)
+                    for k in range(n + 1)
+                )
         raise NotImplementedError(operation)

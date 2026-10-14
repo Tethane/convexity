@@ -1,4 +1,5 @@
 """Local, explicitly timestamped stock bars and supplied exchange-session tables."""
+
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from functools import cached_property
@@ -16,10 +17,16 @@ class HistoricalData:
     bars: tuple[Bar, ...]
     source: str = "in-memory"
     price_basis: str = "unadjusted_no_corporate_actions"
+    sparse: bool = False
 
     def __post_init__(self):
-        if self.price_basis not in ("unadjusted_no_corporate_actions", "split_adjusted_price_return"):
-            raise ValueError("Use unadjusted_no_corporate_actions or split_adjusted_price_return; dividend/total-return accounting is unsupported.")
+        if self.price_basis not in (
+            "unadjusted_no_corporate_actions",
+            "split_adjusted_price_return",
+        ):
+            raise ValueError(
+                "Use unadjusted_no_corporate_actions or split_adjusted_price_return; dividend/total-return accounting is unsupported."
+            )
         if not self.bars:
             raise ValueError("Historical data is empty.")
         ordered = tuple(sorted(self.bars, key=lambda b: (b.end, b.symbol)))
@@ -35,8 +42,12 @@ class HistoricalData:
             groups.setdefault(bar.end, []).append(bar)
         previous_end = None
         for end, panel in groups.items():
-            if {b.symbol for b in panel} != symbols or len(panel) != len(symbols):
-                raise ValueError(f"Incomplete bar panel at {end}; every instrument needs a bar.")
+            if not self.sparse and (
+                {b.symbol for b in panel} != symbols or len(panel) != len(symbols)
+            ):
+                raise ValueError(
+                    f"Incomplete bar panel at {end}; every instrument needs a bar."
+                )
             if len({b.start for b in panel}) != 1:
                 raise ValueError("All instruments must use aligned bar intervals.")
             if previous_end is not None and panel[0].start < previous_end:
@@ -45,9 +56,27 @@ class HistoricalData:
 
     @cached_property
     def identity(self) -> str:
-        payload = [(b.symbol, b.start.isoformat(), b.end.isoformat(), str(b.open), str(b.high),
-                    str(b.low), str(b.close), b.volume) for b in self.bars]
-        return hashlib.sha256(json.dumps([self.price_basis, payload], separators=(",", ":")).encode()).hexdigest()
+        payload = [
+            (
+                b.symbol,
+                b.start.isoformat(),
+                b.end.isoformat(),
+                str(b.open),
+                str(b.high),
+                str(b.low),
+                str(b.close),
+                b.volume,
+            )
+            for b in self.bars
+        ]
+        return hashlib.sha256(
+            json.dumps(
+                [self.price_basis, payload]
+                if not self.sparse
+                else [self.price_basis, payload, "sparse"],
+                separators=(",", ":"),
+            ).encode()
+        ).hexdigest()
 
     def panels(self) -> tuple[Bars, ...]:
         grouped = {}
@@ -55,8 +84,13 @@ class HistoricalData:
             grouped.setdefault(bar.end, {})[bar.symbol] = bar
         return tuple(Bars(t, bars) for t, bars in grouped.items())
 
-    def resample(self, bar_size: str, calendar: "SessionCalendar", *,
-                 boundaries: tuple[datetime, ...] = ()) -> "HistoricalData":
+    def resample(
+        self,
+        bar_size: str,
+        calendar: "SessionCalendar",
+        *,
+        boundaries: tuple[datetime, ...] = (),
+    ) -> "HistoricalData":
         """Aggregate OHLCV; boundaries split warmup/training/trading periods.
 
         Boundaries must fall between sessions. Source bars must cover each output
@@ -64,35 +98,82 @@ class HistoricalData:
         """
         from .history import HistoryError, _aggregate
         from .bar_size import parse_bar_size
+
         parse_bar_size(bar_size)
         for boundary in boundaries:
             aware(boundary)
-            if any(session.open < boundary < session.close for session in calendar.sessions):
+            if any(
+                session.open < boundary < session.close for session in calendar.sessions
+            ):
                 raise ValueError("Resampling boundaries must fall between sessions.")
         groups: dict[int, list[Session]] = {}
         for session in calendar.sessions:
-            groups.setdefault(sum(boundary <= session.open for boundary in boundaries), []).append(session)
+            groups.setdefault(
+                sum(boundary <= session.open for boundary in boundaries), []
+            ).append(session)
         result = []
         used = 0
         for sessions in groups.values():
             for symbol in {bar.symbol for bar in self.bars}:
-                source = [bar for bar in self.bars if bar.symbol == symbol
-                          and sessions[0].open <= bar.start and bar.end <= sessions[-1].close]
+                source = [
+                    bar
+                    for bar in self.bars
+                    if bar.symbol == symbol
+                    and sessions[0].open <= bar.start
+                    and bar.end <= sessions[-1].close
+                ]
                 result.extend(_aggregate(source, tuple(sessions), bar_size))
                 used += len(source)
         if used != len(self.bars):
-            raise HistoryError("Source bars cross a resampling boundary or lie outside its calendar.")
-        return HistoricalData(tuple(result), self.source, self.price_basis)
+            raise HistoryError(
+                "Source bars cross a resampling boundary or lie outside its calendar."
+            )
+        return HistoricalData(
+            tuple(result), self.source, self.price_basis, sparse=self.sparse
+        )
 
     @classmethod
-    def from_csv(cls, path: str | Path, *, price_basis: str = "unadjusted_no_corporate_actions"):
+    def from_frame(cls, frame, calendar: "SessionCalendar", *, price_basis: str):
+        """Map a daily Convexity history frame's session labels to exchange bars.
+
+        Prices are used as supplied. Missing sessions, fractional volumes, and
+        dividend-adjusted prices are rejected instead of repaired. Daily bars
+        are marked as native data for next-session observation publication.
+        """
+        from .frames import daily_bars
+
+        return cls(
+            daily_bars(frame, calendar, price_basis=price_basis),
+            source=f"{frame.attrs.get('provider', 'dataframe')}:native-daily",
+            price_basis=price_basis,
+        )
+
+    @classmethod
+    def from_csv(
+        cls, path: str | Path, *, price_basis: str = "unadjusted_no_corporate_actions"
+    ):
         bars = []
         with Path(path).open(newline="") as stream:
             for row in csv.DictReader(stream):
-                if decimal(row.get("split_factor") or "1") != 1 or decimal(row.get("dividend") or "0") != 0:
-                    raise ValueError("Corporate actions require preprocessing/accounting not supported in this MVP.")
-                bars.append(Bar(row["symbol"], datetime.fromisoformat(row["start"]), datetime.fromisoformat(row["end"]),
-                                decimal(row["open"]), decimal(row["high"]), decimal(row["low"]), decimal(row["close"]), int(row["volume"])))
+                if (
+                    decimal(row.get("split_factor") or "1") != 1
+                    or decimal(row.get("dividend") or "0") != 0
+                ):
+                    raise ValueError(
+                        "Corporate actions require preprocessing/accounting not supported in this MVP."
+                    )
+                bars.append(
+                    Bar(
+                        row["symbol"],
+                        datetime.fromisoformat(row["start"]),
+                        datetime.fromisoformat(row["end"]),
+                        decimal(row["open"]),
+                        decimal(row["high"]),
+                        decimal(row["low"]),
+                        decimal(row["close"]),
+                        int(row["volume"]),
+                    )
+                )
         return cls(tuple(bars), str(path), price_basis)
 
 
@@ -116,6 +197,7 @@ class SessionCalendar:
     Import a trusted exchange calendar as CSV or supply Session objects. There is
     no weekday-only fallback pretending to be a real exchange calendar.
     """
+
     sessions: tuple[Session, ...]
     name: str = "supplied"
 
@@ -130,11 +212,22 @@ class SessionCalendar:
     @classmethod
     def from_csv(cls, path: str | Path):
         with Path(path).open(newline="") as stream:
-            return cls(tuple(Session(date.fromisoformat(r["session"]), datetime.fromisoformat(r["open"]),
-                                     datetime.fromisoformat(r["close"])) for r in csv.DictReader(stream)), str(path))
+            return cls(
+                tuple(
+                    Session(
+                        date.fromisoformat(r["session"]),
+                        datetime.fromisoformat(r["open"]),
+                        datetime.fromisoformat(r["close"]),
+                    )
+                    for r in csv.DictReader(stream)
+                ),
+                str(path),
+            )
 
     @classmethod
-    def from_exchange(cls, name: str, start: date | str, end: date | str) -> "SessionCalendar":
+    def from_exchange(
+        cls, name: str, start: date | str, end: date | str
+    ) -> "SessionCalendar":
         """Resolve an inclusive exchange session table, including holidays/DST.
 
         Requires the optional calendars extra. The resolved table and provider
@@ -151,27 +244,52 @@ class SessionCalendar:
         try:
             import exchange_calendars
         except ImportError as exc:
-            raise ImportError("Install exchange calendars with: python -m pip install -e '.[calendars]'.") from exc
+            raise ImportError(
+                "Install exchange calendars with: python -m pip install -e '.[calendars]'."
+            ) from exc
         # Padding permits one-day/holiday-only requests; the provider itself
         # expects a range containing at least one actual trading session.
-        calendar = exchange_calendars.get_calendar(name, start=first - timedelta(days=7), end=last + timedelta(days=7))
-        table = calendar.schedule.loc[first.isoformat():last.isoformat()]
+        calendar = exchange_calendars.get_calendar(
+            name, start=first - timedelta(days=7), end=last + timedelta(days=7)
+        )
+        table = calendar.schedule.loc[first.isoformat() : last.isoformat()]
         if table["break_start"].notna().any() or table["break_end"].notna().any():
-            raise ValueError("Calendars with intraday breaks require an unsupported split-session model.")
-        sessions = tuple(Session(label.date(), row["open"].to_pydatetime(), row["close"].to_pydatetime())
-                         for label, row in table.iterrows())
-        return cls(sessions, f"{name}:exchange_calendars-{exchange_calendars.__version__}")
+            raise ValueError(
+                "Calendars with intraday breaks require an unsupported split-session model."
+            )
+        sessions = tuple(
+            Session(
+                label.date(), row["open"].to_pydatetime(), row["close"].to_pydatetime()
+            )
+            for label, row in table.iterrows()
+        )
+        return cls(
+            sessions, f"{name}:exchange_calendars-{exchange_calendars.__version__}"
+        )
 
-    def daily(self, name: str, *, at: str = "close", offset: timedelta = timedelta()) -> tuple[Timer, ...]:
+    def daily(
+        self, name: str, *, at: str = "close", offset: timedelta = timedelta()
+    ) -> tuple[Timer, ...]:
         if at not in ("open", "close"):
             raise ValueError("at must be open or close.")
         return tuple(Timer(getattr(s, at) + offset, name) for s in self.sessions)
 
-    def monthly(self, name: str, *, day: str = "first", at: str = "close", offset: timedelta = timedelta()) -> tuple[Timer, ...]:
+    def monthly(
+        self,
+        name: str,
+        *,
+        day: str = "first",
+        at: str = "close",
+        offset: timedelta = timedelta(),
+    ) -> tuple[Timer, ...]:
         if day not in ("first", "last") or at not in ("open", "close"):
             raise ValueError("Use first/last session and open/close.")
         groups = {}
         for session in self.sessions:
-            groups.setdefault((session.label.year, session.label.month), []).append(session)
-        return tuple(Timer(getattr(sessions[0 if day == "first" else -1], at) + offset, name)
-                     for sessions in groups.values())
+            groups.setdefault((session.label.year, session.label.month), []).append(
+                session
+            )
+        return tuple(
+            Timer(getattr(sessions[0 if day == "first" else -1], at) + offset, name)
+            for sessions in groups.values()
+        )

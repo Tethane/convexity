@@ -47,7 +47,9 @@ def weights(value, n):
         return None
     w = array(value, "sample_weight", ndim=1)
     if len(w) != n or np.any(w < 0) or not np.isfinite(w.sum()) or w.sum() <= 0:
-        raise ValueError("sample_weight must align with rows, be nonnegative and have positive finite sum")
+        raise ValueError(
+            "sample_weight must align with rows, be nonnegative and have positive finite sum"
+        )
     return w
 
 

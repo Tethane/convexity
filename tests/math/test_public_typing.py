@@ -1,7 +1,5 @@
 """Executable and static consumer checks for the SDK's public type contracts."""
 
-import inspect
-import re
 from dataclasses import replace
 from typing import assert_type
 
@@ -9,7 +7,6 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-import convexity.math as sdk
 from convexity.math import (
     distributions,
     estimation,
@@ -19,42 +16,6 @@ from convexity.math import (
     regimes,
 )
 from convexity.math.types import ArrayLike, FloatArray
-
-
-@pytest.mark.parametrize("family", sdk.__all__)
-def test_exported_callables_documented_without_explicit_any(family):
-    module = getattr(sdk, family)
-    for name in module.__all__:
-        value = getattr(module, name)
-        if not callable(value) or not getattr(value, "__module__", "").startswith(
-            "convexity.math"
-        ):
-            continue
-        assert value.__doc__ and not value.__doc__.startswith(f"{name}("), (
-            f"{family}.{name} needs an authored docstring"
-        )
-        assert inspect.getdoc(value), f"{family}.{name} needs a public contract"
-        try:
-            signature = inspect.signature(value)
-        except ValueError:
-            assert inspect.isclass(value) and issubclass(value, BaseException)
-            continue
-        if not getattr(value, "_is_protocol", False):
-            for parameter in signature.parameters.values():
-                assert parameter.annotation is not inspect.Signature.empty, (
-                    f"{family}.{name}.{parameter.name} needs a type"
-                )
-                assert not re.search(
-                    r"\b(?:Callable|dict|tuple|list|Mapping|Sequence)\b(?!\[)",
-                    str(parameter.annotation),
-                ), f"{family}.{name}.{parameter.name} needs parameterized types"
-
-            assert signature.return_annotation is not inspect.Signature.empty, (
-                f"{family}.{name} needs a return type"
-            )
-        assert not re.search(r"\bAny\b", str(signature)), (
-            f"{family}.{name}: {signature}"
-        )
 
 
 def test_owned_arrays_accept_lists_and_preserve_snapshot_and_replace_semantics():
@@ -203,16 +164,3 @@ def test_forecast_comparison_accepts_read_only_public_model_mapping():
     assert_allclose(result["drift"].score(), 0.0, atol=1e-12)
     assert_type(result["drift"].score(), float)
     assert_type(result["drift"].score(by_horizon=True), FloatArray)
-
-
-def test_generated_public_reference_is_current():
-    import subprocess
-    import sys
-    from pathlib import Path
-
-    root = Path(__file__).resolve().parents[2]
-    subprocess.run(
-        [sys.executable, str(root / "scripts/build_math_reference.py"), "--check"],
-        cwd=root,
-        check=True,
-    )

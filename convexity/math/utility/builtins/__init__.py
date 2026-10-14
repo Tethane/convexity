@@ -1,8 +1,8 @@
 """Concrete specifications and convenience functions for utility.
 
 Ordinary workflows may import these names directly from convexity.math.utility.
-See docs/math/reference/utility.md for public signatures and mathematical conventions.
 """
+
 from .functions import (
     LinearUtility,
     LogUtility,

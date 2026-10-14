@@ -13,6 +13,7 @@ from ..._finance import array, choice, positive, scalar
 
 class Numeraire(Protocol):
     """Positive value process used as a unit of account for a declared pricing measure."""
+
     def value(self, time: float) -> ArrayLike: ...
 
 

@@ -33,4 +33,5 @@ __all__ = [
 ]
 
 from .interfaces.base import PricingModel, NativePricingModel
+
 __all__ += ["PricingModel", "NativePricingModel"]

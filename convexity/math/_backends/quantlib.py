@@ -1,4 +1,5 @@
 from collections.abc import Iterator
+
 """Shared financial conventions and scoped QuantLib settings.
 
 All rates/volatilities are decimals; times are years. Date-based calculations
@@ -18,7 +19,7 @@ _LOCK = RLock()
 
 def qdate(value: str | date | datetime | ql.Date) -> ql.Date:
     """Convert an ISO date, Python date/datetime or native date to QuantLib Date.
-    
+
     Dates are calendar dates; intraday components are not retained."""
     if isinstance(value, ql.Date):
         if value == ql.Date():
@@ -33,7 +34,7 @@ def qdate(value: str | date | datetime | ql.Date) -> ql.Date:
 
 def day_count(name: str | ql.DayCounter = "actual365") -> ql.DayCounter:
     """Return the native QuantLib day counter for a supported convention name.
-    
+
     This is an explicit interoperability helper; year_fraction is the scalar facade."""
     constructors = {
         "actual365": ql.Actual365Fixed,

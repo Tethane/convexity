@@ -267,4 +267,5 @@ class TreeControlResult:
 
 class ControlSolver(Protocol):
     """Solve a control problem and return owned state/action/value information with diagnostics."""
+
     def solve(self, model: FiniteMDP) -> ControlResult: ...

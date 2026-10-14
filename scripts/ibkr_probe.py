@@ -12,12 +12,20 @@ import sys
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from convexity.brokers.ibkr import PaperAccountConfig, PaperAccountError, read_paper_account
+from convexity.brokers.ibkr import (
+    PaperAccountConfig,
+    PaperAccountError,
+    read_paper_account,
+)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--redact", action="store_true", help="Mask account identity for a shareable output sample (financial values remain visible).")
+    parser.add_argument(
+        "--redact",
+        action="store_true",
+        help="Mask account identity for a shareable output sample (financial values remain visible).",
+    )
     args = parser.parse_args()
     # The client can log unfiltered account objects. Our errors provide diagnostics
     # without leaking another account's data, including when redaction is enabled.

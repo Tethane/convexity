@@ -27,6 +27,7 @@ from .result import ForecastResult
 
 class Forecaster(Protocol):
     """Fit supplied time-series observations into a reusable fitted forecasting contract."""
+
     def fit(
         self, data: TimeSeries | ArrayLike, *, covariates: Covariates | None = None
     ) -> "FittedForecaster": ...
@@ -34,6 +35,7 @@ class Forecaster(Protocol):
 
 class ForecastAdapter(Protocol):
     """Produce a ForecastResult for requested future steps; advertise only uncertainty actually provided by the model."""
+
     def forecast(
         self,
         steps: int,
@@ -96,6 +98,7 @@ class Diagnostics:
 
 class ConvergenceError(RuntimeError):
     """Raised when a checked numerical method does not converge; result retains the attempted solution and diagnostics."""
+
     def __init__(self, result: FittedForecaster) -> None:
         self.result = result
         super().__init__(result.diagnostics.message or "forecast fit did not converge")

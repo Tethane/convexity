@@ -1,8 +1,8 @@
 """Concrete specifications and convenience functions for credit.
 
 Ordinary workflows may import these names directly from convexity.math.credit.
-See docs/math/reference/credit.md for public signatures and mathematical conventions.
 """
+
 from .default import (
     HazardCurve,
     flat_hazard,

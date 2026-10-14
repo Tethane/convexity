@@ -21,10 +21,26 @@ class EmpiricalAdapter:
 
     @property
     def capabilities(self):
-        common = {"log_density", "sample", "cdf", "mean", "variance", "moment",
-                  "expect", "probability", "given", "map"}
-        return frozenset(common | ({"covariance", "marginal", "condition"} if self.event_shape
-                                  else {"survival", "quantile", "support"}))
+        common = {
+            "log_density",
+            "sample",
+            "cdf",
+            "mean",
+            "variance",
+            "moment",
+            "expect",
+            "probability",
+            "given",
+            "map",
+        }
+        return frozenset(
+            common
+            | (
+                {"covariance", "marginal", "condition"}
+                if self.event_shape
+                else {"survival", "quantile", "support"}
+            )
+        )
 
     @property
     def weights(self):
@@ -59,7 +75,9 @@ class EmpiricalAdapter:
                     result = np.log(result)
             return result
         if operation == "sample":
-            indices = kwargs["rng"].choice(len(self.values), size=args[0], p=self.weights)
+            indices = kwargs["rng"].choice(
+                len(self.values), size=args[0], p=self.weights
+            )
             return self.values[indices]
         if operation == "support":
             return self.values.min(), self.values.max()
@@ -75,14 +93,16 @@ class EmpiricalAdapter:
         if operation in {"variance", "covariance"}:
             centered = self.values - self.evaluate("mean")
             if operation == "variance":
-                return np.tensordot(self.weights, centered ** 2, axes=(0, 0))
+                return np.tensordot(self.weights, centered**2, axes=(0, 0))
             return (centered.T * self.weights) @ centered
         if operation == "moment":
             return np.tensordot(self.weights, self.values ** args[0], axes=(0, 0))
         if operation == "expect":
             if kwargs:
                 raise TypeError("finite expectations do not accept integration options")
-            values = np.asarray([v.array(args[0](x), "expectation callback") for x in self.values])
+            values = np.asarray(
+                [v.array(args[0](x), "expectation callback") for x in self.values]
+            )
             return np.tensordot(self.weights, values, axes=(0, 0))
         if operation == "probability":
             return self.mass[self._mask(args[0])].sum() / self.mass.sum()

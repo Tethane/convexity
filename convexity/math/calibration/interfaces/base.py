@@ -165,4 +165,5 @@ class CalibrationResult:
 
 class Calibrator(Protocol):
     """Solve a calibration problem and return owned parameters, residuals and numerical diagnostics."""
+
     def fit(self, problem: CalibrationProblem) -> CalibrationResult: ...

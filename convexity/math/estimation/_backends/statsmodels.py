@@ -31,11 +31,21 @@ def linear(problem, *, covariance_type):
                 note = "Heteroskedasticity-consistent covariance; asymptotic normal intervals."
         else:
             note = "Backend covariance is nonfinite (for example, unit leverage)."
-    return Estimate(raw.params, names=problem.names, objective=float(raw.ssr) / 2,
-                    covariance=covariance, covariance_kind=covariance_type if covariance is not None else None,
-                    nobs=len(problem.response), df=df, residuals=raw.resid,
-                    diagnostics=Diagnostics(backend=f"statsmodels.{type(model).__name__}", rank=rank,
-                                            uncertainty_note=note))
+    return Estimate(
+        raw.params,
+        names=problem.names,
+        objective=float(raw.ssr) / 2,
+        covariance=covariance,
+        covariance_kind=covariance_type if covariance is not None else None,
+        nobs=len(problem.response),
+        df=df,
+        residuals=raw.resid,
+        diagnostics=Diagnostics(
+            backend=f"statsmodels.{type(model).__name__}",
+            rank=rank,
+            uncertainty_note=note,
+        ),
+    )
 
 
 def robust_linear(problem, *, loss, tuning, covariance_type, tolerance, maxiter):
@@ -43,14 +53,19 @@ def robust_linear(problem, *, loss, tuning, covariance_type, tolerance, maxiter)
     from statsmodels.robust.robust_linear_model import RLM
 
     if problem.weights is not None or problem.sigma is not None:
-        raise ValueError("robust_linear accepts an unweighted design; supply whitened inputs explicitly")
+        raise ValueError(
+            "robust_linear accepts an unweighted design; supply whitened inputs explicitly"
+        )
     norm = HuberT(t=tuning) if loss == "huber" else TukeyBiweight(c=tuning)
     model = RLM(problem.response, problem.design, M=norm)
     raw = model.fit(maxiter=maxiter, tol=tolerance, conv="coefs", cov=covariance_type)
     history = raw.fit_history
     iterations = int(history["iteration"])
     params = history["params"]
-    converged = bool(len(params) >= 3 and np.all(np.abs(np.asarray(params[-1]) - params[-2]) <= tolerance))
+    converged = bool(
+        len(params) >= 3
+        and np.all(np.abs(np.asarray(params[-1]) - params[-2]) <= tolerance)
+    )
     # A zero residual scale is an exact fit; robust scale-based uncertainty is undefined.
     exact = bool(raw.scale == 0 and np.allclose(raw.resid, 0))
     converged = converged or exact
@@ -64,8 +79,19 @@ def robust_linear(problem, *, loss, tuning, covariance_type, tolerance, maxiter)
     if covariance is None:
         note = "Robust covariance unavailable: check convergence, rank, residual degrees of freedom and scale."
     # RLM estimates scale jointly; its standardized loss is not comparable to SSE or a log likelihood.
-    return Estimate(raw.params, names=problem.names, nobs=len(problem.response), residuals=raw.resid,
-                    covariance=covariance, covariance_kind=f"robust_{covariance_type}" if covariance is not None else None,
-                    diagnostics=Diagnostics(converged=converged, backend=f"statsmodels.RLM:{loss}",
-                                            iterations=iterations, rank=rank, uncertainty_note=note,
-                                            message="IRLS converged" if converged else "IRLS iteration limit reached"))
+    return Estimate(
+        raw.params,
+        names=problem.names,
+        nobs=len(problem.response),
+        residuals=raw.resid,
+        covariance=covariance,
+        covariance_kind=f"robust_{covariance_type}" if covariance is not None else None,
+        diagnostics=Diagnostics(
+            converged=converged,
+            backend=f"statsmodels.RLM:{loss}",
+            iterations=iterations,
+            rank=rank,
+            uncertainty_note=note,
+            message="IRLS converged" if converged else "IRLS iteration limit reached",
+        ),
+    )

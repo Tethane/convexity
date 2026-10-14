@@ -15,6 +15,7 @@ from .. import _validation as v
 
 class PredictionAdapter(Protocol):
     """Prediction extension with input dimension, output shape and capabilities; evaluate returns aligned observation rows."""
+
     @property
     def input_dimension(self) -> int: ...
 
@@ -31,6 +32,7 @@ class PredictionAdapter(Protocol):
 
 class Learner(Protocol):
     """Fit feature rows and scalar/vector responses into a FittedModel; optional training settings belong to the implementation."""
+
     def fit(self, features: ArrayLike, response: ArrayLike) -> "FittedModel": ...
 
 
@@ -55,6 +57,7 @@ class Diagnostics:
 
 class ConvergenceError(RuntimeError):
     """Raised when a checked numerical method does not converge; result retains the attempted solution and diagnostics."""
+
     def __init__(self, result: FittedModel) -> None:
         self.result = result
         super().__init__(

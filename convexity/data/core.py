@@ -1,4 +1,5 @@
 """Provider-independent query and DataFrame contract."""
+
 from __future__ import annotations
 
 import asyncio
@@ -12,7 +13,9 @@ import numpy as np
 try:
     import pandas as pd
 except ImportError as exc:
-    raise ImportError("Install data dependencies: pip install 'convexity[data]'") from exc
+    raise ImportError(
+        "Install data dependencies: pip install 'convexity[data]'"
+    ) from exc
 
 DateLike = str | date | datetime | pd.Timestamp
 OHLCV = ["open", "high", "low", "close", "volume"]
@@ -32,32 +35,48 @@ class DataProvider(Protocol):
     Return a DatetimeIndex frame with lowercase OHLCV columns. Put provenance
     and unit information in frame.attrs. Daily date labels use midnight UTC.
     """
+
     name: str
 
-    def read(self, symbol: str, start: pd.Timestamp, end: pd.Timestamp,
-             interval: str) -> pd.DataFrame: ...
+    def read(
+        self, symbol: str, start: pd.Timestamp, end: pd.Timestamp, interval: str
+    ) -> pd.DataFrame: ...
 
 
 def timestamp(value: DateLike) -> pd.Timestamp:
     if not isinstance(value, (str, date, datetime, pd.Timestamp)):
-        raise TypeError("Dates must be ISO strings, date, datetime, or Timestamp objects.")
+        raise TypeError(
+            "Dates must be ISO strings, date, datetime, or Timestamp objects."
+        )
     result = pd.Timestamp(value)
     if pd.isna(result):
         raise ValueError("Dates cannot be NaT.")
-    return cast(pd.Timestamp, result.tz_localize("UTC") if result.tzinfo is None else result.tz_convert("UTC"))
+    return cast(
+        pd.Timestamp,
+        result.tz_localize("UTC")
+        if result.tzinfo is None
+        else result.tz_convert("UTC"),
+    )
 
 
 def empty_frame() -> pd.DataFrame:
-    return pd.DataFrame({c: pd.Series(dtype="float64") for c in OHLCV},
-                        index=pd.DatetimeIndex([], tz="UTC", name="timestamp"))
+    return pd.DataFrame(
+        {c: pd.Series(dtype="float64") for c in OHLCV},
+        index=pd.DatetimeIndex([], tz="UTC", name="timestamp"),
+    )
 
 
-def normalize(frame: pd.DataFrame, symbol: str, start: pd.Timestamp,
-              end: pd.Timestamp) -> pd.DataFrame:
-    if not isinstance(frame, pd.DataFrame) or not isinstance(frame.index, pd.DatetimeIndex):
+def normalize(
+    frame: pd.DataFrame, symbol: str, start: pd.Timestamp, end: pd.Timestamp
+) -> pd.DataFrame:
+    if not isinstance(frame, pd.DataFrame) or not isinstance(
+        frame.index, pd.DatetimeIndex
+    ):
         raise DataError("Provider must return a DataFrame with a DatetimeIndex.")
     if not frame.columns.is_unique or not set(OHLCV).issubset(frame.columns):
-        raise DataError("Provider response is missing OHLCV columns or has duplicate columns.")
+        raise DataError(
+            "Provider response is missing OHLCV columns or has duplicate columns."
+        )
     frame = frame.copy()
     frame.index = pd.to_datetime(frame.index, utc=True).rename("timestamp")
     if frame.index.hasnans:
@@ -65,7 +84,9 @@ def normalize(frame: pd.DataFrame, symbol: str, start: pd.Timestamp,
     frame = frame.loc[(frame.index >= start) & (frame.index < end)]
     for column in frame.columns:
         try:
-            frame[column] = cast(pd.Series, pd.to_numeric(frame[column], errors="raise")).astype("float64")
+            frame[column] = cast(
+                pd.Series, pd.to_numeric(frame[column], errors="raise")
+            ).astype("float64")
         except (TypeError, ValueError) as exc:
             raise DataError(f"Provider returned nonnumeric {column} values.") from exc
     if np.isinf(frame.to_numpy()).any():
@@ -87,7 +108,9 @@ def split_history(frame: pd.DataFrame) -> dict[str, pd.DataFrame]:
     requested symbols are retained when allow_empty=True was used.
     """
     if "symbol" not in frame.columns:
-        raise ValueError("split_history requires a history DataFrame with a symbol column.")
+        raise ValueError(
+            "split_history requires a history DataFrame with a symbol column."
+        )
     observed = frame["symbol"].drop_duplicates().tolist()
     if any(not isinstance(symbol, str) for symbol in observed):
         raise ValueError("History symbol labels must be strings.")
@@ -112,9 +135,17 @@ def _provider(provider: str | DataProvider, options: dict) -> DataProvider:
     from .crypto import Binance, Deribit
     from .ibkr import IBKR
     from .yahoo import YahooFinance
-    providers = {"yahoo": YahooFinance, "binance": Binance, "deribit": Deribit, "ibkr": IBKR}
+
+    providers = {
+        "yahoo": YahooFinance,
+        "binance": Binance,
+        "deribit": Deribit,
+        "ibkr": IBKR,
+    }
     if provider.lower() not in providers:
-        raise ValueError(f"Unknown provider {provider!r}; choose {', '.join(providers)}.")
+        raise ValueError(
+            f"Unknown provider {provider!r}; choose {', '.join(providers)}."
+        )
     return providers[provider.lower()](**options)
 
 
@@ -125,23 +156,51 @@ class DataClient:
         self.provider = _provider(provider, provider_options)
 
     @overload
-    def history(self, symbols: str | Sequence[str], *, start: DateLike, end: DateLike,
-                interval: str = "1d", allow_empty: bool = False,
-                split: Literal[False] = False) -> pd.DataFrame: ...
+    def history(
+        self,
+        symbols: str | Sequence[str],
+        *,
+        start: DateLike,
+        end: DateLike,
+        interval: str = "1d",
+        allow_empty: bool = False,
+        split: Literal[False] = False,
+    ) -> pd.DataFrame: ...
 
     @overload
-    def history(self, symbols: str | Sequence[str], *, start: DateLike, end: DateLike,
-                interval: str = "1d", allow_empty: bool = False,
-                split: Literal[True]) -> tuple[pd.DataFrame, ...]: ...
+    def history(
+        self,
+        symbols: str | Sequence[str],
+        *,
+        start: DateLike,
+        end: DateLike,
+        interval: str = "1d",
+        allow_empty: bool = False,
+        split: Literal[True],
+    ) -> tuple[pd.DataFrame, ...]: ...
 
     @overload
-    def history(self, symbols: str | Sequence[str], *, start: DateLike, end: DateLike,
-                interval: str = "1d", allow_empty: bool = False,
-                split: bool) -> pd.DataFrame | tuple[pd.DataFrame, ...]: ...
+    def history(
+        self,
+        symbols: str | Sequence[str],
+        *,
+        start: DateLike,
+        end: DateLike,
+        interval: str = "1d",
+        allow_empty: bool = False,
+        split: bool,
+    ) -> pd.DataFrame | tuple[pd.DataFrame, ...]: ...
 
-    def history(self, symbols: str | Sequence[str], *, start: DateLike, end: DateLike,
-                interval: str = "1d", allow_empty: bool = False,
-                split: bool = False) -> pd.DataFrame | tuple[pd.DataFrame, ...]:
+    def history(
+        self,
+        symbols: str | Sequence[str],
+        *,
+        start: DateLike,
+        end: DateLike,
+        interval: str = "1d",
+        allow_empty: bool = False,
+        split: bool = False,
+    ) -> pd.DataFrame | tuple[pd.DataFrame, ...]:
         """Read bars in [start, end), sorted by UTC timestamp then symbol.
 
         Naive boundaries mean UTC. Daily timestamps are session-date labels,
@@ -153,118 +212,251 @@ class DataClient:
         if not isinstance(split, bool):
             raise TypeError("split must be True or False.")
         names = [symbols] if isinstance(symbols, str) else list(symbols)
-        if not names or any(not isinstance(s, str) or not s.strip() or s != s.strip() for s in names):
-            raise ValueError("symbols must contain nonempty symbols without surrounding whitespace.")
+        if not names or any(
+            not isinstance(s, str) or not s.strip() or s != s.strip() for s in names
+        ):
+            raise ValueError(
+                "symbols must contain nonempty symbols without surrounding whitespace."
+            )
         if len(set(names)) != len(names):
             raise ValueError("symbols must be unique.")
+
         first, stop = timestamp(start), timestamp(end)
         if first >= stop:
             raise ValueError("start must precede the exclusive end.")
         if not isinstance(interval, str) or not interval:
-            raise ValueError("interval must be a nonempty string, for example '1d' or '1h'.")
+            raise ValueError(
+                "interval must be a nonempty string, for example '1d' or '1h'."
+            )
+
         frames, metadata = [], {}
         for symbol in names:
             try:
                 raw = self.provider.read(symbol, first, stop, interval)
                 metadata[symbol] = dict(raw.attrs)
                 frame = normalize(raw, symbol, first, stop)
-            except (DataError, ImportError, ValueError):
+            except DataError, ImportError, ValueError:
                 raise
             except Exception as exc:
-                raise DataError(f"{self.provider.name} history failed for {symbol}: {exc}") from exc
+                raise DataError(
+                    f"{self.provider.name} history failed for {symbol}: {exc}"
+                ) from exc
             if frame.empty and not allow_empty:
-                raise NoDataError(f"{self.provider.name} returned no data for {symbol} in [{first}, {stop}).")
+                raise NoDataError(
+                    f"{self.provider.name} returned no data for {symbol} in [{first}, {stop})."
+                )
             frame.attrs = {}
             frames.append(frame)
-        result = pd.concat(frames).reset_index().sort_values(["timestamp", "symbol"]).set_index("timestamp")
-        result = result.reindex(columns=["symbol", *OHLCV, *[c for c in result if c not in ["symbol", *OHLCV]]])
-        result.attrs = {"provider": self.provider.name, "symbols": names, "interval": interval,
-                        "start": first.isoformat(), "end": stop.isoformat(),
-                        "end_exclusive": True, "fetched_at": pd.Timestamp.now(tz="UTC").isoformat(),
-                        "sources": metadata}
+
+        result = (
+            pd.concat(frames)
+            .reset_index()
+            .sort_values(["timestamp", "symbol"])
+            .set_index("timestamp")
+        )
+        result = result.reindex(
+            columns=[
+                "symbol",
+                *OHLCV,
+                *[c for c in result if c not in ["symbol", *OHLCV]],
+            ]
+        )
+        result.attrs = {
+            "provider": self.provider.name,
+            "symbols": names,
+            "interval": interval,
+            "start": first.isoformat(),
+            "end": stop.isoformat(),
+            "end_exclusive": True,
+            "fetched_at": pd.Timestamp.now(tz="UTC").isoformat(),
+            "sources": metadata,
+        }
         return tuple(split_history(result).values()) if split else result
 
     @overload
-    async def ahistory(self, symbols: str | Sequence[str], *, start: DateLike, end: DateLike,
-                       interval: str = "1d", allow_empty: bool = False,
-                       split: Literal[False] = False) -> pd.DataFrame: ...
+    async def ahistory(
+        self,
+        symbols: str | Sequence[str],
+        *,
+        start: DateLike,
+        end: DateLike,
+        interval: str = "1d",
+        allow_empty: bool = False,
+        split: Literal[False] = False,
+    ) -> pd.DataFrame: ...
 
     @overload
-    async def ahistory(self, symbols: str | Sequence[str], *, start: DateLike, end: DateLike,
-                       interval: str = "1d", allow_empty: bool = False,
-                       split: Literal[True]) -> tuple[pd.DataFrame, ...]: ...
+    async def ahistory(
+        self,
+        symbols: str | Sequence[str],
+        *,
+        start: DateLike,
+        end: DateLike,
+        interval: str = "1d",
+        allow_empty: bool = False,
+        split: Literal[True],
+    ) -> tuple[pd.DataFrame, ...]: ...
 
     @overload
-    async def ahistory(self, symbols: str | Sequence[str], *, start: DateLike, end: DateLike,
-                       interval: str = "1d", allow_empty: bool = False,
-                       split: bool) -> pd.DataFrame | tuple[pd.DataFrame, ...]: ...
+    async def ahistory(
+        self,
+        symbols: str | Sequence[str],
+        *,
+        start: DateLike,
+        end: DateLike,
+        interval: str = "1d",
+        allow_empty: bool = False,
+        split: bool,
+    ) -> pd.DataFrame | tuple[pd.DataFrame, ...]: ...
 
-    async def ahistory(self, symbols: str | Sequence[str], *, start: DateLike, end: DateLike,
-                       interval: str = "1d", allow_empty: bool = False,
-                       split: bool = False) -> pd.DataFrame | tuple[pd.DataFrame, ...]:
+    async def ahistory(
+        self,
+        symbols: str | Sequence[str],
+        *,
+        start: DateLike,
+        end: DateLike,
+        interval: str = "1d",
+        allow_empty: bool = False,
+        split: bool = False,
+    ) -> pd.DataFrame | tuple[pd.DataFrame, ...]:
         """Run blocking acquisition in a worker; useful in notebooks/async apps.
 
         Cancelling the await does not stop an in-flight blocking request.
         """
-        return await asyncio.to_thread(self.history, symbols, start=start, end=end,
-                                       interval=interval, allow_empty=allow_empty, split=split)
+        return await asyncio.to_thread(
+            self.history,
+            symbols,
+            start=start,
+            end=end,
+            interval=interval,
+            allow_empty=allow_empty,
+            split=split,
+        )
 
 
 @overload
-def history(symbols: str | Sequence[str], *, start: DateLike, end: DateLike,
-            interval: str = "1d", provider: str | DataProvider = "yahoo",
-            allow_empty: bool = False, split: Literal[False] = False,
-            **provider_options) -> pd.DataFrame: ...
+def history(
+    symbols: str | Sequence[str],
+    *,
+    start: DateLike,
+    end: DateLike,
+    interval: str = "1d",
+    provider: str | DataProvider = "yahoo",
+    allow_empty: bool = False,
+    split: Literal[False] = False,
+    **provider_options,
+) -> pd.DataFrame: ...
 
 
 @overload
-def history(symbols: str | Sequence[str], *, start: DateLike, end: DateLike,
-            interval: str = "1d", provider: str | DataProvider = "yahoo",
-            allow_empty: bool = False, split: Literal[True],
-            **provider_options) -> tuple[pd.DataFrame, ...]: ...
+def history(
+    symbols: str | Sequence[str],
+    *,
+    start: DateLike,
+    end: DateLike,
+    interval: str = "1d",
+    provider: str | DataProvider = "yahoo",
+    allow_empty: bool = False,
+    split: Literal[True],
+    **provider_options,
+) -> tuple[pd.DataFrame, ...]: ...
 
 
 @overload
-def history(symbols: str | Sequence[str], *, start: DateLike, end: DateLike,
-            interval: str = "1d", provider: str | DataProvider = "yahoo",
-            allow_empty: bool = False, split: bool,
-            **provider_options) -> pd.DataFrame | tuple[pd.DataFrame, ...]: ...
+def history(
+    symbols: str | Sequence[str],
+    *,
+    start: DateLike,
+    end: DateLike,
+    interval: str = "1d",
+    provider: str | DataProvider = "yahoo",
+    allow_empty: bool = False,
+    split: bool,
+    **provider_options,
+) -> pd.DataFrame | tuple[pd.DataFrame, ...]: ...
 
 
-def history(symbols: str | Sequence[str], *, start: DateLike, end: DateLike,
-            interval: str = "1d", provider: str | DataProvider = "yahoo",
-            allow_empty: bool = False, split: bool = False,
-            **provider_options) -> pd.DataFrame | tuple[pd.DataFrame, ...]:
+def history(
+    symbols: str | Sequence[str],
+    *,
+    start: DateLike,
+    end: DateLike,
+    interval: str = "1d",
+    provider: str | DataProvider = "yahoo",
+    allow_empty: bool = False,
+    split: bool = False,
+    **provider_options,
+) -> pd.DataFrame | tuple[pd.DataFrame, ...]:
     """One-call historical OHLCV query. See DataClient.history for the schema."""
     return DataClient(provider, **provider_options).history(
-        symbols, start=start, end=end, interval=interval, allow_empty=allow_empty, split=split)
+        symbols,
+        start=start,
+        end=end,
+        interval=interval,
+        allow_empty=allow_empty,
+        split=split,
+    )
 
 
 @overload
-async def ahistory(symbols: str | Sequence[str], *, start: DateLike, end: DateLike,
-                   interval: str = "1d", provider: str | DataProvider = "yahoo",
-                   allow_empty: bool = False, split: Literal[False] = False,
-                   **provider_options) -> pd.DataFrame: ...
+async def ahistory(
+    symbols: str | Sequence[str],
+    *,
+    start: DateLike,
+    end: DateLike,
+    interval: str = "1d",
+    provider: str | DataProvider = "yahoo",
+    allow_empty: bool = False,
+    split: Literal[False] = False,
+    **provider_options,
+) -> pd.DataFrame: ...
 
 
 @overload
-async def ahistory(symbols: str | Sequence[str], *, start: DateLike, end: DateLike,
-                   interval: str = "1d", provider: str | DataProvider = "yahoo",
-                   allow_empty: bool = False, split: Literal[True],
-                   **provider_options) -> tuple[pd.DataFrame, ...]: ...
+async def ahistory(
+    symbols: str | Sequence[str],
+    *,
+    start: DateLike,
+    end: DateLike,
+    interval: str = "1d",
+    provider: str | DataProvider = "yahoo",
+    allow_empty: bool = False,
+    split: Literal[True],
+    **provider_options,
+) -> tuple[pd.DataFrame, ...]: ...
 
 
 @overload
-async def ahistory(symbols: str | Sequence[str], *, start: DateLike, end: DateLike,
-                   interval: str = "1d", provider: str | DataProvider = "yahoo",
-                   allow_empty: bool = False, split: bool,
-                   **provider_options) -> pd.DataFrame | tuple[pd.DataFrame, ...]: ...
+async def ahistory(
+    symbols: str | Sequence[str],
+    *,
+    start: DateLike,
+    end: DateLike,
+    interval: str = "1d",
+    provider: str | DataProvider = "yahoo",
+    allow_empty: bool = False,
+    split: bool,
+    **provider_options,
+) -> pd.DataFrame | tuple[pd.DataFrame, ...]: ...
 
 
-async def ahistory(symbols: str | Sequence[str], *, start: DateLike, end: DateLike,
-                   interval: str = "1d", provider: str | DataProvider = "yahoo",
-                   allow_empty: bool = False, split: bool = False,
-                   **provider_options) -> pd.DataFrame | tuple[pd.DataFrame, ...]:
+async def ahistory(
+    symbols: str | Sequence[str],
+    *,
+    start: DateLike,
+    end: DateLike,
+    interval: str = "1d",
+    provider: str | DataProvider = "yahoo",
+    allow_empty: bool = False,
+    split: bool = False,
+    **provider_options,
+) -> pd.DataFrame | tuple[pd.DataFrame, ...]:
     """Asynchronous counterpart to history(), with the same result and options."""
     return await DataClient(provider, **provider_options).ahistory(
-        symbols, start=start, end=end, interval=interval, allow_empty=allow_empty, split=split)
+        symbols,
+        start=start,
+        end=end,
+        interval=interval,
+        allow_empty=allow_empty,
+        split=split,
+    )

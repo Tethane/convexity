@@ -52,6 +52,7 @@ class QuoteClient(FakeClient):
 
     async def reqTickersAsync(self, resolved, *, regulatorySnapshot):
         from ib_async import RequestError
+
         assert regulatorySnapshot is False
         self.calls.append("quote")
         if self.error:
@@ -63,8 +64,15 @@ class QuoteClient(FakeClient):
             ticks.append(NS(tickType=1, time=now))
         if self.send_ask:
             ticks.append(NS(tickType=2, time=now))
-        ticker = NS(contract=resolved, bid=self.bid, ask=self.ask, bidSize=self.size,
-                    askSize=self.size, marketDataType=self.data_type, ticks=ticks)
+        ticker = NS(
+            contract=resolved,
+            bid=self.bid,
+            ask=self.ask,
+            bidSize=self.size,
+            askSize=self.size,
+            marketDataType=self.data_type,
+            ticks=ticks,
+        )
         self.pendingTickersEvent.emit([ticker])
         if self.hang:
             await asyncio.Event().wait()
@@ -79,7 +87,9 @@ def client(monkeypatch):
 
 
 def read(**kwargs):
-    return asyncio.run(ibkr.read_stock_quote(config(), ibkr.StockQuoteRequest("SPY", **kwargs)))
+    return asyncio.run(
+        ibkr.read_stock_quote(config(), ibkr.StockQuoteRequest("SPY", **kwargs))
+    )
 
 
 def test_live_quote_and_cleanup(client):
@@ -109,7 +119,10 @@ def test_actual_feed_type_overrides_requested_type(client):
     assert read(market_data_type="delayed").market_data_type == "live"
 
 
-@pytest.mark.parametrize("value", [-1, 0, float("nan"), float("inf"), float.fromhex("0x1.fffffffffffffp+1023")])
+@pytest.mark.parametrize(
+    "value",
+    [-1, 0, float("nan"), float("inf"), float.fromhex("0x1.fffffffffffffp+1023")],
+)
 def test_missing_stock_price_sentinels(client, value):
     client.bid = value
     quote = read()
@@ -166,7 +179,9 @@ def test_subscription_error_is_diagnostic_without_account_leak(client):
 
 def test_timeout_keeps_partial_prices_but_not_success(client):
     client.hang = True
-    quote = asyncio.run(ibkr.read_stock_quote(config(timeout=0.01), ibkr.StockQuoteRequest("SPY")))
+    quote = asyncio.run(
+        ibkr.read_stock_quote(config(timeout=0.01), ibkr.StockQuoteRequest("SPY"))
+    )
     assert quote.status == "incomplete"
     assert quote.bid == Decimal("600.25")
     assert client.disconnected
@@ -175,6 +190,7 @@ def test_timeout_keeps_partial_prices_but_not_success(client):
 def test_cancel_disconnects_and_removes_handlers(client):
     async def cancel(*args, **kwargs):
         raise asyncio.CancelledError
+
     client.reqTickersAsync = cancel
     with pytest.raises(asyncio.CancelledError):
         read()
@@ -188,17 +204,29 @@ def test_disconnect_during_read_fails(client):
         read()
 
 
-@pytest.mark.parametrize("kwargs", [dict(symbol=""), dict(exchange=""), dict(currency=""),
-    dict(market_data_type="invalid"), dict(max_age=0), dict(max_age=float("nan"))])
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        dict(symbol=""),
+        dict(exchange=""),
+        dict(currency=""),
+        dict(market_data_type="invalid"),
+        dict(max_age=0),
+        dict(max_age=float("nan")),
+    ],
+)
 def test_invalid_request(kwargs):
     with pytest.raises(ValueError):
         ibkr.StockQuoteRequest(**(dict(symbol="SPY") | kwargs))
 
 
 @pytest.mark.parametrize("bad_quote,code", [(False, 0), (True, 2)])
-def test_cli_uses_api_and_reports_data_status(client, tmp_path, monkeypatch, capsys, bad_quote, code):
+def test_cli_uses_api_and_reports_data_status(
+    client, tmp_path, monkeypatch, capsys, bad_quote, code
+):
     import json
     from scripts import ibkr_quote
+
     monkeypatch.setenv("IBKR_ACCOUNT", "DU123")
     monkeypatch.setenv("IBKR_PORT", "7497")
     monkeypatch.setenv("IBKR_PAPER_CONFIRMED", "true")

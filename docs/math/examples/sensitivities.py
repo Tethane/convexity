@@ -1,4 +1,4 @@
-"""Family 23: cross-Greeks and exposure-neutral constrained holdings."""
+"""cross-Greeks and exposure-neutral constrained holdings."""
 
 from convexity.math.sensitivities import bump_sensitivities, hedge
 

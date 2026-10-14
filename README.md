@@ -1,82 +1,69 @@
 # Convexity
 
-Convexity combines historical data, an event-driven strategy runtime, simulated
-stock execution, IBKR paper trading, and a quantitative math library.
-Python 3.14 or newer is required. Run the setup commands from this checkout.
+Convexity is a Python toolkit for market data, quantitative models, and
+strategy research. Strategies run through an event-driven stock simulator or
+an IBKR paper-trading runtime. The math library provides models and numerical
+tools independently of either runtime.
 
-| Task | Start here |
-| --- | --- |
-| Query market history into pandas | [Historical data](docs/data.md) |
-| Run a strategy against historical events | [Research and backtesting](docs/backtesting.md) |
-| Define strategy contracts and callbacks | [Building strategies](docs/strategies.md) |
-| Submit, amend, or cancel orders; manage subscriptions | [Order lifecycle](docs/order-lifecycle.md) |
-| Use models, estimators, and optimizers | [Convexity math](docs/math/README.md) |
-| Configure paper execution and recovery | [IBKR guide](docs/ibkr.md) and [operations handoff](docs/handoff.md) |
-
-## Strategy research
+Requires Python 3.14+. From this checkout:
 
 ```sh
-python -m pip install -e '.[ibkr,calendars]'
+python -m pip install -e '.[dev,data,yahoo,calendars,neural,notebooks]'
 ```
 
-Strategies declare their identity, trading instruments, subscriptions, and warmup.
-`Research` takes an inclusive range of session dates; run options configure
-capital, execution assumptions, data acquisition, and exports.
+## Examples
+
+- [Basic Convexity](examples/basic_convexity.ipynb): buy-and-hold, overnight
+  exposure, and intraday trading through the strategy API.
+- [Predictive trading](examples/predictive_trading.ipynb): real prices, feature
+  analysis, regression and neural models, and a held-out trading comparison.
+- [Portfolio rebalancing](examples/portfolio_rebalancing.ipynb): robust mean-CVaR,
+  Markowitz, and equal-weight portfolios with rolling estimates and trading costs.
+
+The notebooks state their data sources, timing assumptions, and limitations.
+The basic notebook uses Alpaca history; configure credentials with
+`python scripts/configure_alpaca.py`. For IBKR data or paper execution, install
+`.[ibkr]` and follow the [connection guide](docs/ibkr.md).
+
+## Quick start
 
 ```python
 import convexity as cx
 
-class BuyAndHold(cx.Strategy):
-    metadata = cx.StrategyMetadata("buy-hold")
-    contract = cx.StrategyContract(instruments=("SPY",))
-
-    def on_start(self, context):
-        return cx.SubmitOrder.market("SPY", "BUY", 10, client_order_id="entry")
-
-result = cx.Research("2025-01-02", "2025-02-07").run(BuyAndHold)
-print(result.metrics, result.positions, result.open_orders)
+prices = cx.data.history(
+    ["SPY", "QQQ"], provider="yahoo",
+    start="2020-01-01", end="2025-01-01",
+)
+closes = prices.pivot(columns="symbol", values="close")
+returns = closes.pct_change(fill_method=None)
 ```
 
-The default provider acquires Alpaca SIP history, with read-only IBKR fallback.
-Run `python scripts/configure_alpaca.py` to save paper API keys outside the repo.
-Validated observations persist in SQLite; covered requests replay offline and
-expanded requests acquire missing sessions. Research needs no paper-account
-configuration. Orders enter the simulated exchange queue; callbacks report
-acceptance, executions, and failures.
+`data.history` returns a pandas DataFrame and uses an exclusive end date.
+`Research(start, end)` replays strategies over inclusive session dates and
+caches validated history. In notebooks, call `await research.run_async(...)`.
 
-In notebooks, use `await research.run_async(...)`. See the
-[research guide](docs/backtesting.md) for connection settings, execution presets,
-cache behavior, and result interpretation. The
-[guided notebook](examples/convexity_demo.ipynb) includes charts and experiments;
-[the strategy workflow](examples/strategy_workflow.py) demonstrates the same
-strategy in research and paper execution.
+| Guide | Contents |
+| --- | --- |
+| [Data](docs/data.md) | Providers, timestamps, units, and missing observations |
+| [Backtesting](docs/backtesting.md) | Research setup, execution assumptions, results |
+| [Strategies](docs/strategies.md) | Callbacks, schedules, sizing, and paper recovery |
+| [Orders](docs/order-lifecycle.md) | Amendments, stops, brackets, and subscriptions |
+| [Portfolios](docs/portfolio.md) | Target weights and historical universe strategies |
+| [Universes](docs/universes.md) / [prefetch](docs/data-prefetch.md) | Membership, identity, and daily coverage |
+| [Corporate actions](docs/corporate-actions.md) | Explicit split, dividend, and merger accounting |
+| [Math](docs/math/README.md) | Module map, examples, and numerical conventions |
+| [IBKR](docs/ibkr.md) | Paper setup, execution, and reconciliation |
 
-## Historical DataFrames
+## Development
 
 ```sh
-python -m pip install -e '.[data,yahoo]'
+python -m pytest -q
+python -m pyright
+python -m ruff format --check convexity tests examples scripts docs/math/examples
 ```
 
-```python
-from convexity import data
-
-df = data.history(["SPY", "QQQ"], provider="yahoo",
-                  start="2024-01-01", end="2025-01-01")
-closes = df.pivot(columns="symbol", values="close")
-```
-
-The standalone data API supports Yahoo Finance, Binance, Deribit, and IBKR.
-It uses an exclusive end boundary and has no persistent cache. See
-[historical data](docs/data.md) for provider dependencies, timestamps, and units.
-
-## Paper execution
-
-`PaperTrading` manages data polling, broker callbacks, schedules, checkpoints,
-and reconnects. Strategies use the same command/event interface; supported
-feeds and execution semantics depend on the backend. See
-[capabilities and limits](docs/order-lifecycle.md#capabilities) before comparing
-research and paper runs.
-
-The [operations handoff](docs/handoff.md) contains explicit paper-session and
-recovery commands. [Paper execution evidence](docs/paper-evidence.md) records
-previous acceptance runs.
+Optional integrations need their corresponding extras; inspect pytest's skip
+summary when checking one. Model tests establish numerical behavior on tested
+cases, not predictive skill. Historical simulation uses OHLCV bars, modeled
+costs, and limited liquidity assumptions. Paper execution is supported;
+live-money deployment and options backtesting are not.

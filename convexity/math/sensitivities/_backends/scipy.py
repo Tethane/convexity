@@ -1,4 +1,5 @@
 from numpy.typing import ArrayLike
+
 """Private scipy execution for sensitivities."""
 
 import numpy as np
@@ -13,8 +14,8 @@ def hedge(
     target,
     *,
     weights=None,
-    lower: ArrayLike=-np.inf,
-    upper: ArrayLike=np.inf,
+    lower: ArrayLike = -np.inf,
+    upper: ArrayLike = np.inf,
     equality=None,
     equality_target=None,
     ridge=0.0,

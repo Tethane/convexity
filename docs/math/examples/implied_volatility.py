@@ -1,4 +1,4 @@
-"""Family 20: implied inversion, constrained smile fitting and diagnostics."""
+"""implied inversion, constrained smile fitting and diagnostics."""
 
 import numpy as np
 from convexity.math.pricing import forward_option

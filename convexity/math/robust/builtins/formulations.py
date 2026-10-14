@@ -115,6 +115,7 @@ def mean_cvar(
     returns: ArrayLike,
     *,
     weights: ArrayLike | None = None,
+    ambiguity: Ellipsoid | None = None,
     aversion: float = 1.0,
     level: float = 0.95,
     lower_bounds: float = 0.0,
@@ -122,17 +123,34 @@ def mean_cvar(
     budget: float = 1.0,
     solver: str | None = None,
 ) -> SolveResult:
-    """Minimize -E[return@x] + aversion*ES(-return@x)."""
+    """Minimize negative expected return plus aversion times empirical CVaR.
+
+    An optional ellipsoid makes the mean term robust: its center must equal
+    the scenario-weighted mean, and its support penalty is added to the loss.
+    CVaR still uses the supplied scenarios; this does not make their tail
+    distribution robust or account for losses absent from the sample.
+    """
     from .._backends.cvxpy import mean_cvar as run
 
     r = v.array(returns, "returns", ndim=2)
     p = v.weights(weights, len(r))
+    if ambiguity is not None:
+        mean = p @ r
+        if (
+            not isinstance(ambiguity, Ellipsoid)
+            or ambiguity.center.shape != mean.shape
+            or not np.allclose(ambiguity.center, mean, rtol=1e-10, atol=1e-12)
+        ):
+            raise ValueError("ambiguity center must equal the scenario-weighted mean")
+
     a = v.scalar(aversion, "aversion", minimum=0)
     level = v.probability(level, "level", open_interval=True)
     bounds = QuadraticProgram(
         np.zeros(r.shape[1]), lower_bounds=lower_bounds, upper_bounds=upper_bounds
     )
-    return _checked(run(r, p, a, level, bounds, v.scalar(budget, "budget"), solver))
+    return _checked(
+        run(r, p, a, level, bounds, v.scalar(budget, "budget"), solver, ambiguity)
+    )
 
 
 def robust_allocation(

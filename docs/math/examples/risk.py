@@ -1,4 +1,4 @@
-"""Family 27: weighted tail risk, Euler allocation and whole-path breaches."""
+"""weighted tail risk, Euler allocation and whole-path breaches."""
 
 import numpy as np
 from convexity.math import risk, simulation

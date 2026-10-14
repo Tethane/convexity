@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "convexity"
 version = "0.1.0"
-description = "Generic mathematical tools for quantitative modeling."
+description = "Market data, quantitative models, and event-driven strategy research."
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
@@ -25,7 +25,7 @@ data = ["pandas>=2.2"]
 yahoo = ["pandas>=2.2", "yfinance>=0.2.54,<2"]
 ibkr = ["ib_async==2.1.0"]
 calendars = ["exchange-calendars>=4.13.2,<5"]
-dev = ["pytest>=8", "pyright>=1.1.408"]
+dev = ["pytest>=8", "pyright>=1.1.408", "ruff>=0.15"]
 autodiff = ["torch>=2.2"]
 neural = ["torch>=2.2"]
 reinforcement = ["torch>=2.8", "stable-baselines3>=2.6", "gymnasium>=0.29"]
@@ -35,6 +35,9 @@ bayesian = ["pymc>=5.20,<6", "arviz>=0.21,<1", "particles @ git+https://github.c
 processes = ["sdeint>=0.3.0"]
 forecasting-advanced = ["neuralforecast>=3.2", "chronos-forecasting>=2.3", "timesfm>=3.0", "huggingface-hub>=1", "safetensors>=0.6"]
 notebooks = ["nbformat>=5", "nbclient>=0.10", "ipykernel>=6", "matplotlib>=3.9", "pandas>=2.2"]
+
+[project.scripts]
+convexity = "convexity.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["convexity*"]
@@ -52,3 +55,7 @@ typeCheckingMode = "basic"
 testpaths = ["tests"]
 addopts = "--import-mode=importlib"
 cache_dir = ".cache/pytest"
+
+[tool.ruff]
+target-version = "py314"
+extend-exclude = ["*.ipynb"]

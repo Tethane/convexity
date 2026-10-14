@@ -25,7 +25,9 @@ def sample_shape(size):
 def weights(value, n):
     raw = np.ones(n) if value is None else array(value, "weights", ndim=1)
     if raw.shape != (n,) or np.any(raw < 0) or not np.any(raw > 0):
-        raise ValueError("weights must align with outcomes, be nonnegative and have positive total mass")
+        raise ValueError(
+            "weights must align with outcomes, be nonnegative and have positive total mass"
+        )
     # Scaling before summing avoids overflow; retain unnormalized mass for ECDFs.
     mass = raw / raw.max()
     mass.setflags(write=False)
@@ -45,8 +47,9 @@ def indices(value, dimension, *, proper=False):
 
 def location_matrix(location, matrix, name):
     from .._covariance import psd
-    location = array(location, 'location', ndim=1)
+
+    location = array(location, "location", ndim=1)
     matrix = psd(matrix, name, definite=True)
     if matrix.shape != (location.size, location.size):
-        raise ValueError(f'{name} must have shape (dimension, dimension)')
+        raise ValueError(f"{name} must have shape (dimension, dimension)")
     return location, matrix

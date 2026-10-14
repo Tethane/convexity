@@ -1,4 +1,4 @@
-"""Family 19: one contract, three QuantLib engines."""
+"""one contract, three QuantLib engines."""
 
 from convexity.math.contracts import VanillaContract, Exercise
 from convexity.math.curves import flat_curve

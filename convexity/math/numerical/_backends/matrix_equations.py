@@ -22,12 +22,21 @@ def lyapunov(problem: LyapunovEquation) -> ArrayResult:
 
 
 def riccati(problem: RiccatiEquation) -> ArrayResult:
-    a, b, q, r = (np.asarray(value) for value in (problem.a, problem.b, problem.q, problem.r))
+    a, b, q, r = (
+        np.asarray(value) for value in (problem.a, problem.b, problem.q, problem.r)
+    )
     if problem.time == "continuous":
         x = linalg.solve_continuous_are(a, b, q, r)
         residual = a.conj().T @ x + x @ a - x @ b @ linalg.solve(r, b.conj().T @ x) + q
     else:
         x = linalg.solve_discrete_are(a, b, q, r)
-        residual = (a.conj().T @ x @ a - x + q -
-                    a.conj().T @ x @ b @ linalg.solve(r + b.conj().T @ x @ b, b.conj().T @ x @ a))
+        residual = (
+            a.conj().T @ x @ a
+            - x
+            + q
+            - a.conj().T
+            @ x
+            @ b
+            @ linalg.solve(r + b.conj().T @ x @ b, b.conj().T @ x @ a)
+        )
     return ArrayResult(x, Diagnostics(residual_norm=float(np.linalg.norm(residual))))

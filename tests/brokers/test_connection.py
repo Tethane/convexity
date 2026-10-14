@@ -1,4 +1,5 @@
 """Read-only endpoint fallback, explicit overrides and WSL discovery."""
+
 import asyncio
 from pathlib import Path
 
@@ -24,12 +25,15 @@ class Client:
 
 
 def connect(client, **kwargs):
-    return asyncio.run(connection.connect_readonly(
-        client, client_id=72, timeout=1, **kwargs))
+    return asyncio.run(
+        connection.connect_readonly(client, client_id=72, timeout=1, **kwargs)
+    )
 
 
 def test_wsl_gateway_fallback(monkeypatch):
-    monkeypatch.setattr(connection, "_default_hosts", lambda: ("127.0.0.1", "172.31.96.1"))
+    monkeypatch.setattr(
+        connection, "_default_hosts", lambda: ("127.0.0.1", "172.31.96.1")
+    )
     client = Client(("172.31.96.1", 4002))
     assert connect(client, host=None, port=None) == client.target
     assert client.calls == [("127.0.0.1", 4002), client.target]
@@ -50,7 +54,9 @@ def test_explicit_host_still_discovers_tws():
 
 
 def test_explicit_port_still_discovers_host(monkeypatch):
-    monkeypatch.setattr(connection, "_default_hosts", lambda: ("127.0.0.1", "172.31.96.1"))
+    monkeypatch.setattr(
+        connection, "_default_hosts", lambda: ("127.0.0.1", "172.31.96.1")
+    )
     client = Client(("172.31.96.1", 1234))
     connect(client, host=None, port=1234)
     assert client.calls == [("127.0.0.1", 1234), client.target]
@@ -71,6 +77,7 @@ def test_timeout_reserves_time_for_fallback():
             if port == 4002:
                 await asyncio.sleep(10)
             await super().connectAsync(host, port, **kwargs)
+
     client = SlowClient(("custom", 7497))
     connect(client, host="custom", port=None)
     assert client.calls == [client.target]
@@ -81,6 +88,7 @@ def test_cancellation_is_not_retried():
     class CancelledClient(Client):
         async def connectAsync(self, *args, **kwargs):
             raise asyncio.CancelledError()
+
     with pytest.raises(asyncio.CancelledError):
         connect(CancelledClient(), host=None, port=None)
 
@@ -91,6 +99,7 @@ def test_wsl_default_route_without_dns_server(monkeypatch):
             return "6.6-microsoft-standard-WSL2"
         assert str(path) == "/proc/net/route"
         return "Iface Destination Gateway Flags\neth0 00000000 01601FAC 0003\n"
+
     monkeypatch.setattr(Path, "read_text", read)
     assert connection._default_hosts() == ("127.0.0.1", "172.31.96.1")
 

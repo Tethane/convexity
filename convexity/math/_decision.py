@@ -45,6 +45,7 @@ def vector(value, n, name, *, finite=True):
 
 def psd(value, name, *, definite=False):
     from ._covariance import psd as checked
+
     return checked(value, name, definite=definite)
 
 

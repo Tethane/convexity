@@ -24,6 +24,7 @@ from .. import _validation as v
 
 class Transform(Protocol):
     """Coordinate map with declared input/output dimensions; transform preserves leading observation axes."""
+
     @property
     def input_dimension(self) -> int: ...
 
@@ -35,6 +36,7 @@ class Transform(Protocol):
 
 class TransformFitter(Protocol):
     """Fit a coordinate transform from observation rows without implicitly changing target semantics."""
+
     def fit(self, samples: ArrayLike) -> Transform: ...
 
 
@@ -59,6 +61,7 @@ class Diagnostics:
 
 class ConvergenceError(RuntimeError):
     """Raised when a checked numerical method does not converge; result retains the attempted solution and diagnostics."""
+
     def __init__(self, result: FactorAnalysisResult) -> None:
         self.result = result
         super().__init__(result.diagnostics.message or "Transform fit did not converge")

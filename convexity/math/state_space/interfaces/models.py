@@ -41,6 +41,7 @@ class TimeStep:
 
 class TransitionModel(Protocol):
     """Latent-state transition mechanism with explicit state dimension and time-step convention."""
+
     @property
     def dimension(self) -> int: ...
 
@@ -59,6 +60,7 @@ class TransitionDensityModel(TransitionModel, Protocol):
 
 class ObservationModel(Protocol):
     """State-conditioned observation mechanism with an explicit observed dimension and time-step convention."""
+
     @property
     def state_dimension(self) -> int: ...
 

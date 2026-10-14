@@ -74,3 +74,11 @@ def test_real_stable_baselines_backend(algorithm):
     )
     with pytest.raises(ValueError):
         rl.train_agent(masked, steps=10)
+
+
+def test_optional_rl_is_lazy():
+    import subprocess
+    import sys
+
+    code = 'import sys; from convexity.math import reinforcement; assert "torch" not in sys.modules; assert "stable_baselines3" not in sys.modules'
+    subprocess.run([sys.executable, "-c", code], check=True)

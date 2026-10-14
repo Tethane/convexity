@@ -51,7 +51,8 @@ class DerivativeProductProblem:
 
     def __init__(
         self,
-        function: Callable[[FloatArray], ArrayLike] | Callable[[NativeTensor], NativeTensor],
+        function: Callable[[FloatArray], ArrayLike]
+        | Callable[[NativeTensor], NativeTensor],
         x: ArrayLike,
         vector: ArrayLike,
         kind: str = "jvp",

@@ -1,8 +1,8 @@
 """Concrete specifications and convenience functions for pricing.
 
 Ordinary workflows may import these names directly from convexity.math.pricing.
-See docs/math/reference/pricing.md for public signatures and mathematical conventions.
 """
+
 from .engines import (
     VanillaEngine,
     QuantLibEngine,

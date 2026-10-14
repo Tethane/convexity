@@ -15,7 +15,16 @@ def solve(problem, *, method, xtol, residual_tol, maxiter):
             raise ValueError("fixed-point function must preserve shape")
         return y
 
-    x = optimize.fixed_point(evaluate, problem.x0, xtol=xtol, maxiter=maxiter, method=method)
-    residual = float(np.linalg.norm((evaluate(x)-x).ravel()))
-    return ArrayResult(np.asarray(x), Diagnostics(converged=residual <= residual_tol, residual_norm=residual,
-                                      evaluations=evaluations, message="fixed-point residual check"))
+    x = optimize.fixed_point(
+        evaluate, problem.x0, xtol=xtol, maxiter=maxiter, method=method
+    )
+    residual = float(np.linalg.norm((evaluate(x) - x).ravel()))
+    return ArrayResult(
+        np.asarray(x),
+        Diagnostics(
+            converged=residual <= residual_tol,
+            residual_norm=residual,
+            evaluations=evaluations,
+            message="fixed-point residual check",
+        ),
+    )

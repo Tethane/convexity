@@ -23,14 +23,15 @@ def minimax(a, b, bounds, budget, solver):
     return result(p, x, cons)
 
 
-def mean_cvar(r, w, aversion, level, bounds, budget, solver):
+def mean_cvar(r, w, aversion, level, bounds, budget, solver, ambiguity=None):
     x, t, z = cp.Variable(r.shape[1]), cp.Variable(), cp.Variable(len(r), nonneg=True)
     cons = _constraints(x, bounds, budget)
     cons["tail"] = -r @ x - t <= z
-    p = cp.Problem(
-        cp.Minimize(-(w @ r) @ x + aversion * (t + w @ z / (1 - level))),
-        list(cons.values()),
-    )
+    objective = -(w @ r) @ x + aversion * (t + w @ z / (1 - level))
+    if ambiguity is not None:
+        objective += ambiguity.radius * cp.norm(ambiguity.shape.T @ x)
+
+    p = cp.Problem(cp.Minimize(objective), list(cons.values()))
     p.solve(solver=solver)
     return result(p, x, cons)
 

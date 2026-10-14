@@ -37,6 +37,7 @@ class ActionDecision:
 
 class Policy(Protocol):
     """Map supplied state and context to an ActionDecision without executing external actions."""
+
     def update(
         self, state: PolicyState, probability: float, time: float, **evidence
     ) -> PolicyState: ...

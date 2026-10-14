@@ -13,6 +13,7 @@ from ..._typing import BoolArray
 
 class VarianceSurface(Protocol):
     """Implied-variance surface extension with explicit maturity and strike coordinates."""
+
     def total_variance(self, time: float, log_moneyness): ...
 
 

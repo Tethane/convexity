@@ -1,4 +1,5 @@
 """SciPy linear algebra adapters; no Convexity numerical algorithms."""
+
 from __future__ import annotations
 from typing import TypeIs
 
@@ -10,8 +11,14 @@ from scipy import linalg, sparse
 from scipy.sparse import linalg as spla
 
 from ..interfaces import (
-    ArrayResult, Diagnostics, Eigenproblem, EigenResult, LinearSystem,
-    MatrixExponential, SVDProblem, SVDResult,
+    ArrayResult,
+    Diagnostics,
+    Eigenproblem,
+    EigenResult,
+    LinearSystem,
+    MatrixExponential,
+    SVDProblem,
+    SVDResult,
 )
 
 
@@ -45,8 +52,15 @@ def dense_solve(problem: LinearSystem) -> ArrayResult:
     return ArrayResult(x, Diagnostics(residual_norm=residual))
 
 
-def sparse_solve(problem: LinearSystem, *, method: str, atol: float,
-                 rtol: float, maxiter: int, preconditioner=None) -> ArrayResult:
+def sparse_solve(
+    problem: LinearSystem,
+    *,
+    method: str,
+    atol: float,
+    rtol: float,
+    maxiter: int,
+    preconditioner=None,
+) -> ArrayResult:
     if not (is_sparse(problem.a) or is_operator(problem.a)):
         raise ValueError("SparseSolve requires a sparse matrix or LinearOperator")
     a, b = problem.a, np.asarray(problem.b)
@@ -68,25 +82,61 @@ def sparse_solve(problem: LinearSystem, *, method: str, atol: float,
             raise ValueError("iterative sparse solvers require b with shape (n,)")
         if method == "cg" and not is_operator(a):
             difference = a - a.conj().T
-            if difference.nnz and np.max(np.abs(difference.data)) > 1e-12 * max(1., float(abs(a).max())):
-                raise ValueError("conjugate gradient requires a Hermitian positive-definite matrix")
+            if difference.nnz and np.max(np.abs(difference.data)) > 1e-12 * max(
+                1.0, float(abs(a).max())
+            ):
+                raise ValueError(
+                    "conjugate gradient requires a Hermitian positive-definite matrix"
+                )
+
         def count(_):
             nonlocal iterations
             iterations += 1
 
         if method == "cg":
-            x, info = spla.cg(a, b, atol=atol, rtol=rtol, maxiter=maxiter, callback=count, M=preconditioner)
+            x, info = spla.cg(
+                a,
+                b,
+                atol=atol,
+                rtol=rtol,
+                maxiter=maxiter,
+                callback=count,
+                M=preconditioner,
+            )
         elif method == "bicgstab":
-            x, info = spla.bicgstab(a, b, atol=atol, rtol=rtol, maxiter=maxiter, callback=count, M=preconditioner)
+            x, info = spla.bicgstab(
+                a,
+                b,
+                atol=atol,
+                rtol=rtol,
+                maxiter=maxiter,
+                callback=count,
+                M=preconditioner,
+            )
         else:
-            x, info = spla.gmres(a, b, atol=atol, rtol=rtol, maxiter=maxiter,
-                                 callback=count, callback_type="legacy", M=preconditioner)
+            x, info = spla.gmres(
+                a,
+                b,
+                atol=atol,
+                rtol=rtol,
+                maxiter=maxiter,
+                callback=count,
+                callback_type="legacy",
+                M=preconditioner,
+            )
     residual = float(np.linalg.norm(np.asarray(a @ x) - b))
     success = bool(info == 0 and np.all(np.isfinite(x)) and np.isfinite(residual))
-    return ArrayResult(x, Diagnostics(converged=success,
-                                      iterations=None if method == "direct" else iterations,
-                                      residual_norm=residual if np.isfinite(residual) else None,
-                                      message="" if success else f"{method} failed (info={info}, finite={np.isfinite(residual)})"))
+    return ArrayResult(
+        x,
+        Diagnostics(
+            converged=success,
+            iterations=None if method == "direct" else iterations,
+            residual_norm=residual if np.isfinite(residual) else None,
+            message=""
+            if success
+            else f"{method} failed (info={info}, finite={np.isfinite(residual)})",
+        ),
+    )
 
 
 def eigen(problem: Eigenproblem) -> EigenResult:

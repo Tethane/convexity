@@ -1,4 +1,4 @@
-"""Family 18: deterministic carry and deposit bootstrap, using only Convexity."""
+"""deterministic carry and deposit bootstrap, using only Convexity."""
 
 from convexity.math.curves import bootstrap, deposit_quote, flat_curve, forward_price
 

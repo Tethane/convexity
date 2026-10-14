@@ -1,8 +1,8 @@
 """Concrete specifications and convenience functions for contracts.
 
 Ordinary workflows may import these names directly from convexity.math.contracts.
-See docs/math/reference/contracts.md for public signatures and mathematical conventions.
 """
+
 from .cashflows import (
     payoff,
     schedule,

@@ -1,4 +1,5 @@
 """Read option chains or quote one exact option; submits no orders."""
+
 import argparse
 import asyncio
 from dataclasses import asdict
@@ -13,7 +14,11 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from convexity.brokers.ibkr import PaperAccountConfig, PaperAccountError
-from convexity.brokers.ibkr_options import OptionQuoteRequest, discover_options, read_option_quote
+from convexity.brokers.ibkr_options import (
+    OptionQuoteRequest,
+    discover_options,
+    read_option_quote,
+)
 
 
 def main() -> int:
@@ -32,10 +37,24 @@ def main() -> int:
     try:
         config = PaperAccountConfig.from_env()
         if args.action == "chain":
-            result = [asdict(c) for c in asyncio.run(discover_options(config, args.symbol))]
+            result = [
+                asdict(c) for c in asyncio.run(discover_options(config, args.symbol))
+            ]
         else:
-            result = asdict(asyncio.run(read_option_quote(config, OptionQuoteRequest(
-                args.symbol, args.expiry, args.strike, args.right, args.trading_class))))
+            result = asdict(
+                asyncio.run(
+                    read_option_quote(
+                        config,
+                        OptionQuoteRequest(
+                            args.symbol,
+                            args.expiry,
+                            args.strike,
+                            args.right,
+                            args.trading_class,
+                        ),
+                    )
+                )
+            )
         print(json.dumps(result, indent=2, default=str))
         return 0 if args.action == "chain" or result["status"] == "received" else 2
     except (OSError, ValueError, PaperAccountError) as exc:

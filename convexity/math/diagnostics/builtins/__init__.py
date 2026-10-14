@@ -1,8 +1,8 @@
 """Concrete specifications and convenience functions for diagnostics.
 
 Ordinary workflows may import these names directly from convexity.math.diagnostics.
-See docs/math/reference/diagnostics.md for public signatures and mathematical conventions.
 """
+
 from .scores import (
     log_score,
     quantile_score,

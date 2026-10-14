@@ -13,5 +13,9 @@ def fit(problem: InterpolationProblem, *, method: str) -> Interpolant:
     elif method == "cubic":
         fitted = interpolate.CubicSpline(x, y, axis=0, extrapolate=problem.extrapolate)
     else:
-        fitted = interpolate.PchipInterpolator(x, y, axis=0, extrapolate=problem.extrapolate)
-    return Interpolant(fitted, (float(x[0]), float(x[-1])), y.shape[1:], problem.extrapolate)
+        fitted = interpolate.PchipInterpolator(
+            x, y, axis=0, extrapolate=problem.extrapolate
+        )
+    return Interpolant(
+        fitted, (float(x[0]), float(x[-1])), y.shape[1:], problem.extrapolate
+    )

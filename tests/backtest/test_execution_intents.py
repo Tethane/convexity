@@ -1,4 +1,5 @@
 """Immediate order policies must not turn into resting or partial FOK orders."""
+
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
@@ -10,16 +11,37 @@ from convexity.runtime import Bar, Bars, Strategy, SubmitOrder
 
 def replay(tif, *, limit=None, volume=3, quantity=5):
     start = datetime(2025, 1, 2, 14, 30, tzinfo=timezone.utc)
-    bars = HistoricalData(tuple(Bar("SPY", start + timedelta(minutes=i),
-        start + timedelta(minutes=i + 1), 100, 105, 90, 100, volume) for i in range(4)))
+    bars = HistoricalData(
+        tuple(
+            Bar(
+                "SPY",
+                start + timedelta(minutes=i),
+                start + timedelta(minutes=i + 1),
+                Decimal(100),
+                Decimal(105),
+                Decimal(90),
+                Decimal(100),
+                volume,
+            )
+            for i in range(4)
+        )
+    )
+
     class Buyer(Strategy):
         sent = False
+
         def on_event(self, event, context):
             if isinstance(event, Bars) and not self.sent:
                 self.sent = True
-                return SubmitOrder("SPY", "BUY", quantity,
+                return SubmitOrder(
+                    "SPY",
+                    "BUY",
+                    quantity,
                     order_type="limit" if limit is not None else "market",
-                    limit_price=limit, time_in_force=tif)
+                    limit_price=limit,
+                    time_in_force=tif,
+                )
+
     return Backtest(data=bars, strategies={"buyer": Buyer}).run().raise_for_failure()
 
 

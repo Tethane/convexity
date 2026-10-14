@@ -1,4 +1,4 @@
-"""Family 28: negative wealth, options-sheet utility and preferences."""
+"""negative wealth, options-sheet utility and preferences."""
 
 import numpy as np
 from convexity.math import utility

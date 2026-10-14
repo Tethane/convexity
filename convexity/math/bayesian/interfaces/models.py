@@ -112,6 +112,7 @@ class PyMCModel:
 
 class InferenceMethod[ModelT = object](Protocol):
     """Infer a posterior from a built-in or custom model, preserving the model type and caller RNG contract."""
+
     def fit(self, model: ModelT, *, rng: np.random.Generator) -> PosteriorSamples: ...
 
 

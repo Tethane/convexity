@@ -1,4 +1,4 @@
-"""Family 16: explicitly supply P and Q, then compose Q with QuantLib."""
+"""explicitly supply P and Q, then compose Q with QuantLib."""
 
 from convexity.math.measures import gbm_pair
 from convexity.math.pricing import BlackScholesModel

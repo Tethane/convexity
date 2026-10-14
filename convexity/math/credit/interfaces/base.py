@@ -7,6 +7,7 @@ from typing import Protocol
 
 class DefaultLaw(Protocol):
     """Default-time probability law with survival/default semantics declared by its operations."""
+
     measure: str
 
     def survival(self, maturity: float) -> float: ...

@@ -114,6 +114,7 @@ class Estimate:
 
 class EstimationProblem(Protocol):
     """Structural parameter-estimation problem; names defines parameter coordinate order."""
+
     def validate_result(self, result: Estimate) -> None: ...
 
 
@@ -129,6 +130,7 @@ class Estimator(Protocol[Input]):
 
 class ConvergenceError(RuntimeError):
     """Raised when a checked numerical method does not converge; result retains the attempted solution and diagnostics."""
+
     def __init__(self, result: Estimate) -> None:
         self.result = result
         super().__init__(result.diagnostics.message or "Estimation did not converge")

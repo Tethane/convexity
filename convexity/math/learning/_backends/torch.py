@@ -15,7 +15,9 @@ def torch_module():
     except ModuleNotFoundError as exc:
         if exc.name != "torch":
             raise
-        raise ImportError("Neural learning requires: pip install 'convexity[neural]'") from exc
+        raise ImportError(
+            "Neural learning requires: pip install 'convexity[neural]'"
+        ) from exc
     return torch
 
 
@@ -39,10 +41,21 @@ class TorchAdapter:
     def evaluate(self, operation, features, *, offset=None):
         torch = torch_module()
         with torch.no_grad():
-            values = self._module(torch.tensor(np.array(features), dtype=torch.float64, device="cpu"))
-            width = self.n_classes if operation == "probability" else (self.output_shape[0] if self.output_shape else 1)
-            if not isinstance(values, torch.Tensor) or tuple(values.shape) != (len(features), width):
-                raise ValueError("neural module must return (n, outputs), including (n,1) for scalar regression")
+            values = self._module(
+                torch.tensor(np.array(features), dtype=torch.float64, device="cpu")
+            )
+            width = (
+                self.n_classes
+                if operation == "probability"
+                else (self.output_shape[0] if self.output_shape else 1)
+            )
+            if not isinstance(values, torch.Tensor) or tuple(values.shape) != (
+                len(features),
+                width,
+            ):
+                raise ValueError(
+                    "neural module must return (n, outputs), including (n,1) for scalar regression"
+                )
             if not bool(torch.isfinite(values).all()):
                 raise ValueError("neural module output must be finite")
             if operation == "probability":
@@ -55,10 +68,18 @@ class TorchAdapter:
 def neural(spec, x, y, w):
     torch = torch_module()
     classification = spec.task == "classification"
-    classes, encoded = np.unique(y, return_inverse=True) if classification else (None, None)
-    outputs = len(classes) if classes is not None else (y.shape[1] if y.ndim == 2 else 1)
+    classes, encoded = (
+        np.unique(y, return_inverse=True) if classification else (None, None)
+    )
+    outputs = (
+        len(classes) if classes is not None else (y.shape[1] if y.ndim == 2 else 1)
+    )
     widths = (x.shape[1],) + spec.hidden_layers + (outputs,)
-    activation = {"tanh": torch.nn.Tanh, "relu": torch.nn.ReLU, "sigmoid": torch.nn.Sigmoid}[spec.activation]
+    activation = {
+        "tanh": torch.nn.Tanh,
+        "relu": torch.nn.ReLU,
+        "sigmoid": torch.nn.Sigmoid,
+    }[spec.activation]
     # Initialize only the CPU generator and restore it, without touching GPU RNGs.
     with torch.random.fork_rng(devices=[]):
         generator = torch.Generator(device="cpu").manual_seed(spec.seed)
@@ -70,9 +91,16 @@ def neural(spec, x, y, w):
                 layers.append(activation())
         model = torch.nn.Sequential(*layers)
     inputs = torch.tensor(np.array(x), dtype=torch.float64, device="cpu")
-    target = (torch.tensor(encoded, dtype=torch.long, device="cpu") if classification else
-              torch.tensor(np.array(y).reshape(len(x), outputs), dtype=torch.float64, device="cpu"))
-    weight = torch.tensor(np.ones(len(x)) if w is None else np.array(w), dtype=torch.float64, device="cpu")
+    target = (
+        torch.tensor(encoded, dtype=torch.long, device="cpu")
+        if classification
+        else torch.tensor(
+            np.array(y).reshape(len(x), outputs), dtype=torch.float64, device="cpu"
+        )
+    )
+    weight = torch.tensor(
+        np.ones(len(x)) if w is None else np.array(w), dtype=torch.float64, device="cpu"
+    )
     weight = weight / weight.sum()
     optimizer = torch.optim.Adam(model.parameters(), lr=spec.learning_rate)
     history, converged = [], False
@@ -80,8 +108,11 @@ def neural(spec, x, y, w):
     for iteration in range(spec.maxiter + 1):
         optimizer.zero_grad()
         prediction = model(inputs)
-        losses = (torch.nn.functional.cross_entropy(prediction, target, reduction="none") if classification else
-                  ((prediction - target) ** 2).mean(dim=-1) / 2)
+        losses = (
+            torch.nn.functional.cross_entropy(prediction, target, reduction="none")
+            if classification
+            else ((prediction - target) ** 2).mean(dim=-1) / 2
+        )
         loss = torch.sum(weight * losses)
         if not bool(torch.isfinite(loss)):
             raise FloatingPointError("neural training produced a nonfinite loss")
@@ -100,9 +131,19 @@ def neural(spec, x, y, w):
             break
         if iteration < spec.maxiter:
             optimizer.step()
-    message = (f"gradient infinity norm {gradient:.6g} <= {spec.tolerance:g}" if converged else
-               f"Adam iteration limit reached; gradient infinity norm {gradient:.6g} > {spec.tolerance:g}")
+    message = (
+        f"gradient infinity norm {gradient:.6g} <= {spec.tolerance:g}"
+        if converged
+        else f"Adam iteration limit reached; gradient infinity norm {gradient:.6g} > {spec.tolerance:g}"
+    )
     caps = frozenset({"probability" if classification else "mean"})
-    adapter = TorchAdapter(model, x.shape[1], y.shape[1:], caps, None if classes is None else len(classes))
-    return FittedModel(adapter, Diagnostics("torch.Adam", converged, message, iteration), len(x),
-                       classes=classes, loss_history=history)
+    adapter = TorchAdapter(
+        model, x.shape[1], y.shape[1:], caps, None if classes is None else len(classes)
+    )
+    return FittedModel(
+        adapter,
+        Diagnostics("torch.Adam", converged, message, iteration),
+        len(x),
+        classes=classes,
+        loss_history=history,
+    )

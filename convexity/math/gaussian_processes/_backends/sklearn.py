@@ -35,39 +35,61 @@ def fit(spec, kernel, x, y, alpha):
     kernel.diag(x)
     if spec.optimize and kernel.theta.size:
         bounds = kernel.bounds
-        if bounds.shape != (len(kernel.theta), 2) or np.any(bounds[:, 0] >= bounds[:, 1]):
-            raise ValueError("free kernel parameters require finite increasing log bounds")
+        if bounds.shape != (len(kernel.theta), 2) or np.any(
+            bounds[:, 0] >= bounds[:, 1]
+        ):
+            raise ValueError(
+                "free kernel parameters require finite increasing log bounds"
+            )
         if np.any(kernel.theta < bounds[:, 0]) or np.any(kernel.theta > bounds[:, 1]):
             raise ValueError("initial kernel theta must lie within its bounds")
     runs = []
 
     def optimizer(objective, initial_theta, bounds):
-        result = minimize(objective, initial_theta, jac=True, bounds=bounds,
-                          method="L-BFGS-B", options={"maxiter": spec.maxiter,
-                                                    "ftol": spec.tolerance,
-                                                    "gtol": spec.tolerance})
+        result = minimize(
+            objective,
+            initial_theta,
+            jac=True,
+            bounds=bounds,
+            method="L-BFGS-B",
+            options={
+                "maxiter": spec.maxiter,
+                "ftol": spec.tolerance,
+                "gtol": spec.tolerance,
+            },
+        )
         runs.append(result)
         return result.x, result.fun
 
     optimizer_option: Any = optimizer if spec.optimize else None
-    model = GaussianProcessRegressor(kernel=deepcopy(kernel._kernel), alpha=deepcopy(alpha),
-                                     normalize_y=spec.normalize_y,
-                                     optimizer=optimizer_option,
-                                     n_restarts_optimizer=spec.restarts,
-                                     random_state=spec.seed, copy_X_train=True)
+    model = GaussianProcessRegressor(
+        kernel=deepcopy(kernel._kernel),
+        alpha=deepcopy(alpha),
+        normalize_y=spec.normalize_y,
+        optimizer=optimizer_option,
+        n_restarts_optimizer=spec.restarts,
+        random_state=spec.seed,
+        copy_X_train=True,
+    )
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always", ConvergenceWarning)
         model.fit(np.array(x), np.array(y))
-    messages = tuple(str(w.message) for w in caught if issubclass(w.category, ConvergenceWarning))
+    messages = tuple(
+        str(w.message) for w in caught if issubclass(w.category, ConvergenceWarning)
+    )
     for warning in caught:
         if not issubclass(warning.category, ConvergenceWarning):
             warnings.warn(str(warning.message), warning.category, stacklevel=2)
     best = min(runs, key=lambda r: r.fun) if runs else None
     converged = best is None or bool(best.success and np.isfinite(best.fun))
-    diagnostics = Diagnostics(converged=converged, optimized=bool(runs),
-                              message="Fixed hyperparameters" if best is None else str(best.message),
-                              iterations=0 if best is None else int(best.nit),
-                              optimizer_runs=len(runs), warnings=messages)
+    diagnostics = Diagnostics(
+        converged=converged,
+        optimized=bool(runs),
+        message="Fixed hyperparameters" if best is None else str(best.message),
+        iterations=0 if best is None else int(best.nit),
+        optimizer_runs=len(runs),
+        warnings=messages,
+    )
     # Retain fitted numeric state without the optimizer closure and its run history.
     model.set_params(optimizer=None)
     return FittedGaussianProcess(model, diagnostics)

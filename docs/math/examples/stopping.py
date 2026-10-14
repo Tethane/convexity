@@ -1,4 +1,4 @@
-"""Family 22: inspect the exact finite-state Snell envelope."""
+"""inspect the exact finite-state Snell envelope."""
 
 import numpy as np
 from convexity.math.stopping import StoppingProblem, BackwardInduction

@@ -6,12 +6,23 @@ import pytest
 from convexity.trading import Execution, OrderJournal, StockOrder
 
 
-def order(local_id="order-1", side: Literal["BUY", "SELL"]="BUY", quantity=2):
-    return StockOrder(local_id, "smoke", "SPY", side, quantity, Decimal("700.01"), "overnight")
+def order(local_id="order-1", side: Literal["BUY", "SELL"] = "BUY", quantity=2):
+    return StockOrder(
+        local_id, "smoke", "SPY", side, quantity, Decimal("700.01"), "overnight"
+    )
 
 
-def fill(exec_id="exec-1", qty="1", local_id="order-1", side: Literal["BUY", "SELL"]="BUY"):
-    return Execution(exec_id, local_id, Decimal(qty), Decimal("700"), side, "2026-10-09T05:00:00+00:00")
+def fill(
+    exec_id="exec-1", qty="1", local_id="order-1", side: Literal["BUY", "SELL"] = "BUY"
+):
+    return Execution(
+        exec_id,
+        local_id,
+        Decimal(qty),
+        Decimal("700"),
+        side,
+        "2026-10-09T05:00:00+00:00",
+    )
 
 
 def test_intent_durable_idempotent_and_conflicts(tmp_path):
@@ -84,34 +95,55 @@ def test_pending_cancel_is_not_cancellation_or_ack(tmp_path):
         assert not j.get("order-1").terminal
 
 
-@pytest.mark.parametrize("kwargs", [dict(quantity=0), dict(quantity=1.5), dict(side="BOUGHT"),
-    dict(limit_price=Decimal("NaN")), dict(limit_price=1.2), dict(session="all"),
-    dict(client_order_id=""), dict(currency="EUR")])
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        dict(quantity=0),
+        dict(quantity=1.5),
+        dict(side="BOUGHT"),
+        dict(limit_price=Decimal("NaN")),
+        dict(limit_price=1.2),
+        dict(session="all"),
+        dict(client_order_id=""),
+        dict(currency="EUR"),
+    ],
+)
 def test_invalid_order(kwargs):
-    data = dict(client_order_id="one", strategy_id="smoke", symbol="SPY", side="BUY", quantity=1, limit_price=Decimal("700"))
+    data = dict(
+        client_order_id="one",
+        strategy_id="smoke",
+        symbol="SPY",
+        side="BUY",
+        quantity=1,
+        limit_price=Decimal("700"),
+    )
     with pytest.raises(ValueError):
         StockOrder(**(data | kwargs))
 
 
 def test_fill_deduplication_survives_reopen(tmp_path):
-    path = tmp_path / 'orders.sqlite'
+    path = tmp_path / "orders.sqlite"
     with OrderJournal(path) as journal:
-        journal.intent(order(), 'DU123', 7, 71, 756733)
+        journal.intent(order(), "DU123", 7, 71, 756733)
         journal.execution(fill())
     with OrderJournal(path) as journal:
         assert not journal.execution(fill())
-        assert journal.attributed_position('DU123', 'smoke', 756733) == 1
-        assert len(journal.get('order-1').executions) == 1
+        assert journal.attributed_position("DU123", "smoke", 756733) == 1
+        assert len(journal.get("order-1").executions) == 1
 
 
 def test_execution_validation_preserves_attribution_and_quantity(tmp_path):
     from dataclasses import replace
+
     with OrderJournal(tmp_path / "orders.sqlite") as j:
         j.intent(order(), "DU123", 7, 71, 756733)
-        for invalid in (fill(side="SELL"), fill(qty="3"),
-                        replace(fill(), price=Decimal("-1")),
-                        replace(fill(), quantity=Decimal("NaN")),
-                        replace(fill(), occurred_at="2026-10-09T05:00:00")):
+        for invalid in (
+            fill(side="SELL"),
+            fill(qty="3"),
+            replace(fill(), price=Decimal("-1")),
+            replace(fill(), quantity=Decimal("NaN")),
+            replace(fill(), occurred_at="2026-10-09T05:00:00"),
+        ):
             with pytest.raises(ValueError):
                 j.execution(invalid)
         assert not j.get("order-1").executions
@@ -124,10 +156,13 @@ def test_execution_validation_preserves_attribution_and_quantity(tmp_path):
 
 def test_supplied_execution_commission_survives_reopen(tmp_path):
     from dataclasses import replace
+
     path = tmp_path / "orders.sqlite"
     with OrderJournal(path) as j:
         j.intent(order(), "DU123", 7, 71, 756733)
-        j.execution(replace(fill(), commission=Decimal("0.35"), commission_currency="USD"))
+        j.execution(
+            replace(fill(), commission=Decimal("0.35"), commission_currency="USD")
+        )
     with OrderJournal(path) as j:
         execution = j.get("order-1").executions[0]
         assert execution.commission == Decimal("0.35")
@@ -137,8 +172,11 @@ def test_supplied_execution_commission_survives_reopen(tmp_path):
 def test_invalid_reported_fill_does_not_make_order_terminal(tmp_path):
     with OrderJournal(tmp_path / "orders.sqlite") as j:
         j.intent(order(), "DU123", 7, 71, 756733)
-        for status, quantity in (("Submitted", Decimal("3")), ("Filled", Decimal("0")),
-                                 ("Submitted", Decimal("NaN"))):
+        for status, quantity in (
+            ("Submitted", Decimal("3")),
+            ("Filled", Decimal("0")),
+            ("Submitted", Decimal("NaN")),
+        ):
             with pytest.raises(ValueError):
                 j.status("order-1", status, quantity)
         assert not j.get("order-1").terminal
@@ -158,6 +196,7 @@ def test_intent_creation_time_survives_reopen_for_session_trade_limits(tmp_path)
 def test_legacy_stock_request_keeps_day_default_and_original_evidence(tmp_path):
     import json
     import sqlite3
+
     path = tmp_path / "legacy.sqlite"
     with OrderJournal(path) as journal:
         journal.intent(order(), "DU123", 7, 71, 756733)

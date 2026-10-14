@@ -39,14 +39,17 @@ def symmetric(value, name="matrix"):
     return array(x / 2 + x.T / 2, name)
 
 
-def psd(value, name='covariance', *, definite=False):
+def psd(value, name="covariance", *, definite=False):
     from .._covariance import psd as checked
+
     return checked(value, name, definite=definite)
 
 
 def correlation(value, *, definite=False):
     x = psd(value, "correlation", definite=definite)
-    if not np.allclose(np.diag(x), 1, rtol=0, atol=1e-10) or np.any(np.abs(x) > 1 + 1e-10):
+    if not np.allclose(np.diag(x), 1, rtol=0, atol=1e-10) or np.any(
+        np.abs(x) > 1 + 1e-10
+    ):
         raise ValueError("correlation must have unit diagonal and entries in [-1,1]")
     return elliptical_shape(x, "correlation") if definite else x
 
@@ -54,12 +57,15 @@ def correlation(value, *, definite=False):
 def elliptical_shape(value, name="shape"):
     """Use SciPy's numerical rank convention for full-dimensional densities."""
     from scipy.stats import multivariate_normal
+
     matrix = psd(value, name, definite=True)
     generator: Any = multivariate_normal
     try:
         generator(cov=matrix, allow_singular=False)
     except np.linalg.LinAlgError as error:
-        raise ValueError(f"{name} must be numerically positive definite for SciPy densities") from error
+        raise ValueError(
+            f"{name} must be numerically positive definite for SciPy densities"
+        ) from error
     return matrix
 
 
@@ -67,7 +73,9 @@ def probabilities(value, *, interior=False):
     x = array(value, "probabilities", empty=True)
     bad = (x <= 0) | (x >= 1) if interior else (x < 0) | (x > 1)
     if np.any(bad):
-        raise ValueError(f"probabilities must lie in {'(0,1)' if interior else '[0,1]'}")
+        raise ValueError(
+            f"probabilities must lie in {'(0,1)' if interior else '[0,1]'}"
+        )
     return x
 
 

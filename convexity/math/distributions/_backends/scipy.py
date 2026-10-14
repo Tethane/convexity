@@ -11,10 +11,20 @@ from ..._backends.gaussian import sample as gaussian_sample, logpdf as gaussian_
 from .. import _validation as v
 from ..interfaces import Distribution, Measure
 
-SCALAR_CAPABILITIES = frozenset({
-    "log_density", "sample", "cdf", "survival", "quantile", "support",
-    "mean", "variance", "moment", "expect",
-})
+SCALAR_CAPABILITIES = frozenset(
+    {
+        "log_density",
+        "sample",
+        "cdf",
+        "survival",
+        "quantile",
+        "support",
+        "mean",
+        "variance",
+        "moment",
+        "expect",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -30,7 +40,9 @@ class ScalarAdapter:
             method = self.law.logpmf if self.measure == "discrete" else self.law.logpdf
             return method(args[0])
         if operation == "sample":
-            return np.asarray(self.law.rvs(size=args[0], random_state=kwargs["rng"])).reshape(args[0])
+            return np.asarray(
+                self.law.rvs(size=args[0], random_state=kwargs["rng"])
+            ).reshape(args[0])
         if operation == "cdf":
             return self.law.cdf(args[0])
         if operation == "survival":
@@ -44,32 +56,52 @@ class ScalarAdapter:
         if operation == "variance":
             return self.law.var()
         if operation == "support":
-            return self.support_bounds if self.support_bounds is not None else self.law.support()
+            return (
+                self.support_bounds
+                if self.support_bounds is not None
+                else self.law.support()
+            )
         if operation == "expect":
             # Bounds/conditional flags would change the meaning of this method.
             if {"lb", "ub", "conditional"} & kwargs.keys():
-                raise ValueError("expect integrates the full law; bounds/conditional are not supported")
+                raise ValueError(
+                    "expect integrates the full law; bounds/conditional are not supported"
+                )
+
             def callback(x):
                 points = np.asarray(x)
-                return np.array([v.scalar(args[0](float(point)), "expectation callback")
-                                 for point in points.flat]).reshape(points.shape)
+                return np.array(
+                    [
+                        v.scalar(args[0](float(point)), "expectation callback")
+                        for point in points.flat
+                    ]
+                ).reshape(points.shape)
+
             return self.law.expect(callback, **kwargs)
         return getattr(self.law, operation)(*args, **kwargs)
 
 
 def scalar_law(name, **parameters):
     generators = {
-        "normal": stats.norm, "student_t": stats.t, "lognormal": stats.lognorm,
-        "bernoulli": stats.bernoulli, "binomial": stats.binom, "poisson": stats.poisson,
+        "normal": stats.norm,
+        "student_t": stats.t,
+        "lognormal": stats.lognorm,
+        "bernoulli": stats.bernoulli,
+        "binomial": stats.binom,
+        "poisson": stats.poisson,
     }
-    measure: Measure = "discrete" if name in {"bernoulli", "binomial", "poisson"} else "continuous"
+    measure: Measure = (
+        "discrete" if name in {"bernoulli", "binomial", "poisson"} else "continuous"
+    )
     bounds = None
     if name in {"bernoulli", "binomial"} and parameters["p"] in (0, 1):
         point = float(parameters.get("n", 1) * parameters["p"])
         bounds = (point, point)
     if name == "poisson" and parameters["mu"] == 0:
-        bounds = (0., 0.)
-    return Distribution(ScalarAdapter(generators[name](**parameters), measure, support_bounds=bounds))
+        bounds = (0.0, 0.0)
+    return Distribution(
+        ScalarAdapter(generators[name](**parameters), measure, support_bounds=bounds)
+    )
 
 
 @dataclass(frozen=True)
@@ -78,10 +110,19 @@ class EllipticalAdapter:
     matrix: Any
     df: float | None = None
     measure: Measure = "continuous"
-    capabilities: frozenset[str] = frozenset({
-        "log_density", "sample", "cdf", "mean", "variance", "covariance",
-        "moment", "marginal", "condition",
-    })
+    capabilities: frozenset[str] = frozenset(
+        {
+            "log_density",
+            "sample",
+            "cdf",
+            "mean",
+            "variance",
+            "covariance",
+            "moment",
+            "marginal",
+            "condition",
+        }
+    )
 
     @property
     def event_shape(self):
@@ -90,7 +131,11 @@ class EllipticalAdapter:
     def _law(self, rng=None) -> Any:
         if self.df is None:
             generator: Any = stats.multivariate_normal
-            return generator(self.location, stats.Covariance.from_cholesky(np.linalg.cholesky(self.matrix)), seed=rng)
+            return generator(
+                self.location,
+                stats.Covariance.from_cholesky(np.linalg.cholesky(self.matrix)),
+                seed=rng,
+            )
         # Some SciPy stubs incorrectly restrict df to int; the library accepts real df.
         generator: Any = stats.multivariate_t
         return generator(self.location, self.matrix, self.df, seed=rng)
@@ -108,7 +153,9 @@ class EllipticalAdapter:
                 finite = np.all(np.isfinite(flat), axis=-1)
                 result = np.full(len(flat), -np.inf)
                 if self.df is None:
-                    result[finite] = gaussian_logpdf(flat[finite], self.location, self.matrix)
+                    result[finite] = gaussian_logpdf(
+                        flat[finite], self.location, self.matrix
+                    )
                 elif np.any(finite):
                     units = np.sqrt(np.diag(self.matrix))
                     corr = self.matrix / units[:, None] / units[None, :]
@@ -119,20 +166,34 @@ class EllipticalAdapter:
                     # Integer dimension permits a stable gamma-ratio product.
                     # Avoid subtracting enormous log-gammas in the normal limit.
                     half_df = self.df / 2
-                    offset = .5 if d % 2 else 0.
-                    normalization = np.log1p((np.arange(d//2) + offset) / half_df).sum()
+                    offset = 0.5 if d % 2 else 0.0
+                    normalization = np.log1p(
+                        (np.arange(d // 2) + offset) / half_df
+                    ).sum()
                     if d % 2:
-                        normalization += np.log(poch(half_df, .5) / np.sqrt(half_df))
-                    result[finite] = (normalization - d/2*np.log(2*np.pi) - log_volume
-                                      - (self.df+d)/2*np.log1p(np.sum(white**2, axis=1)/self.df))
+                        normalization += np.log(poch(half_df, 0.5) / np.sqrt(half_df))
+                    result[finite] = (
+                        normalization
+                        - d / 2 * np.log(2 * np.pi)
+                        - log_volume
+                        - (self.df + d)
+                        / 2
+                        * np.log1p(np.sum(white**2, axis=1) / self.df)
+                    )
                 return result.reshape(shape)
             rng = v.generator(kwargs.get("rng"))
             result = np.empty(len(flat))
             finite = np.all(np.isfinite(flat), axis=-1)
             if np.any(finite):
                 if d == 1:
-                    z = (flat[finite, 0] - self.location[0]) / np.sqrt(self.matrix[0, 0])
-                    result[finite] = stats.norm.cdf(z) if self.df is None else stats.t.cdf(z, self.df)
+                    z = (flat[finite, 0] - self.location[0]) / np.sqrt(
+                        self.matrix[0, 0]
+                    )
+                    result[finite] = (
+                        stats.norm.cdf(z)
+                        if self.df is None
+                        else stats.t.cdf(z, self.df)
+                    )
                 elif self.df is None:
                     result[finite] = self._law(rng).cdf(flat[finite])
                 else:
@@ -140,28 +201,37 @@ class EllipticalAdapter:
                     corr = self.matrix / units[:, None] / units[None, :]
                     generator: Any = stats.multivariate_t
                     law = generator(shape=corr, df=self.df)
-                    result[finite] = law.cdf((flat[finite] - self.location) / units, random_state=rng)
+                    result[finite] = law.cdf(
+                        (flat[finite] - self.location) / units, random_state=rng
+                    )
             for i in np.flatnonzero(~finite):
                 point = flat[i]
                 if np.any(np.isneginf(point)):
-                    result[i] = 0.
+                    result[i] = 0.0
                 elif np.all(np.isposinf(point)):
-                    result[i] = 1.
+                    result[i] = 1.0
                 else:
                     keep = np.flatnonzero(np.isfinite(point))
-                    result[i] = self.evaluate("marginal", keep).cdf(point[keep], rng=rng)
+                    result[i] = self.evaluate("marginal", keep).cdf(
+                        point[keep], rng=rng
+                    )
             return result.reshape(shape)
         if operation == "sample":
             shape = args[0]
             if 0 in shape:
                 return np.empty(shape + self.event_shape)
-            rng = kwargs['rng']
+            rng = kwargs["rng"]
             noise = gaussian_sample(np.zeros(d), self.matrix, shape, rng)
             if self.df is not None:
-                noise = noise / np.sqrt(rng.chisquare(self.df, size=shape) / self.df)[..., None]
+                noise = (
+                    noise
+                    / np.sqrt(rng.chisquare(self.df, size=shape) / self.df)[..., None]
+                )
             return self.location + noise
         if operation == "mean":
-            return self.location if self.df is None or self.df > 1 else np.full(d, np.nan)
+            return (
+                self.location if self.df is None or self.df > 1 else np.full(d, np.nan)
+            )
         if operation in {"variance", "covariance"}:
             if self.df is None:
                 covariance = self.matrix
@@ -176,7 +246,9 @@ class EllipticalAdapter:
         if operation == "moment":
             generator = stats.norm if self.df is None else stats.t
             params = {} if self.df is None else {"df": self.df}
-            return generator(loc=self.location, scale=np.sqrt(np.diag(self.matrix)), **params).moment(args[0])
+            return generator(
+                loc=self.location, scale=np.sqrt(np.diag(self.matrix)), **params
+            ).moment(args[0])
         if operation == "marginal":
             keep = args[0]
             location = v.array(self.location[keep], "marginal location")

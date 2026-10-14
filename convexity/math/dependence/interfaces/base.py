@@ -47,6 +47,7 @@ def diagnostics(value):
 
 class ConvergenceError(RuntimeError):
     """Raised when a checked numerical method does not converge; result retains the attempted solution and diagnostics."""
+
     def __init__(
         self, result: CovarianceEstimate | StudentTResult | TailFit | MatrixRepair
     ) -> None:
@@ -67,11 +68,13 @@ def checked_convergence[
 
 class CovarianceEstimator(Protocol):
     """Fit location/covariance from observation rows, returning a checked CovarianceEstimate."""
+
     def fit(self, samples: ArrayLike) -> "CovarianceEstimate": ...
 
 
 class CopulaAdapter(Protocol):
     """Dependence adapter declaring dimension and supported operations on unit-interval coordinates."""
+
     @property
     def dimension(self) -> int: ...
 
@@ -85,6 +88,7 @@ class CopulaAdapter(Protocol):
 
 class ContinuousMarginal(Protocol):
     """Scalar marginal law providing CDF, quantile and log density for copula composition."""
+
     @property
     def event_shape(self) -> tuple[int, ...]: ...
 

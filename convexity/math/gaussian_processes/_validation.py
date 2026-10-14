@@ -24,18 +24,28 @@ def variance(value, name, n=None):
     return float(a) if a.ndim == 0 else a
 
 
-def parameter(value, bounds, name, *, vector=False, allow_zero=False) -> tuple[Any, Any]:
+def parameter(
+    value, bounds, name, *, vector=False, allow_zero=False
+) -> tuple[Any, Any]:
     a = array(value, name)
-    if a.ndim not in ((0, 1) if vector else (0,)) or np.any(a < 0 if allow_zero else a <= 0):
-        raise ValueError(f"{name} must be {'nonnegative' if allow_zero else 'positive'} "
-                         f"and {'scalar or a vector' if vector else 'scalar'}")
+    if a.ndim not in ((0, 1) if vector else (0,)) or np.any(
+        a < 0 if allow_zero else a <= 0
+    ):
+        raise ValueError(
+            f"{name} must be {'nonnegative' if allow_zero else 'positive'} "
+            f"and {'scalar or a vector' if vector else 'scalar'}"
+        )
     if isinstance(bounds, str):
         if bounds != "fixed":
             raise ValueError(f"{name}_bounds must be 'fixed' or positive ordered pairs")
         checked = bounds
     else:
         b = array(bounds, f"{name}_bounds")
-        if b.shape not in ((2,), (a.size, 2)) or np.any(b <= 0) or np.any(b[..., 0] >= b[..., 1]):
+        if (
+            b.shape not in ((2,), (a.size, 2))
+            or np.any(b <= 0)
+            or np.any(b[..., 0] >= b[..., 1])
+        ):
             raise ValueError(f"{name}_bounds must contain positive increasing pairs")
         if np.any(a < b[..., 0]) or np.any(a > b[..., 1]):
             raise ValueError(f"{name} must lie within its bounds")

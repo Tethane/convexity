@@ -150,3 +150,37 @@ def test_gaussian_chance_and_kl_ambiguity_limits():
     assert r1.solution[2] == 0
     assert r2.objective == pytest.approx(2.0, abs=1e-6)
     assert robust.chance_probability([-1, 2], weights=[0.8, 0.2]) == pytest.approx(0.8)
+
+
+def test_mean_cvar_mean_uncertainty_and_zero_radius():
+    returns = np.array([[0.03, 0.01], [-0.04, -0.01], [0.06, 0.02], [0.01, 0.0]])
+    probabilities = np.array([0.1, 0.2, 0.3, 0.4])
+    mean = probabilities @ returns
+    shape = np.diag([0.04, 0.01])
+    nominal = robust.mean_cvar(returns, weights=probabilities, level=0.5)
+    zero = robust.mean_cvar(
+        returns,
+        weights=probabilities,
+        level=0.5,
+        ambiguity=robust.Ellipsoid(mean, shape, 0),
+    )
+    assert zero.objective == pytest.approx(nominal.objective, abs=1e-7)
+
+    uncertain = robust.mean_cvar(
+        returns,
+        weights=probabilities,
+        level=0.5,
+        ambiguity=robust.Ellipsoid(mean, shape, 2),
+    )
+    assert uncertain.solution is not None and nominal.solution is not None
+    allocation = uncertain.solution
+    expected = (
+        -mean @ allocation
+        + 2 * np.linalg.norm(shape.T @ allocation)
+        + risk.expected_shortfall(-returns @ allocation, 0.5, weights=probabilities)
+    )
+    assert uncertain.objective == pytest.approx(expected, abs=1e-7)
+    assert uncertain.solution[0] < nominal.solution[0]
+
+    with pytest.raises(ValueError, match="scenario-weighted mean"):
+        robust.mean_cvar(returns, ambiguity=robust.Ellipsoid(mean + 0.1, shape))

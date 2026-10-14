@@ -21,74 +21,96 @@ def test_gaussian_glm_matches_ols_and_frequency_replication():
 @pytest.mark.parametrize("family", ["poisson", "gamma"])
 def test_log_link_generated_recovery_and_required_offsets(family):
     rng = np.random.default_rng(41)
-    x = rng.normal(size=(5000, 2)) * .4
-    offset = rng.uniform(-.5, .5, len(x))
-    mean = np.exp(.8 + x @ [.6, -.5] + offset)
+    x = rng.normal(size=(5000, 2)) * 0.4
+    offset = rng.uniform(-0.5, 0.5, len(x))
+    mean = np.exp(0.8 + x @ [0.6, -0.5] + offset)
     y = rng.poisson(mean) if family == "poisson" else rng.gamma(4, mean / 4)
     result = learn.GeneralizedLinearModel(family).fit(x, y, offset=offset)
     assert result.coefficients is not None
-    assert_allclose(result.coefficients, [.6, -.5], atol=.08)
+    assert_allclose(result.coefficients, [0.6, -0.5], atol=0.08)
     assert result.intercept is not None
-    assert_allclose(result.intercept, .8, atol=.03)
+    assert_allclose(result.intercept, 0.8, atol=0.03)
     assert result.coefficients is not None and result.intercept is not None
-    assert_allclose(result.predict_mean(x, offset=offset),
-                    np.exp(x @ result.coefficients + result.intercept + offset))
-    assert result.predict_mean(x[:6].reshape(2, 3, 2), offset=offset[:6].reshape(2, 3)).shape == (2, 3)
+    assert_allclose(
+        result.predict_mean(x, offset=offset),
+        np.exp(x @ result.coefficients + result.intercept + offset),
+    )
+    assert result.predict_mean(
+        x[:6].reshape(2, 3, 2), offset=offset[:6].reshape(2, 3)
+    ).shape == (2, 3)
     with pytest.raises(ValueError, match="explicit prediction offset"):
         result.predict_mean(x)
     with pytest.raises(ValueError, match="leading axes"):
-        result.predict_mean(x, offset=0.)
+        result.predict_mean(x, offset=0.0)
 
 
 def test_grouped_binomial_matches_expanded_bernoulli():
     rng = np.random.default_rng(42)
     x = rng.normal(size=(120, 2))
     trials = rng.integers(10, 30, len(x))
-    successes = rng.binomial(trials, expit(-.3 + x @ [.8, -.5]))
+    successes = rng.binomial(trials, expit(-0.3 + x @ [0.8, -0.5]))
     model = learn.GeneralizedLinearModel("binomial")
     grouped = model.fit(x, successes, trials=trials)
     expanded_x = np.repeat(x, trials, axis=0)
-    expanded_y = np.concatenate([np.r_[np.ones(k), np.zeros(n-k)] for k, n in zip(successes, trials)])
+    expanded_y = np.concatenate(
+        [np.r_[np.ones(k), np.zeros(n - k)] for k, n in zip(successes, trials)]
+    )
     expanded = model.fit(expanded_x, expanded_y)
     assert expanded.coefficients is not None and grouped.coefficients is not None
     assert_allclose(grouped.coefficients, expanded.coefficients, atol=1e-8)
     assert grouped.coefficients is not None and grouped.intercept is not None
     probability = expit(x @ grouped.coefficients + grouped.intercept)
     assert_allclose(grouped.predict_mean(x), probability)
-    assert_allclose(grouped.predict_proba(x), np.column_stack([1-probability, probability]))
-    np.testing.assert_array_equal(grouped.predict_class(x), probability > .5)
+    assert_allclose(
+        grouped.predict_proba(x), np.column_stack([1 - probability, probability])
+    )
+    np.testing.assert_array_equal(grouped.predict_class(x), probability > 0.5)
     assert grouped.coefficients is not None
-    assert_allclose(grouped.coefficients, [.8, -.5], atol=.12)
+    assert_allclose(grouped.coefficients, [0.8, -0.5], atol=0.12)
 
 
 def test_binomial_offset_and_frequency_match_statsmodels():
     from statsmodels.genmod.generalized_linear_model import GLM
     from statsmodels.genmod.families import Binomial
+
     rng = np.random.default_rng(14)
     x = rng.normal(size=(100, 2))
-    y = rng.binomial(1, .4, 100)
-    offset = rng.normal(size=100) * .1
+    y = rng.binomial(1, 0.4, 100)
+    offset = rng.normal(size=100) * 0.1
     w = rng.integers(1, 5, 100)
-    result = learn.GeneralizedLinearModel("binomial").fit(x, y, offset=offset, frequency_weights=w)
+    result = learn.GeneralizedLinearModel("binomial").fit(
+        x, y, offset=offset, frequency_weights=w
+    )
     design = np.column_stack([np.ones(len(x)), x])
-    reference = GLM(y, design, family=Binomial(), offset=offset, freq_weights=w).fit(tol=1e-8)
-    assert_allclose(result.predict_mean(x[:10], offset=offset[:10]), reference.predict(design[:10], offset=offset[:10]))
+    reference = GLM(y, design, family=Binomial(), offset=offset, freq_weights=w).fit(
+        tol=1e-8
+    )
+    assert_allclose(
+        result.predict_mean(x[:10], offset=offset[:10]),
+        reference.predict(design[:10], offset=offset[:10]),
+    )
 
 
-@pytest.mark.parametrize("classes", [np.array([-3, 7]), np.array(["bear", "bull", "flat"])])
+@pytest.mark.parametrize(
+    "classes", [np.array([-3, 7]), np.array(["bear", "bull", "flat"])]
+)
 def test_logistic_class_order_and_links(classes):
     rng = np.random.default_rng(30)
     x = rng.normal(size=(600, 3))
     beta = rng.normal(size=(3, len(classes)))
     probabilities = softmax(x @ beta, axis=-1)
     labels = np.array([classes[rng.choice(len(classes), p=p)] for p in probabilities])
-    fitted = learn.logistic_regression(x, labels, C=2.)
+    fitted = learn.logistic_regression(x, labels, C=2.0)
     assert_allclose(fitted.predict_proba(x).sum(axis=-1), 1)
     assert fitted.classes is not None
     assert np.array_equal(fitted.classes, np.sort(classes))
     assert fitted.coefficients is not None and fitted.intercept is not None
     logits = x @ fitted.coefficients + fitted.intercept
-    expected = np.column_stack([1-expit(logits[:, 0]), expit(logits[:, 0])]) if len(classes) == 2 else softmax(logits, axis=-1)
+    expected = (
+        np.column_stack([1 - expit(logits[:, 0]), expit(logits[:, 0])])
+        if len(classes) == 2
+        else softmax(logits, axis=-1)
+    )
     assert_allclose(fitted.predict_proba(x), expected)
     assert fitted.classes is not None
     assert np.array_equal(fitted.predict(x), fitted.classes[expected.argmax(axis=1)])
@@ -119,6 +141,8 @@ def test_glm_and_logistic_failed_convergence():
         learn.GeneralizedLinearModel("poisson", maxiter=1).fit(x, y)
     with pytest.raises(learn.ConvergenceError):
         learn.LogisticRegression(maxiter=1, tolerance=1e-15).fit(x, (y > 1).astype(int))
-    separated = np.arange(-20., 20.)[:, None]
+    separated = np.arange(-20.0, 20.0)[:, None]
     with pytest.raises(learn.ConvergenceError):
-        learn.GeneralizedLinearModel("binomial").fit(separated, (separated[:, 0] > 0).astype(int))
+        learn.GeneralizedLinearModel("binomial").fit(
+            separated, (separated[:, 0] > 0).astype(int)
+        )

@@ -27,8 +27,11 @@ def function(value, name):
 
 def names(value, size):
     result = tuple(f"theta_{i}" for i in range(size)) if value is None else tuple(value)
-    if (len(result) != size or any(not isinstance(x, str) or not x for x in result)
-            or len(set(result)) != size):
+    if (
+        len(result) != size
+        or any(not isinstance(x, str) or not x for x in result)
+        or len(set(result)) != size
+    ):
         raise ValueError("names must contain one unique nonempty string per parameter")
     return result
 
@@ -43,17 +46,22 @@ def broadcast(value, size, name, *, finite=True):
 def bounds(lower, upper, size, *, strict=False):
     lo = broadcast(lower, size, "lower", finite=False)
     hi = broadcast(upper, size, "upper", finite=False)
-    if (np.any(lo > hi) or (strict and np.any(lo == hi))
-            or np.any(np.isposinf(lo)) or np.any(np.isneginf(hi))):
+    if (
+        np.any(lo > hi)
+        or (strict and np.any(lo == hi))
+        or np.any(np.isposinf(lo))
+        or np.any(np.isneginf(hi))
+    ):
         raise ValueError("bounds must be ordered with finite feasible points")
     return lo, hi
 
 
 def matrix(value, size, name, *, positive=False):
     from .._covariance import psd
+
     result = psd(value, name, definite=positive)
     if result.shape != (size, size):
-        raise ValueError(f'{name} must have shape ({size}, {size})')
+        raise ValueError(f"{name} must have shape ({size}, {size})")
     return result
 
 

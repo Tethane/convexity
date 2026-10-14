@@ -66,4 +66,5 @@ class RiskContributions:
 
 class RiskMeasure(Protocol):
     """Evaluate risk of supplied outcomes under the family's loss/return sign convention."""
+
     def __call__(self, law: LossScenarios) -> float: ...
